@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | — | RNF-09 | `/architecture-guardian` |
+| concluída | — | RNF-09 | `/architecture-guardian` |
 
 **Objetivo.** Criar o projeto Nuxt `~4.6` com pnpm, Node 24 e TypeScript `~6.0` em modo strict, na estrutura de pastas do [overview](../architecture/overview.md#3-estrutura-do-repositório-criada-na-f00).
 
@@ -23,11 +23,11 @@
 **Fora do escopo.** Tailwind, i18n, Cloudflare, frameworks de teste.
 
 **Critérios de aceite**
-- [ ] Antes de instalar, `npm view` confirma as versões da pesquisa (registrar qualquer mudança no doc de compatibilidade).
-- [ ] `pnpm install` gera o lockfile; `pnpm why typescript` mostra 6.0.x; `nuxt` 4.6.x; nenhum `h3`/`nitropack` instalado diretamente.
-- [ ] `tsconfig` com `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` (ou justificativa registrada se algum quebrar tipos do Nuxt).
-- [ ] `pnpm dev` serve a página placeholder; `GET /api/health` → `{ "status": "ok", "version": "<package version>" }`.
-- [ ] `pnpm build` conclui sem warnings de tipos.
+- [x] Antes de instalar, `npm view` confirma as versões da pesquisa (registrar qualquer mudança no doc de compatibilidade).
+- [x] `pnpm install` gera o lockfile; `pnpm why typescript` mostra 6.0.x; `nuxt` 4.6.x; nenhum `h3`/`nitropack` instalado diretamente.
+- [x] `tsconfig` com `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` (ou justificativa registrada se algum quebrar tipos do Nuxt).
+- [x] `pnpm dev` serve a página placeholder; `GET /api/health` → `{ "status": "ok", "version": "<package version>" }`.
+- [x] `pnpm build` conclui sem warnings de tipos.
 
 **Testes**
 - `pnpm typecheck` e `pnpm build` verdes (saída colada).

@@ -70,6 +70,12 @@ Detalhes em [compatibilidade](../../research/2026-10-25-compatibilidade.md).
 - F00-T3: `nuxt dev` acessa D1 e R2 locais.
 - Revisão trimestral: verificar se o TS 7.1 + Volar já suportam Vue, para propor a migração.
 
+| Verificação | Resultado | Data |
+|---|---|---|
+| F00-T1: `pnpm typecheck` e `pnpm build` no esqueleto | Passam com Nuxt 4.6.2, Nitro 2.13.5, Vite 8.3.5, Vue 3.5.44, TypeScript 6.0.3 e vue-tsc 3.3.13 (Node 24.22.1, pnpm 10.34.8). `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ativos nos 4 tsconfigs gerados, comprovado por fixtures temporárias que falharam em app, server e shared | 2026-10-25 |
+| F00-T2: `pnpm lint` | _pendente_ | |
+| F00-T3: D1 e R2 locais no `nuxt dev` | _pendente_ | |
+
 ## Referências
 
 - [Nitro v2 — Cloudflare](https://v2.nitro.build/deploy/providers/cloudflare)

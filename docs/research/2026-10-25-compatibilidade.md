@@ -11,7 +11,7 @@
 | `nuxt` | 4.6.2 (sem Nuxt 5 publicado) | `~4.6` | Linha estável atual. Usa Vite 8 (`@nuxt/vite-builder` → `vite ^8.3.4`), Vue `^3.5.44`, Vue Router `^5.4` |
 | `nitropack` | 2.13.5 (via `@nuxt/nitro-server` 4.6.2) | Não instalar diretamente | Nitro 3 (`nitro@3.0.x-beta`) ainda é beta e não é usado pelo Nuxt 4 |
 | `h3` **⚠** | 2.0.8 é `latest`, mas o Nitro 2.13 depende de `h3 ^1.15.11` | Não instalar diretamente | Instalar `h3@latest` traria a v2, incompatível com os handlers do Nuxt 4 |
-| `typescript` **⚠** | 7.0.2 (compilador nativo); 6.0.3 disponível | `~6.0` | `vue-tsc`/Volar ainda não suportam TS 7, porque dependem da API que só chega no 7.1 |
+| `typescript` **⚠** | 7.0.2 (compilador nativo); 6.0.3 disponível; 7.1.0-beta em 20/10/2026 | `~6.0` | `vue-tsc`/Volar ainda não suportam TS 7, porque dependem da API que só chega no 7.1 |
 | `vue-tsc` | 3.3.13 (peer `typescript >=5`) | Usar via `nuxi typecheck` | — |
 | `tailwindcss` / `@tailwindcss/vite` | 4.3.3 | `~4.3` | Integração oficial pelo plugin Vite. O `@nuxtjs/tailwindcss` (6.14) é para a v3 |
 | `gsap` | 3.15.0 | `~3.15` | Licença "Standard no-charge" (gratuita, inclui os plugins, não é OSI) |
@@ -41,8 +41,8 @@
 | `zod` | 4.6.7 | `~4.6` | Mesma major usada pelo Better Auth (`^4.5.4`) |
 | `@jsquash/avif` / `@jsquash/webp` | 2.1.1 / 1.5.0 | Candidatos (F04-T2) | Codecs WASM consistentes entre navegadores |
 | `@anthropic-ai/sdk` | 1.3.0 | Só no futuro (ADR-0009) | Claude como provedor opcional e pago, com aprovação |
-| Node.js | 24 LTS (local: v24.22.1) | `.nvmrc` = 24 | — |
-| pnpm | 10.16 (local) | `packageManager` fixado na F00-T1 | — |
+| Node.js | 24 LTS (local: v24.22.1 via nvm; o default do nvm é 22.12.0) | `.nvmrc` = 24; `engines.node` = `^24.15.0` | O `nuxt` 4.6.2 exige `^22.22.3 \|\| ^24.15.0 \|\| >=26.0.0` |
+| pnpm | 10.34.8 (último da linha 10; `latest` = 12.15.0) | `packageManager` = `pnpm@10.34.8` com hash, via corepack | O CLAUDE.md fixa a major 10; o 10.16.0 local só existe no Node 22 |
 
 ## 2. Limites da Cloudflare relevantes
 
@@ -111,6 +111,19 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - Antes de cada fase, rode `npm view` nas dependências que a fase vai adicionar e registre aqui qualquer mudança.
 - A cada trimestre, revise os itens com **⚠** (TS 7.1/Volar, Vitest 5/pool-workers, Lighthouse CI) e atualize os ADRs 0002 e 0013.
 - Nenhuma major é atualizada sem ADR.
+
+### Registro
+
+**25/10/2026 — F00-T1 (antes do install).** O `npm view` confirmou `nuxt` 4.6.2, `vue` 3.5.44, `vue-router` 5.4.0, `typescript` 6.0.3 e `vue-tsc` 3.3.13; `nitropack` 2.13.5, `h3` ^1.15.11 e `vite` ^8.3.4 seguem como transitivos. Mudanças e achados:
+- **Node:** o `nuxt` 4.6.2 declara `engines.node` `^22.22.3 || ^24.15.0 || >=26.0.0`, e o default do nvm local (22.12.0) fica fora da faixa. Decisão: `engines.node` `^24.15.0` e `engine-strict=true` no `.npmrc`.
+- **pnpm:** o `latest` é 12.15.0 (linha 11: 11.28.8). A major 10 foi mantida (CLAUDE.md): `pnpm@10.34.8`, com hash sha512 no `packageManager`, via corepack 0.36 do Node 24.
+- **TypeScript:** o 7.1.0-beta saiu em 20/10/2026. O `@nuxt/cli` 4 já aceita o Golar (verificador baseado no typescript-go) como alternativa ao `vue-tsc`; avaliar na revisão trimestral do item ⚠.
+- **Peers do `nuxt`:** `rolldown ~1.2.1` é obrigatório e já vem pelo `vite` 8.3.x; `@types/node` e `@parcel/watcher` são opcionais e não foram instalados.
+- **tsconfig gerado pelo Nuxt 4.6.2:** `strict` e `noUncheckedIndexedAccess` já vêm ligados; `exactOptionalPropertyTypes` é opt-in. `typescript.tsConfig.compilerOptions` vale para os 4 contextos (app, server, shared, node). Nada está depreciado no TS 6 (`moduleResolution: Bundler`, sem `baseUrl`).
+- **`nuxt typecheck`:** roda `vue-tsc -b --noEmit`. Se `typescript` ou `vue-tsc` faltarem, ele oferece instalá-los, o que traria o TS 7; por isso os dois são devDependencies fixadas.
+- **Build scripts:** o pnpm 10 bloqueou o do `esbuild` 0.28.2 (transitivo). Dev e build funcionam sem ele; a decisão está em `pnpm.ignoredBuiltDependencies`.
+- **`pnpm audit`:** 1 vulnerabilidade alta transitiva, sem versão corrigida: `node-forge` ≤ 1.4.0 (GHSA-86w9-cpqp-85rv / CVE-2026-85393), via `nitropack` → `listhen`. O `listhen` só gera o certificado autoassinado do HTTPS de dev (não verifica assinaturas), e o pacote não entra no output de produção. A exceção no `pnpm audit --audit-level high` do CI é decisão da F00-T5.
+- **Depreciado:** `glob` 10.5.0, transitivo via `nitropack` → `archiver`. Sem ação; depende do upstream.
 
 ## 6. Fontes
 
