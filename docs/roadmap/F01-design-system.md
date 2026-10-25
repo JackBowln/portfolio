@@ -14,7 +14,9 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00 (gate) | RX-01, RNF-10, RNF-11 | `/frontend-design` |
+| em andamento | F00 (gate) | RX-01, RNF-10, RNF-11 | `/frontend-design` |
+
+> Iniciada em 2026-10-25 antes do gate da F00, por decisão do owner. O `pnpm lint` (F00-T2), o axe e o E2E do 404 (F00-T4) rodam quando essas tarefas existirem; a tarefa só é concluída depois deles e da escolha do owner.
 
 **Objetivo.** Montar a rota `/dev/styleguide`, que existe **só em desenvolvimento**, com duas variações de par tipográfico e paleta para você escolher.
 
@@ -23,11 +25,11 @@
 **Fora do escopo.** Tokens definitivos (T2) e componentes de produção (T4).
 
 **Critérios de aceite**
-- [ ] Duas variações navegáveis: escala tipográfica, títulos, parágrafo longo, bloco de código, card, botão, link e cores em claro e escuro.
-- [ ] Conteúdo real fornecido por você, ou `[PLACEHOLDER]` marcado; nenhuma biografia inventada.
-- [ ] Contraste calculado e mostrado para cada par texto/fundo; licença de cada fonte registrada.
-- [ ] A rota não existe no build de produção (404).
-- [ ] **Você escolhe** a variação, e a escolha é registrada no §9 com data.
+- [x] Duas variações navegáveis: escala tipográfica, títulos, parágrafo longo, bloco de código, card, botão, link e cores em claro e escuro.
+- [x] Conteúdo real fornecido por você, ou `[PLACEHOLDER]` marcado; nenhuma biografia inventada.
+- [x] Contraste calculado e mostrado para cada par texto/fundo; licença de cada fonte registrada.
+- [x] A rota não existe no build de produção (404). Conferido com `curl` no preview; o teste E2E entra com a F00-T4.
+- [x] **Você escolhe** a variação, e a escolha é registrada no §9 com data. Par tipográfico A (escolha do owner) e paleta B (por delegação), em 2026-10-25.
 
 **Testes**
 - E2E: `/dev/styleguide` retorna 404 no build de produção.
@@ -52,6 +54,7 @@
 - [ ] `pnpm check:contrast` valida todos os pares e falha abaixo de AA (falha demonstrada com um par ruim).
 - [ ] Trocar de tema não causa FOUC; a preferência fica em `localStorage` e **nenhum cookie é emitido**.
 - [ ] Sem valores mágicos fora dos tokens (revisão pelo `/frontend-design`).
+- [ ] O `app/assets/css/styleguide-variants.css` (temporário da F01-T1) foi removido, e a styleguide lê os tokens finais; o `check:contrast` reaproveita `shared/design/contrast.ts`.
 
 **Testes**
 - Unit: as funções de contraste do script.
@@ -76,6 +79,7 @@
 - [ ] Nenhuma requisição de fonte a terceiros.
 - [ ] Primeira tela com ≤ 2 arquivos e ≤ 120 KB de fonte.
 - [ ] CLS = 0 atribuível a fontes (trace ou Lighthouse); diacríticos de pt, es, de e fr renderizados corretamente, incluindo "œ", "ß" e "ñ".
+- [ ] Os pacotes `@fontsource*` temporários da F01-T1 foram removidos das devDependencies.
 
 **Testes**
 - `/performance-audit` na home placeholder (relatório anexado).

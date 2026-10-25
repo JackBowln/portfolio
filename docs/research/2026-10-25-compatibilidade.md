@@ -125,6 +125,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - **`pnpm audit`:** 1 vulnerabilidade alta transitiva, sem versão corrigida: `node-forge` ≤ 1.4.0 (GHSA-86w9-cpqp-85rv / CVE-2026-85393), via `nitropack` → `listhen`. O `listhen` só gera o certificado autoassinado do HTTPS de dev (não verifica assinaturas), e o pacote não entra no output de produção. A exceção no `pnpm audit --audit-level high` do CI é decisão da F00-T5.
 - **Depreciado:** `glob` 10.5.0, transitivo via `nitropack` → `archiver`. Sem ação; depende do upstream.
 
+**25/10/2026 — F01-T1.** Seis devDependencies **temporárias**, usadas só pela styleguide de dev (fora do build de produção): `@fontsource-variable/fraunces`, `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono`, `@fontsource/instrument-serif`, `@fontsource-variable/instrument-sans` e `@fontsource-variable/geist-mono`, todas na 5.3.0 (19/07/2026), sob OFL-1.1 e sem script de instalação. Saem na F01-T3, quando o `@nuxt/fonts` assume o par escolhido.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

@@ -1,6 +1,6 @@
 # Direção visual — proposta para aprovação (F01-T1)
 
-**Status:** proposta. As escolhas finais são registradas na seção 9, depois da sua aprovação no styleguide de desenvolvimento. Decisão técnica em [ADR-0010](../architecture/adr/0010-design-system.md); a skill `/frontend-design` aplica estas regras.
+**Status:** direção escolhida em 2026-10-25 (seção 9): par tipográfico A com a paleta B. Os tokens finais são definidos na F01-T2. Decisão técnica em [ADR-0010](../architecture/adr/0010-design-system.md); a skill `/frontend-design` aplica estas regras.
 
 ## 1. Princípios
 
@@ -21,6 +21,19 @@ Preciso · confiante · curioso · artesanal · contemporâneo. Evitar: "templat
 | A | Fraunces (variável: `opsz`, `SOFT`, `WONK`) | Inter (variável) | JetBrains Mono | Editorial clássico com personalidade, ótimo em títulos grandes |
 | B | Instrument Serif | Instrument Sans (variável) | Geist Mono | Elegante e contemporâneo, display condensado |
 | C | Space Grotesk (variável) | IBM Plex Sans | IBM Plex Mono | Técnico e geométrico, menos editorial |
+
+**Licenças e peso dos pares prototipados** (conferidos na F01-T1, 2026-10-25; o par C não foi prototipado, por escolha do owner):
+
+| Fonte | Licença | Pacote na styleguide | Subset latin (WOFF2) |
+|---|---|---|---|
+| Fraunces | OFL-1.1 | `@fontsource-variable/fraunces` 5.3.0 | 118,2 KB com todos os eixos · 65,7 KB (`opsz` + `wght`) · 35,8 KB (`wght`) |
+| Inter | OFL-1.1 | `@fontsource-variable/inter` 5.3.0 | 47,1 KB (`wght`) |
+| JetBrains Mono | OFL-1.1 | `@fontsource-variable/jetbrains-mono` 5.3.0 | 39,5 KB (`wght`) |
+| Instrument Serif | OFL-1.1 | `@fontsource/instrument-serif` 5.3.0 | 20,5 KB (400; itálico em arquivo à parte) |
+| Instrument Sans | OFL-1.1 | `@fontsource-variable/instrument-sans` 5.3.0 | 29,4 KB (`wght`) |
+| Geist Mono | OFL-1.1 | `@fontsource-variable/geist-mono` 5.3.0 | 22,6 KB (`wght`) |
+
+Preload da primeira tela (teto: 2 arquivos e 120 KB): o par A soma 112,8 KB com a Fraunces em `opsz` + `wght` (perto do teto) e 165,3 KB com todos os eixos (acima); o par B soma 49,9 KB.
 
 **Regras:**
 - **Arquivos:** WOFF2 self-hosted via `@nuxt/fonts`; no máximo **2 arquivos com preload** (display e texto, subset `latin`). O `latin-ext` carrega via `unicode-range` só quando necessário (por exemplo, "œ" em francês).
@@ -70,18 +83,27 @@ Todo par texto/fundo passa pelo script de contraste da F01-T2. O tema padrão (c
 
 ## 8. Checklist de aprovação da F01-T1
 
-- [ ] Moodboard ou referências recebidas (Q-02).
-- [ ] Duas variações (par tipográfico + paleta) no styleguide de dev, com conteúdo real ou placeholders marcados.
-- [ ] Relatório de contraste de todos os pares de tokens.
-- [ ] Licenças das fontes confirmadas e registradas.
-- [ ] Tema padrão definido (Q-03).
-- [ ] Sua escolha registrada abaixo.
+- [x] Moodboard ou referências recebidas (Q-02).
+- [x] Duas variações (par tipográfico + paleta) no styleguide de dev, com conteúdo real ou placeholders marcados.
+- [x] Relatório de contraste de todos os pares de tokens (seção "Cores e contraste" da styleguide).
+- [x] Licenças das fontes confirmadas e registradas (§3).
+- [x] Tema padrão definido (Q-03).
+- [x] Sua escolha registrada abaixo.
 
 ## 9. Decisões registradas
 
 | Item | Escolha | Data |
 |---|---|---|
-| Par tipográfico | _pendente_ | |
-| Paleta e acento | _pendente_ | |
-| Tema padrão | _pendente_ | |
-| Referências visuais | _pendente_ | |
+| Par tipográfico | **A**: Fraunces (display), Inter (texto e UI) e JetBrains Mono (código e rótulos), escolhido pelo owner. Para caber no preload de 120 KB, a F01-T3 deve carregar a Fraunces só com `opsz` + `wght` (112,8 KB com a Inter) | 2026-10-25 |
+| Forma | Cantos retos, que acompanharam a tipografia A na styleguide; revisável na F01-T2 | 2026-10-25 |
+| Paleta e acento | **B, "Noite e rosa"**: azul-noite profundo, papel quente e um acento rosa; todos os pares passam em AA nos dois temas. Escolhida pelo Claude Code por delegação do owner, com base nas referências (abaixo); revisável pelo owner | 2026-10-25 |
+| Tema padrão | Claro e escuro; o padrão segue `prefers-color-scheme`, com troca manual guardada em `localStorage` (Q-03) | 2026-10-25 |
+| Referências visuais | [ingrassiadaniel.it](https://ingrassiadaniel.it/), [emotion-agency.com](https://emotion-agency.com/), [junkbranding.com](https://www.junkbranding.com/) (Q-02) | 2026-10-25 |
+
+### Leitura das referências (F01-T1)
+
+- **Adotado nas duas variações:** título display muito grande (passo 7 fluido com `vw`), rótulos pequenos em caixa-alta com tracking de 0,08–0,12em na fonte mono (a mono como voz de interface), hairlines como estrutura, base quase preta ou quase branca e um único acento vivo.
+- **Por variação:** a paleta A parte do neutro claro com amarelo do ingrassiadaniel.it; a paleta B parte do azul-noite com rosa do junkbranding.com, que também usa a Instrument Serif. A tipografia A tem cantos retos e a B usa pílulas em botões e tags.
+- **Deixado de fora** (§2): o vidro e os gradientes do emotion-agency.com. Motion e WebGL ficam para a F10, com storyboard.
+- Os valores de cor são próprios, em OKLCH, e não cópias dos hex das referências.
+- **Por que a paleta B:** é a mais próxima do conjunto, porque o junkbranding.com é escuro com rosa e o emotion-agency.com também parte de uma base quase preta (só o ingrassiadaniel.it é claro). O rosa funciona como texto, link, foco e preenchimento nos dois temas (os 22 pares passam em AA), enquanto o amarelo da A só pode preencher no tema claro. E ela segue o rascunho do §4: papel quente e tinta profunda.
