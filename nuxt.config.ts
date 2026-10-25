@@ -2,6 +2,11 @@
 import { version } from './package.json'
 
 export default defineNuxtConfig({
+  $production: {
+    // Dev-only pages (the F01-T1 styleguide) never reach the production build
+    ignore: ['**/pages/dev/**'],
+  },
+
   devtools: { enabled: true },
 
   app: {
