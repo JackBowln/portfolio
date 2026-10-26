@@ -16,6 +16,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private (server-only); returned by GET /api/health
     appVersion: version,
+    public: {
+      // Canonical, hreflang and JSON-LD base. Set per environment by NUXT_PUBLIC_SITE_URL in wrangler.jsonc, read at
+      // runtime from the Worker env; must equal SITE_URL (tests/unit/wrangler-config.test.ts)
+      siteUrl: 'http://localhost:3000',
+    },
   },
 
   // ADR-0003 §2: APIs are never stored; the admin is private and never indexed. Public pages get their policy in

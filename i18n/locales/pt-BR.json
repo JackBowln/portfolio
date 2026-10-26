@@ -39,5 +39,10 @@
   },
   "common": {
     "sampleDate": "Data de exemplo: {date}"
+  },
+  "seo": {
+    "siteName": "[PLACEHOLDER]",
+    "titleTemplate": "%s — [PLACEHOLDER]",
+    "defaultDescription": "[PLACEHOLDER]"
   }
 }

@@ -1,8 +1,10 @@
-// Skeleton pages (F02-T2): translated title and noindex until each page gets its own phase and usePageSeo (F02-T3)
-export function usePlaceholderPage(titleKey: string) {
+// Skeleton pages (F02-T2): translated title and placeholder description through usePageSeo; noindex unless the page
+// is listed as indexable in shared/i18n/routes.ts (also what the sitemap includes)
+export function usePlaceholderPage(titleKey: string, options: { indexable?: boolean } = {}) {
   const { t } = useI18n()
-  useHead({
+  usePageSeo({
     title: () => t(titleKey),
-    meta: [{ name: 'robots', content: 'noindex' }],
+    description: () => t('seo.defaultDescription'),
+    noindex: !options.indexable,
   })
 }

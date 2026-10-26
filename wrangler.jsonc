@@ -13,6 +13,8 @@
   "vars": {
     "ENVIRONMENT": "local",
     "SITE_URL": "http://localhost:3000",
+    // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
+    "NUXT_PUBLIC_SITE_URL": "http://localhost:3000",
     "MEDIA_BASE_URL": "http://localhost:3000/media",
   },
   "d1_databases": [
@@ -39,6 +41,8 @@
         "ENVIRONMENT": "preview",
         // workers.dev subdomain: vinivdias
         "SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
+        // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
+        "NUXT_PUBLIC_SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
         "MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev/media",
       },
       "d1_databases": [
@@ -64,6 +68,8 @@
         "ENVIRONMENT": "production",
         // [PLACEHOLDER] domain pending (Q-01, F12)
         "SITE_URL": "https://DOMAIN",
+        // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
+        "NUXT_PUBLIC_SITE_URL": "https://DOMAIN",
         "MEDIA_BASE_URL": "https://media.DOMAIN",
       },
       "d1_databases": [

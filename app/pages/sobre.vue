@@ -11,7 +11,7 @@ definePageMeta({
   },
 })
 
-usePlaceholderPage('pages.about.title')
+usePlaceholderPage('pages.about.title', { indexable: true })
 </script>
 
 <template>
