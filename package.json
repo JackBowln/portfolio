@@ -15,6 +15,13 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "cf:types": "wrangler types",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:nuxt": "vitest run --project nuxt",
+    "test:workers": "vitest run --project workers",
+    "test:api": "playwright test --project api",
+    "test:e2e": "playwright test --project e2e --project e2e-mobile",
+    "test:a11y": "playwright test --project a11y && playwright test --config playwright.dev.config.ts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -23,6 +30,8 @@
     "vue-router": "~5.4.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "~4.14.0",
+    "@cloudflare/vitest-plugin": "~1.4.7",
     "@fontsource-variable/fraunces": "~5.3.0",
     "@fontsource-variable/geist-mono": "~5.3.0",
     "@fontsource-variable/instrument-sans": "~5.3.0",
@@ -30,9 +39,14 @@
     "@fontsource-variable/jetbrains-mono": "~5.3.0",
     "@fontsource/instrument-serif": "~5.3.0",
     "@nuxt/eslint": "~1.17.0",
+    "@nuxt/test-utils": "~4.3.4",
+    "@playwright/test": "~1.64.1",
     "@types/node": "~24.19.2",
+    "@vue/test-utils": "~2.5.1",
     "eslint": "~10.13.0",
+    "happy-dom": "~21.0.4",
     "typescript": "~6.0.3",
+    "vitest": "~5.0.5",
     "vue-tsc": "~3.3.13",
     "wrangler": "^4.152.0"
   },
