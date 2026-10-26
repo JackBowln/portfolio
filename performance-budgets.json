@@ -1,14 +1,90 @@
 {
-  "$comment": "docs/quality/performance-budgets.md §3–§4. Sizes in kB (1 kB = 1000 bytes, gzip), as Vite reports them. Initial JS = entry + the route's page chunk + their static imports; dynamic imports are excluded.",
+  "$comment": "docs/quality/performance-budgets.md §3–§4. Sizes in kB (1 kB = 1000 bytes, gzip), as Vite reports them. Initial JS = entry + the route's page chunk + their static imports; dynamic imports are excluded. R2–R8 are F02-T2 skeletons (noindex), so `lighthouse: false` until each page gets its phase.",
   "routes": {
-    "R1": { "path": "/", "page": "pages/index.vue", "js": 110, "css": 30 },
-    "E404": { "path": "/__budget-not-found", "page": "nuxt/dist/app/components/error-404.vue", "js": 110, "css": 30, "lighthouse": false }
+    "R1": {
+      "path": "/",
+      "page": "pages/index.vue",
+      "js": 125,
+      "css": 30
+    },
+    "R2": {
+      "path": "/blog",
+      "page": "pages/blog/index.vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    },
+    "R3": {
+      "path": "/blog/x",
+      "page": "pages/blog/[slug].vue",
+      "js": 120,
+      "css": 25,
+      "lighthouse": false
+    },
+    "R4": {
+      "path": "/projetos",
+      "page": "pages/projetos/index.vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    },
+    "R5": {
+      "path": "/projetos/x",
+      "page": "pages/projetos/[slug].vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    },
+    "R6": {
+      "path": "/sobre",
+      "page": "pages/sobre.vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    },
+    "R7": {
+      "path": "/contato",
+      "page": "pages/contato.vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    },
+    "R8": {
+      "path": "/de/blog/x",
+      "page": "pages/blog/[slug].vue",
+      "js": 120,
+      "css": 25,
+      "lighthouse": false
+    },
+    "E404": {
+      "path": "/__budget-not-found",
+      "page": "nuxt/dist/app/components/error-404.vue",
+      "js": 125,
+      "css": 30,
+      "lighthouse": false
+    }
   },
-  "forbiddenInPublicRoutes": ["/admin/", "@tiptap/", "/shiki/", "@shikijs/", "@jsquash/"],
+  "forbiddenInPublicRoutes": [
+    "/admin/",
+    "@tiptap/",
+    "/shiki/",
+    "@shikijs/",
+    "@jsquash/"
+  ],
   "lighthouse": {
     "minScores": {
-      "mobile": { "performance": 95, "accessibility": 100, "best-practices": 100, "seo": 100 },
-      "desktop": { "performance": 98, "accessibility": 100, "best-practices": 100, "seo": 100 }
+      "mobile": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "desktop": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      }
     }
   }
 }

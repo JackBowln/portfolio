@@ -156,6 +156,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **26/10/2026 — F02-T4.** Sem dependências novas. Comportamentos do Nitro 2.13.5 e do Nuxt 4.6.2 confirmados no build em `wrangler dev`: o hook `beforeResponse` não roda quando o error handler responde, então o `Cache-Control` dos 404 vem do próprio handler (`no-cache` em JSON; no HTML, os headers da renderização interna de `/__nuxt_error`, onde o plugin põe `no-store`). Pela mesma razão, o `afterResponse` não roda em erros, e o log da requisição sai no hook `error`. Erros não tratados chegam ao cliente como `{"statusCode":500,"message":"Server Error"}`, mas o handler padrão os registra no console com URL completa e stack. O Nitro gera `.output/public/_headers` a partir das `routeRules` com headers.
 
+**26/10/2026 — F02-T2.** O `npm view` confirmou `@nuxtjs/i18n` 10.6.0 (13/10/2026, MIT), com `vue-i18n` 11.4. Ele declara `h3 ^1.15.11`, que deduplica com o h3 do Nitro (1.15.11); o h3 2.x do lockfile já vinha de ferramentas de dev (`@nuxt/test-utils`, config inspector do ESLint). No 10.6, o cliente busca as mensagens do idioma ativo em `/_i18n/<hash>/<locale>/messages.json` em toda hidratação, mesmo com `experimental.preload`. Com `experimental.prerenderMessages`, o build gera esses arquivos em `.output/public/` e o hash vem do conteúdo dos arquivos de idioma e do `i18n.config.ts`. As mensagens chegam como JSON cru, então `bundle.dropMessageCompiler` não se aplica (economizaria ~4,8 KB). Custo medido: +33 KB gz de JS inicial por rota pública.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

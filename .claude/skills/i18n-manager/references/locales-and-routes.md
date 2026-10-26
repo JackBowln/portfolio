@@ -32,5 +32,5 @@
 
 - Áreas: `layout.*`, `home.*`, `blog.*`, `projects.*`, `contact.*`, `errors.*`, `a11y.*`, `seo.*`, `admin.*` (admin só em pt-BR na v1, com `en` opcional).
 - Nome pelo papel (`blog.readingTime`), não pelo texto.
-- Plural ICU: `"{count, plural, one {# minuto de leitura} other {# minutos de leitura}}"`.
+- Plural nativo do vue-i18n, com o mesmo número de formas em todos os idiomas: `"{count} minuto de leitura | {count} minutos de leitura"`, usado como `t('blog.readingTime', { count }, count)`. A forma vem do `Intl.PluralRules` do idioma.
 - Nunca concatenar frases traduzidas: use interpolação (`{date}`, `{title}`).

@@ -84,8 +84,9 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 ## 7. Mensagens de interface
 
 - Arquivos `i18n/locales/{pt-BR,en,es,de,fr}.json`, com chaves por área: `layout.*`, `home.*`, `blog.*`, `projects.*`, `contact.*`, `errors.*`, `a11y.*` (rótulos de leitores de tela), `admin.*` (só pt-BR na v1, com `en` opcional).
-- `pnpm check:i18n` (F02-T2) compara as chaves de todos os idiomas com o pt-BR e falha se faltar alguma ou se houver chave órfã.
-- O plural usa sintaxe ICU (`{count, plural, one {# artigo} other {# artigos}}`).
+- `pnpm check:i18n` (F02-T2) compara as chaves de todos os idiomas com o pt-BR e falha com chave faltando, chave órfã, tipo diferente (mensagem × grupo), mensagem vazia, interpolações `{x}` diferentes ou número diferente de formas de plural. As chaves `admin.*` podem faltar fora do pt-BR.
+- As mensagens chegam ao cliente como arquivos estáticos pré-renderizados em `/_i18n/<hash>/<locale>/messages.json` (o hash é do conteúdo dos arquivos de idioma), com cache `immutable`; o Worker não é executado para elas.
+- O plural usa a sintaxe nativa do vue-i18n, com as formas separadas por `|` (`um artigo | {count} artigos`, ou `zero | one | other` com forma própria para zero). A forma é escolhida pelo `Intl.PluralRules` do idioma (`shared/i18n/plural.ts`), seguindo o CLDR: em francês e em português, 0 fica no singular. O `check:i18n` exige o mesmo número de formas em todos os idiomas.
 - Datas: `Intl.DateTimeFormat(locale, { dateStyle: 'long' })`; tempo de leitura: `Intl.NumberFormat` + mensagem pluralizada.
 
 ## 8. Testes obrigatórios

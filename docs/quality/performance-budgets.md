@@ -43,11 +43,13 @@ O artigo e o estudo de referência são definidos na F06/F07 (conteúdo real ou 
 
 ## 4. Orçamentos (valores iniciais; revisar com a baseline do F00-T7)
 
-Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB de CSS ([perf-log](perf-log.md)). Os limites abaixo seguem os mesmos e são revistos quando as rotas reais existirem (F06/F07). A fonte que o `pnpm check:budgets` lê é o `performance-budgets.json`.
+Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB de CSS ([perf-log](perf-log.md)).
+
+**Revisão na F02-T2 (owner, 26/10/2026):** o `@nuxtjs/i18n` (vue-i18n + runtime do módulo) acrescenta ~33 KB gz em toda rota pública, e o R3 esqueleto chegou a 102,2 kB, acima dos 100 KB iniciais. O owner manteve o módulo (ADR-0008) e os limites de JS inicial passaram para **R3 ≤ 120 KB** e **demais ≤ 125 KB**. Os limites voltam a ser revistos quando as rotas reais existirem (F06/F07). A fonte que o `pnpm check:budgets` lê é o `performance-budgets.json`.
 
 | Recurso | R3 (artigo) | R1 (home) | Demais públicas |
 |---|---|---|---|
-| JS inicial (gzip, carregado até o `load`) | ≤ 100 KB | ≤ 110 KB | ≤ 110 KB |
+| JS inicial (gzip, carregado até o `load`) | ≤ 120 KB | ≤ 125 KB | ≤ 125 KB |
 | JS adiado de motion (após o LCP) | 0 | ≤ 60 KB | ≤ 60 KB (estudo de caso) |
 | CSS (gzip) | ≤ 25 KB | ≤ 30 KB | ≤ 30 KB |
 | Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB | idem | idem |

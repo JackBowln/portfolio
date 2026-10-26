@@ -20,12 +20,12 @@ Referências rápidas:
 ## Regras
 
 1. **Nenhum texto visível hardcoded.**
-   - Chaves em `i18n/locales/{pt-BR,en,es,de,fr}.json`, adicionadas **nos 5 idiomas** no mesmo PR, com plural ICU.
+   - Chaves em `i18n/locales/{pt-BR,en,es,de,fr}.json`, adicionadas **nos 5 idiomas** no mesmo PR, com o plural nativo do vue-i18n (`one | other`; a forma vem do `Intl.PluralRules`).
    - `pnpm check:i18n` verde.
    - Traduções de UI escritas no PR passam pela revisão do owner, que pode pedir revisão nativa.
 2. **Rotas:** caminhos traduzidos em `definePageMeta({ i18n: { paths } })`, exatamente como a tabela; slugs em ASCII com transliteração; páginas de admin e preview com `i18n: false`.
 3. **Links:** `NuxtLinkLocale` (via `UiLocalizedLink`); seletor com `<SwitchLocalePathLink>`; rotas dinâmicas chamam `useSetI18nParams` só com os idiomas publicados.
-4. **Formatação:** datas, números e plurais via `Intl` e ICU, com o locale ativo. Nunca formatar manualmente.
+4. **Formatação:** datas, números e plurais via `Intl` (`useFormatDate`, `Intl.NumberFormat`, `pluralRules` do `shared/i18n/plural.ts`), com o locale ativo. Nunca formatar manualmente.
 5. **SEO:** `usePageSeo()` em toda página; hreflang **só** entre idiomas publicados; `x-default` → `en` se publicado, senão `pt-BR`; canonical absoluto para a própria página; `og:locale` + alternates.
 6. **Não traduzido:**
    - artigo, projeto ou tema → não aparece no idioma (404 + fora das listas, do sitemap e do hreflang);

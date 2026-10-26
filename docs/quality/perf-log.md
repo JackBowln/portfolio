@@ -8,6 +8,8 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-26 | `490e1eb` | `pnpm lighthouse` / 13.5.0 | Chrome for Testing 156.0.8078.4 | local, `wrangler dev` (build de produção) | R1 `/` | mobile | 100 | 100 | 100 | 90 | 1512 ms | 0 ms | 0 | Baseline do esqueleto. SEO 90: `meta-description` ausente no placeholder, a resolver com o SEO por página na F02. Elemento LCP: `<h1>`. FCP 1212 ms, SI 1212 ms |
 | 2026-10-26 | `490e1eb` | `pnpm lighthouse` / 13.5.0 | Chrome for Testing 156.0.8078.4 | local, `wrangler dev` (build de produção) | R1 `/` | desktop | 100 | 100 | 100 | 90 | 412 ms | 0 ms | 0 | Idem. FCP 332 ms, SI 332 ms |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `wrangler dev` (build de produção) | R1 `/` | mobile | 99 | 100 | 100 | 90 | 1809 ms | 0 ms | 0 | Com `@nuxtjs/i18n` (+33 KB de JS). FCP 1510 ms (era 1212): o JS maior compete com o HTML na simulação. SEO 90 pelo mesmo motivo da baseline (F02-T3). Elemento LCP: `<h1>` |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `wrangler dev` (build de produção) | R1 `/` | desktop | 100 | 100 | 100 | 90 | 409 ms | 0 ms | 0 | Idem. FCP 329 ms |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -17,3 +19,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 |---|---|---|---|---|---|---|
 | 2026-10-26 | `490e1eb` | R1 `/` | 68,56 | 0,00 | 110 / 30 | Entrada + `pages/index.vue` |
 | 2026-10-26 | `490e1eb` | E404 (página de erro do Nuxt) | 70,07 | 0,92 | 110 / 30 | Não auditável pelo Lighthouse, que só mede documentos 2xx |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R1 `/` | 101,86 | 0,00 | 125 / 30 | Com `@nuxtjs/i18n` e `fullInstall: false`; sem o i18n eram 68,56 |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R2–R7 (esqueletos) | 102,05–102,18 | 0,00 | 125 / 30 | Páginas `[PLACEHOLDER]` com `noindex`; fora do Lighthouse |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R3 e R8 `/blog/x`, `/de/blog/x` | 102,20 | 0,00 | 120 / 25 | Acima dos 100 KB iniciais; limite revisto pelo owner |
+| 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | E404 | 103,38 | 0,92 | 125 / 30 | — |

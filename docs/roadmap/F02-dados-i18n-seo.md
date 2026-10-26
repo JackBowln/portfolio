@@ -42,7 +42,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T4 | RF-10.1, RF-10.2, RF-10.3, RF-10.5, RF-12.1 | `/i18n-manager` |
+| concluída | F00-T4 | RF-10.1, RF-10.2, RF-10.3, RF-10.5, RF-12.1 | `/i18n-manager` |
 
 **Objetivo.** Configurar o `@nuxtjs/i18n ~10.6` conforme o ADR-0008 e criar:
 - as mensagens base;
@@ -55,16 +55,22 @@
 **Fora do escopo.** Head SEO completo (T3); conteúdo real das páginas.
 
 **Critérios de aceite**
-- [ ] Todas as rotas da tabela do [i18n-seo](../architecture/i18n-seo.md) (§2) respondem 200 nos 5 idiomas; `/admin/**` e `/preview/**` não são localizados.
-- [ ] `detectBrowserLanguage: false`: nenhum redirect por idioma e **nenhum `Set-Cookie`** nas respostas públicas.
-- [ ] O seletor de idioma usa nomes no próprio idioma, com o atributo `lang`, e é operável por teclado.
-- [ ] `pnpm check:i18n` passa; remover uma chave de um idioma faz o script falhar (demonstrado).
-- [ ] Datas formatadas via `Intl` com o locale ativo (exemplo na página-esqueleto).
+- [x] Todas as rotas da tabela do [i18n-seo](../architecture/i18n-seo.md) (§2) respondem 200 nos 5 idiomas; `/admin/**` e `/preview/**` não são localizados.
+- [x] `detectBrowserLanguage: false`: nenhum redirect por idioma e **nenhum `Set-Cookie`** nas respostas públicas.
+- [x] O seletor de idioma usa nomes no próprio idioma, com o atributo `lang`, e é operável por teclado.
+- [x] `pnpm check:i18n` passa; remover uma chave de um idioma faz o script falhar (demonstrado).
+- [x] Datas formatadas via `Intl` com o locale ativo (exemplo na página-esqueleto).
 
 **Testes**
 - API: 200 em cada rota × idioma; ausência de `Set-Cookie`.
 - E2E: o seletor leva à rota equivalente em cada idioma.
 - Unit: lógica do `check:i18n` com fixtures.
+
+**Resultado (26/10/2026).**
+- `@nuxtjs/i18n` 10.6.0; plural nativo do vue-i18n com `Intl.PluralRules` (opção A do owner); mensagens pré-renderizadas como assets estáticos `immutable` (ADR-0008, "Decisões da implementação").
+- `tests/unit/{check-i18n,plural}.test.ts`; `tests/api/i18n-routes.spec.ts` (9 rotas × 5 idiomas, `Accept-Language`, admin/preview, mensagens estáticas); `tests/e2e/language-switcher.spec.ts`; `tests/a11y/i18n-pages.spec.ts`. `pnpm check:i18n` no CI.
+- O módulo acrescenta ~33 KB gz de JS em toda rota pública; o R3 esqueleto (102,2 kB) passou dos 100 KB iniciais, e o owner reviu os orçamentos (R3 ≤ 120, demais ≤ 125). Lighthouse R1 mobile: Perf 99, LCP 1809 ms ([perf-log](../quality/perf-log.md)).
+- Limitações: o teste de teclado do seletor não roda no `e2e-mobile` (o WebKit do iOS não leva o foco por Tab a links); os alvos do cabeçalho provisório têm o mínimo de 24 px fixo até os tokens (F01-T2/T5). As traduções de interface escritas nesta tarefa aguardam a revisão do owner.
 
 ---
 
