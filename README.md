@@ -2,7 +2,7 @@
 
 Portfólio profissional e blog pessoal full-stack, com CMS próprio, em **Nuxt 4** na **Cloudflare** (Workers, D1, R2 e Workers AI). O conteúdo original é escrito em pt-BR e traduzido para en, es, de e fr com assistência de IA e revisão humana.
 
-> **Estado:** fase **F00** do [roadmap](docs/roadmap/README.md) em andamento. O esqueleto Nuxt 4.6 já existe (F00-T1), mas ainda não há funcionalidades.
+> **Estado:** a fase **F00** do [roadmap](docs/roadmap/README.md) está concluída, com toolchain, lint, testes, CI, Cloudflare e os spikes de CPU/cache e Lighthouse. A F01-T1 também, com a direção visual escolhida. Ainda não há funcionalidades.
 
 ## Destaques
 

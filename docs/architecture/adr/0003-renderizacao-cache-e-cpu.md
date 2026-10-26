@@ -1,6 +1,6 @@
 # ADR-0003 — Renderização, cache e orçamento de CPU
 
-- **Status:** Aceito (2026-10-25), com gate de validação no spike F00-T6
+- **Status:** Aceito (2026-10-25). Gate do spike F00-T6 cumprido em 2026-10-26: **mantido o plano Free** (decisão do owner)
 - **Decisores:** Owner · Claude Code
 - **Relacionados:** ADR-0002, ADR-0006, ADR-0007, ADR-0012, RNF-01…RNF-05, RNF-08
 
@@ -90,14 +90,29 @@ Se algum critério falhar, aplica-se o fallback correspondente e o owner é cons
 
 | Medição (F00-T6) | Resultado | Data |
 |---|---|---|
-| CPU SSR miss p50/p95 — home | _pendente_ | |
-| CPU SSR miss p50/p95 — artigo | _pendente_ | |
-| Workers Cache disponível no Free | _pendente_ | |
-| Assets contam no limite diário com cache ligado | _pendente_ | |
-| Purge por tag → reflexo | _pendente_ | |
+| CPU SSR miss p50/p95 — home | p50 **6** / p95 **54** ms (p99 88, máx. 101; 200 requisições). Aquecido: p50 6 / p95 ~15 ms | 2026-10-26 |
+| CPU SSR miss p50/p95 — artigo | p50 **25** / p95 **67** ms (p99 78; 200 requisições; ~2.500 palavras, 6 blocos de código em HAST, 5 imagens, documento no payload do `useFetch`). Aquecido: p50 ~22 / p95 ~55 ms. 200 de 200 acima de 10 ms, **nenhum erro 1102** | 2026-10-26 |
+| Workers Cache disponível no Free | **Sim.** MISS → HIT com `age` crescente; o HIT **não executa o Worker** (1 MISS e 4 HITs geraram 1 invocação no tail), então a CPU em hit é zero. `ctx.cache` presente | 2026-10-26 |
+| Assets contam no limite diário com cache ligado | Os assets não executam o Worker (50 requisições, 0 invocações). A contagem de cobrança foi conferida pelo owner no painel ("tudo em ordem"). Assets com hash saem com `max-age=31536000, immutable` | 2026-10-26 |
+| Purge por tag → reflexo | `ctx.cache.purge({ tags })` com `success: true`; a chamada leva 87–465 ms, e o MISS aparece **na primeira consulta (< 1 s)**, em 3 de 3 rodadas. Medido de um único colo (MRS) | 2026-10-26 |
 
 ## Referências
 
 - [Workers Cache](https://developers.cloudflare.com/workers/cache/) · [Configuração](https://developers.cloudflare.com/workers/cache/configuration/)
 - [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/) · [How the cache works](https://developers.cloudflare.com/workers/reference/how-the-cache-works/)
 - [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) · [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)
+
+### Decisão após o spike (owner, 2026-10-26)
+
+**Seguir no Workers Free.** Em MISS, o SSR de um artigo passa de 10 ms de CPU, mas com o Workers Cache cada página só renderiza uma vez por publicação, purge ou deploy, e todo o resto é HIT, sem CPU. O Free tolerou os 400 misses seguidos sem erro 1102. Requisitos que viram trabalho nas fases seguintes:
+
+1. **`Cache-Control` das páginas públicas:** `public, max-age=0, s-maxage=604800`, com cache compartilhado de 7 dias e revalidação no navegador. O purge por evento (§3) torna o TTL longo seguro. Implementação na F02-T4.
+2. **`cross_version_cache: true` em produção**, para o deploy não esfriar o cache, com purge geral nos deploys que mudarem templates (F11/F12).
+3. **Chave de cache normalizada:** query strings desconhecidas não podem gerar misses. Elas devem ser ignoradas ou redirecionadas para a URL canônica (F11), porque misses em massa são o que pode levar ao 1102.
+4. **Renderer sem o documento no payload** (F05). O spike mediu o pior caso, com o documento inteiro serializado pelo `useFetch` (HTML de 155 KB brutos). Remedir a CPU do R3 com o renderer real na F05/F11.
+5. **Monitorar o 1102** no Workers Observability. Se aparecer de forma recorrente, aplicam-se os fallbacks 2 e 3 do §7, com consulta ao owner antes de qualquer custo.
+
+**Como reproduzir:**
+- carga: `node scripts/spikes/ssr-load.mjs --base https://portfolio-preview.vinivdias.workers.dev --path /spike/article --count 200 --label article` (e `--path / --label home`), com query string única por requisição para forçar o miss;
+- CPU por requisição: `pnpm exec wrangler tail portfolio-preview --format json` (campos `cpuTime` e `wallTime`), filtrando pelo valor `spike=<label>-<n>`;
+- a página do spike foi descartada depois da medição (regra da fase).

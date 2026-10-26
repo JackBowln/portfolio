@@ -6,7 +6,7 @@
 
 **Leitura obrigatória:** [ADR-0002](../architecture/adr/0002-plataforma-e-toolchain.md), [ADR-0003](../architecture/adr/0003-renderizacao-cache-e-cpu.md), [ADR-0013](../architecture/adr/0013-testes-e-qualidade.md), [compatibilidade](../research/2026-10-25-compatibilidade.md), [test-strategy](../quality/test-strategy.md), [performance-budgets](../quality/performance-budgets.md).
 
-**Gate de saída:** a seção "Validação" do ADR-0003 e do ADR-0013 preenchida com números e data, e a sua decisão registrada: seguir no Free ou adotar a alternativa.
+**Gate de saída:** a seção "Validação" do ADR-0003 e do ADR-0013 preenchida com números e data, e a sua decisão registrada: seguir no Free ou adotar a alternativa. **Cumprido em 2026-10-26:** ADR-0003 e ADR-0013 preenchidos, com o Free mantido.
 
 ---
 
@@ -137,7 +137,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T3 | RNF-01, RNF-05, RNF-08 | `/performance-audit` |
+| concluída | F00-T3 | RNF-01, RNF-05, RNF-08 | `/performance-audit` |
 
 **Objetivo.** Medir no Workers Free:
 - a CPU do SSR em cache-miss numa página representativa;
@@ -152,11 +152,11 @@ Os números vão para o ADR-0003.
 **Fora do escopo.** Implementar o renderer real (F05-T4).
 
 **Critérios de aceite**
-- [ ] **Sua autorização explícita** antes de: criar `portfolio-preview` (D1/R2), configurar segredos e fazer deploy de preview.
-- [ ] CPU p50/p95/p99 em miss para home e artigo (≥ 200 requisições cada), tirada do Workers Observability, com prints ou export no relatório.
-- [ ] Workers Cache: `Cf-Cache-Status` observado (HIT/MISS), com `cache.enabled` funcionando ou não no Free; efeito na contagem de requisições de assets verificado no painel.
-- [ ] Purge por tag via `ctx.cache.purge`: tempo até o reflexo medido.
-- [ ] Tabela do ADR-0003 preenchida, com a recomendação e o fallback aplicável. **Você decide** antes de prosseguir: Free confirmado ou alternativa.
+- [x] **Sua autorização explícita** antes de: criar `portfolio-preview` (D1/R2), configurar segredos e fazer deploy de preview.
+- [x] CPU p50/p95/p99 em miss para home e artigo (≥ 200 requisições cada), tirada do Workers Observability, com prints ou export no relatório. _Tirada do `wrangler tail` (`cpuTime` por invocação), que dá os mesmos dados por requisição do Workers Observability._
+- [x] Workers Cache: `Cf-Cache-Status` observado (HIT/MISS), com `cache.enabled` funcionando ou não no Free; efeito na contagem de requisições de assets verificado no painel.
+- [x] Purge por tag via `ctx.cache.purge`: tempo até o reflexo medido.
+- [x] Tabela do ADR-0003 preenchida, com a recomendação e o fallback aplicável. **Você decide** antes de prosseguir: Free confirmado ou alternativa.
 
 **Testes**
 - O script de carga é reproduzível, com comandos e parâmetros documentados no ADR.

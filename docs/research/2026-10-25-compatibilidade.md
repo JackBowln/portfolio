@@ -85,7 +85,7 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
    - A chave inclui o caminho, o entrypoint e, por padrão, a versão do Worker: cada deploy começa com o cache frio, a menos que `cross_version_cache` esteja ligado.
    - Respostas com `Set-Cookie` ou requisições com `Authorization` passam direto (bypass).
    - Ressalva: com o cache ligado, requisições de assets estáticos passam a ser cobradas e contadas.
-   - A documentação não diz se o recurso existe no Free. **Validar no spike F00-T6.**
+   - A documentação não diz se o recurso existe no Free. **Validar no spike F00-T6.** _Validado: existe no Free (F00-T6)._
 2. **Cache API (fallback).** É por data center, e o Worker roda em todo hit. O purge global vale para "tudo", tag, host e prefixo, com ressalvas para cache key customizada.
 3. **Better Auth no Workers.** O binding do D1 só existe dentro do request, então a instância é criada por request (factory). O hash de senha padrão (scrypt em JS) não cabe em 10 ms de CPU. Por isso: passkey + GitHub, sem senha.
 4. **TypeScript 7** saiu em julho de 2026, mas a recomendação para projetos Vue é ficar no 6.0 até o 7.1 e um Volar compatível.
@@ -99,8 +99,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 | Pergunta | Onde | Critério de decisão |
 |---|---|---|
-| O Workers Cache está disponível no Free? Os assets passam a contar no limite de 100 mil/dia? | F00-T6 | Disponível e com hit sem CPU → adotar. Senão → Cache API + purge por tag via API |
-| Quanta CPU o SSR gasta em cache-miss (p50/p95) numa página representativa? | F00-T6 | p95 ≤ 10 ms (ou estouros só ocasionais) → seguir no Free. Senão → pedir aprovação para o Paid ou cair para pré-render |
+| O Workers Cache está disponível no Free? Os assets passam a contar no limite de 100 mil/dia? | F00-T6 | Disponível e com hit sem CPU → adotar. Senão → Cache API + purge por tag via API  **Respondido (F00-T6):** disponível; um HIT não executa o Worker; assets também não executam. |
+| Quanta CPU o SSR gasta em cache-miss (p50/p95) numa página representativa? | F00-T6 | p95 ≤ 10 ms (ou estouros só ocasionais) → seguir no Free. Senão → pedir aprovação para o Paid ou cair para pré-render  **Respondido (F00-T6):** home p50 6 / p95 54 ms; artigo p50 25 / p95 67 ms. Free mantido, porque o cache torna os misses raros (ADR-0003). |
 | Lighthouse 13 no CI: Unlighthouse ou script próprio? | F00-T7 | Mediana estável em 3 execuções, relatório em artefato, asserção por categoria |
 | Passkey do Better Auth funciona no workerd com o RP ID do domínio de preview? | F03-T2 | Registro e login E2E com autenticador virtual |
 | O `@cloudflare/vitest-pool-workers` roda os handlers do Nitro com bindings? | F00-T4 | Um teste de integração lê e grava no D1 local  **Respondido na F00-T4:** sim, com o `@cloudflare/vitest-plugin` (D1 do miniflare). |

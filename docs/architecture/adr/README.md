@@ -5,7 +5,7 @@
 | [0000](0000-template.md) | Template | — |
 | [0001](0001-registro-de-decisoes.md) | Registrar decisões em ADRs | Aceito |
 | [0002](0002-plataforma-e-toolchain.md) | Plataforma e toolchain (Nuxt 4, Workers, TS 6) | Aceito |
-| [0003](0003-renderizacao-cache-e-cpu.md) | Renderização, cache e orçamento de CPU | Aceito, com gate F00-T6 |
+| [0003](0003-renderizacao-cache-e-cpu.md) | Renderização, cache e orçamento de CPU | Aceito; gate F00-T6 cumprido (Free mantido) |
 | [0004](0004-dados-d1-drizzle.md) | Dados: D1 + Drizzle | Aceito |
 | [0005](0005-autenticacao-e-rbac.md) | Autenticação (passkey + GitHub) e RBAC | Aceito |
 | [0006](0006-conteudo-e-editor.md) | Modelo de conteúdo, editor e renderer | Aceito |
@@ -15,7 +15,7 @@
 | [0010](0010-design-system.md) | Design system (Tailwind 4 e tokens) | Aceito |
 | [0011](0011-motion.md) | Motion (GSAP sob demanda) | Aceito |
 | [0012](0012-seguranca.md) | Segurança | Aceito |
-| [0013](0013-testes-e-qualidade.md) | Testes e qualidade | Aceito, com gate F00-T7; §1 substituído pelo 0015 |
+| [0013](0013-testes-e-qualidade.md) | Testes e qualidade | Aceito; gate F00-T7 cumprido; §1 substituído pelo 0015 |
 | [0014](0014-operacao.md) | Operação, CI/CD e backups | Aceito |
 | [0015](0015-vitest-5-e-vitest-plugin.md) | Vitest 5 com `@cloudflare/vitest-plugin` | Aceito |
 
