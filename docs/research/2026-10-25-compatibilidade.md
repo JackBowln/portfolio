@@ -154,6 +154,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **26/10/2026 — F02-T1.** O `npm view` confirmou `drizzle-orm` 0.45.4 (08/10/2026; a 1.0 está em `rc.5`), `drizzle-kit` 0.31.11 e `zod` 4.6.7, que bate com a pesquisa. O `drizzle-kit` traz o `@esbuild-kit/esm-loader` e o `core-utils`, ambos depreciados, e um `esbuild` ≤ 0.24.2 com o GHSA-67mh-4wv8-2f99 (moderada). Essa falha trata do servidor `serve` do esbuild, que o `drizzle-kit` não usa, e o audit em nível `high` segue limpo. Reavaliar quando o Drizzle 1.0 sair.
 
+**26/10/2026 — F02-T4.** Sem dependências novas. Comportamentos do Nitro 2.13.5 e do Nuxt 4.6.2 confirmados no build em `wrangler dev`: o hook `beforeResponse` não roda quando o error handler responde, então o `Cache-Control` dos 404 vem do próprio handler (`no-cache` em JSON; no HTML, os headers da renderização interna de `/__nuxt_error`, onde o plugin põe `no-store`). Pela mesma razão, o `afterResponse` não roda em erros, e o log da requisição sai no hook `error`. Erros não tratados chegam ao cliente como `{"statusCode":500,"message":"Server Error"}`, mas o handler padrão os registra no console com URL completa e stack. O Nitro gera `.output/public/_headers` a partir das `routeRules` com headers.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

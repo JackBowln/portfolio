@@ -87,6 +87,7 @@
 
 ## Validação
 
+- F02-T4 (2026-10-26): headers base (§1, sem CSP) em `server/plugins/security-headers.ts`, com HSTS só quando `ENVIRONMENT=production`; validação `strict` (§4) em `server/utils/validation.ts`, que também exige `application/json` e limita o body a 1 MB inclusive sem `Content-Length`; erro 500 genérico e logs JSON com `requestId` (§10). Coberto por `tests/api/server-infra.spec.ts`.
 - F03-T4: testes de headers por tipo de rota; POST cross-origin rejeitado; o rate limit retorna 429; nenhuma violação de CSP nas páginas públicas.
 - F12-T3: `/security-audit` completo sem achados altos ou críticos.
 

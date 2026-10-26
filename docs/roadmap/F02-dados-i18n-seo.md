@@ -100,7 +100,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F02-T1 | RNF-05, RNF-06, RNF-09 | `/architecture-guardian`, `/security-audit` |
+| concluída | F02-T1 | RNF-05, RNF-06, RNF-09 | `/architecture-guardian`, `/security-audit` |
 
 **Objetivo.** Criar:
 - os helpers de validação com zod (body, query e params `strict`);
@@ -114,14 +114,20 @@
 **Fora do escopo.** CSP, CSRF e rate limit (F03-T4).
 
 **Critérios de aceite**
-- [ ] Rotas públicas emitem o `Cache-Control` definido no ADR-0003 e o `Cache-Tag`; `/api/admin/**` e `/admin/**` emitem `private, no-store`.
-- [ ] Os erros em produção não expõem stack trace nem detalhes internos; o log tem `requestId`, rota, status e duração, sem PII.
-- [ ] As tags são validadas (ASCII imprimível, sem espaços, até 1.024 caracteres) antes de entrar no header.
-- [ ] Headers base presentes: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `COOP`, `X-Frame-Options`.
+- [x] Rotas públicas emitem o `Cache-Control` definido no ADR-0003 e o `Cache-Tag`; `/api/admin/**` e `/admin/**` emitem `private, no-store`.
+- [x] Os erros em produção não expõem stack trace nem detalhes internos; o log tem `requestId`, rota, status e duração, sem PII.
+- [x] As tags são validadas (ASCII imprimível, sem espaços, até 1.024 caracteres) antes de entrar no header.
+- [x] Headers base presentes: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `COOP`, `X-Frame-Options`.
 
 **Testes**
 - Unit: builders de tags e de política de cache; validação de tags inválidas.
 - API: headers por tipo de rota; erro 500 genérico em build de produção.
+
+**Resultado (26/10/2026).**
+- `tests/unit/cache-tags.test.ts` e `tests/unit/cache-policy.test.ts`; `tests/api/server-infra.spec.ts` (14 casos) contra o build em `wrangler dev`.
+- As rotas `server/api/_test/**` e `server/routes/_test/**` só entram no build com `PORTFOLIO_TEST_BUILD=1`, que o `playwright.config.ts` e o CI definem; o build de deploy não as contém (busca no `.output/`: 0).
+- Além do pedido: o body exige `Content-Type: application/json` (415), defesa em profundidade para o CSRF da F03-T4, e o limite de 1 MB vale também para corpos sem `Content-Length`.
+- Limitações: `/admin/**` ainda não tem páginas, então o teste confere só que a resposta não é pública e leva `X-Robots-Tag` (o `private, no-store` das respostas 200 vem das `routeRules` e aparece no `_headers` gerado). Os 404 em JSON saem com `no-cache`, que o Nitro força e a Cloudflare também não armazena. O handler padrão do Nitro registra erros não tratados com URL completa e stack nos logs do Workers (só no servidor).
 
 ---
 

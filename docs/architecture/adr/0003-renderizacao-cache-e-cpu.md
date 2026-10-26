@@ -112,6 +112,12 @@ Se algum critério falhar, aplica-se o fallback correspondente e o owner é cons
 4. **Renderer sem o documento no payload** (F05). O spike mediu o pior caso, com o documento inteiro serializado pelo `useFetch` (HTML de 155 KB brutos). Remedir a CPU do R3 com o renderer real na F05/F11.
 5. **Monitorar o 1102** no Workers Observability. Se aparecer de forma recorrente, aplicam-se os fallbacks 2 e 3 do §7, com consulta ao owner antes de qualquer custo.
 
+**Implementação (F02-T4, 2026-10-26):**
+- políticas em `server/utils/cache.ts` (`CACHE_POLICIES`: `public`, `private`, `none`), `setCachePolicy`, `setCacheTags` (valida as tags e o limite de 16 KB do header) e `purgeCacheTags` (via `ctx.cache.purge`, sem efeito onde não há Workers Cache);
+- vocabulário de tags em `shared/cache/tags.ts`, usado tanto no header quanto no purge;
+- `server/plugins/cache-policy.ts`: página HTML pública sem política própria recebe `public` + a tag `site`; erros e respostas fora das páginas recebem `no-store`; resposta pública com `Set-Cookie` perde o cookie e gera um log de erro;
+- `routeRules`: `/api/**` com `no-store`; `/admin/**` e `/api/admin/**` com `private, no-store` e `X-Robots-Tag: noindex, nofollow`.
+
 **Como reproduzir:**
 - carga: `node scripts/spikes/ssr-load.mjs --base https://portfolio-preview.vinivdias.workers.dev --path /spike/article --count 200 --label article` (e `--path / --label home`), com query string única por requisição para forçar o miss;
 - CPU por requisição: `pnpm exec wrangler tail portfolio-preview --format json` (campos `cpuTime` e `wallTime`), filtrando pelo valor `spike=<label>-<n>`;
