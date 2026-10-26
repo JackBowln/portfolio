@@ -1,0 +1,43 @@
+{
+  "layout": {
+    "nav": {
+      "label": "Main navigation",
+      "projects": "Projects",
+      "blog": "Blog",
+      "about": "About",
+      "contact": "Contact"
+    },
+    "languageSwitcher": {
+      "label": "Language"
+    }
+  },
+  "pages": {
+    "about": {
+      "title": "About"
+    },
+    "projects": {
+      "title": "Projects"
+    },
+    "project": {
+      "title": "Project"
+    },
+    "blog": {
+      "title": "Blog"
+    },
+    "article": {
+      "title": "Article"
+    },
+    "topic": {
+      "title": "Topic"
+    },
+    "contact": {
+      "title": "Contact"
+    },
+    "privacy": {
+      "title": "Privacy"
+    }
+  },
+  "common": {
+    "sampleDate": "Sample date: {date}"
+  }
+}

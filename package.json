@@ -23,6 +23,7 @@
     "test:e2e": "playwright test --project e2e --project e2e-mobile",
     "test:a11y": "playwright test --project a11y && playwright test --config playwright.dev.config.ts",
     "check:budgets": "node scripts/check-budgets.ts",
+    "check:i18n": "node scripts/check-i18n.ts",
     "lighthouse": "node scripts/lighthouse.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state",
@@ -30,6 +31,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxtjs/i18n": "~10.6.0",
     "drizzle-orm": "~0.45.4",
     "nuxt": "~4.6.2",
     "vue": "~3.5.44",

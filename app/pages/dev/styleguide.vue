@@ -14,6 +14,9 @@ import '~/assets/css/styleguide-variants.css'
 import { AA_MINIMUM, contrastRatio, isInSrgbGamut, meetsAA } from '#shared/design/contrast'
 import type { ContrastUse, Oklch } from '#shared/design/contrast'
 
+// Dev tool, not part of the localized site
+definePageMeta({ i18n: false })
+
 type VariantId = 'a' | 'b'
 type ThemeName = 'light' | 'dark'
 type ColorToken = 'bg' | 'surface' | 'text' | 'text-muted' | 'border' | 'link' | 'accent' | 'accent-contrast' | 'focus'

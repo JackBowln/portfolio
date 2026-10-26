@@ -2,7 +2,7 @@
 import { version } from './package.json'
 
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
 
   $production: {
     // Dev-only pages and routes (styleguide, binding diagnostics) never reach the production build
@@ -12,12 +12,6 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-
-  app: {
-    head: {
-      htmlAttrs: { lang: 'pt-BR' },
-    },
-  },
 
   runtimeConfig: {
     // Private (server-only); returned by GET /api/health
@@ -30,6 +24,8 @@ export default defineNuxtConfig({
     '/api/**': { headers: { 'cache-control': 'no-store' } },
     '/api/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     '/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
+    // Prerendered i18n messages: the path carries a hash of the locale files, so a change means a new URL
+    '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
   },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
@@ -62,6 +58,30 @@ export default defineNuxtConfig({
   eslint: {
     config: {
       stylistic: true,
+    },
+  },
+
+  // ADR-0008 §1 and docs/architecture/i18n-seo.md: pt-BR at the root, translated paths in definePageMeta,
+  // no browser detection (no cookie, no redirect), so every public response stays cacheable
+  i18n: {
+    strategy: 'prefix_except_default',
+    defaultLocale: 'pt-BR',
+    customRoutes: 'meta',
+    detectBrowserLanguage: false,
+    // Names are autonyms: each language is listed in its own language, on every page
+    locales: [
+      { code: 'pt-BR', language: 'pt-BR', name: 'Português (Brasil)', file: 'pt-BR.json' },
+      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
+      { code: 'es', language: 'es', name: 'Español', file: 'es.json' },
+      { code: 'de', language: 'de', name: 'Deutsch', file: 'de.json' },
+      { code: 'fr', language: 'fr', name: 'Français', file: 'fr.json' },
+    ],
+    // No <i18n-t> component or v-t directive (unused); the message compiler stays, since messages arrive as JSON
+    bundle: { fullInstall: false },
+    experimental: {
+      // The client always fetches the active locale's messages on hydration. Prerendered, they are static assets
+      // at /_i18n/<content-hash>/<locale>/messages.json: served by Static Assets without running the Worker
+      prerenderMessages: true,
     },
   },
 })
