@@ -1,5 +1,5 @@
 // Test layers from docs/quality/test-strategy.md (ADR-0015): unit, nuxt and workers in one Vitest run
-import { cloudflareTest } from '@cloudflare/vitest-plugin'
+import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
 
@@ -21,11 +21,17 @@ export default defineConfig({
         },
       }),
       {
-        // remoteBindings off: tests never reach Cloudflare (ADR-0013 §9); AI stays unavailable here
-        plugins: [cloudflareTest({ wrangler: { configPath: './wrangler.jsonc' }, remoteBindings: false })],
+        // remoteBindings off: tests never reach Cloudflare (ADR-0013 §9); AI stays unavailable here.
+        // Migrations are read here and applied inside workerd by tests/workers/setup.ts
+        plugins: [cloudflareTest({
+          wrangler: { configPath: './wrangler.jsonc' },
+          remoteBindings: false,
+          miniflare: { bindings: { TEST_MIGRATIONS: await readD1Migrations('./server/db/migrations') } },
+        })],
         test: {
           name: 'workers',
           include: ['tests/workers/**/*.test.ts'],
+          setupFiles: ['./tests/workers/setup.ts'],
         },
       },
     ],
