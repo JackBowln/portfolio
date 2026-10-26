@@ -32,6 +32,7 @@ export const cacheTags = {
   sitemap: () => 'sitemap',
   rss: (locale: Locale) => `rss:${locale}`,
   redirects: () => 'redirects',
+  robots: () => 'robots',
   // UI messages served to the client by @nuxtjs/i18n (/_i18n/<hash>/<locale>/messages.json)
   i18n: () => 'i18n',
 } as const
