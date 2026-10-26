@@ -114,7 +114,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T2, F00-T4 | RNF-09, RNF-13 | `/test-engineer` |
+| concluída | F00-T2, F00-T4 | RNF-09, RNF-13 | `/test-engineer` |
 
 **Objetivo.** Rodar os checks do ADR-0013 em todo PR e na `main`, sem nenhum deploy.
 
@@ -123,10 +123,10 @@
 **Fora do escopo.** Workflows de deploy (F12-T4/T5) e de Lighthouse (F00-T7/F11-T5).
 
 **Critérios de aceite**
-- [ ] O job roda com Node 24 e pnpm em cache e executa `install --frozen-lockfile` → `typecheck` → `lint` → `test` → `build` → Playwright `api` + smoke `e2e` + `a11y` → `pnpm audit --audit-level high`.
-- [ ] Os relatórios do Playwright saem como artefatos; o tempo total fica registrado (Q-07: minutos de CI).
-- [ ] Um PR de teste com erro de lint proposital falha; corrigido, passa (links ou logs no relatório).
-- [ ] Dependabot semanal para npm e github-actions, sem auto-merge.
+- [x] O job roda com Node 24 e pnpm em cache e executa `install --frozen-lockfile` → `typecheck` → `lint` → `test` → `build` → Playwright `api` + smoke `e2e` + `a11y` → `pnpm audit --audit-level high`.
+- [x] Os relatórios do Playwright saem como artefatos; o tempo total fica registrado (Q-07: minutos de CI).
+- [x] Um PR de teste com erro de lint proposital falha; corrigido, passa (links ou logs no relatório).
+- [x] Dependabot semanal para npm e github-actions, sem auto-merge.
 
 **Testes**
 - Execução real do workflow num PR (você cria o repositório e autoriza o push).

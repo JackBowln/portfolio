@@ -69,6 +69,7 @@
 ## Validação
 
 - F12-T4: restore ensaiado (D1 de um export num banco de preview); rollback de versão ensaiado em preview.
+- **F00-T5 (2026-10-26):** o CI roda em todo PR e na `main`, com todos os passos verdes em ~1 min 38 s por execução (ubuntu-24.04; [run do PR #1](https://github.com/JackBowln/portfolio/actions/runs/40317070699)). O PR de teste #2 falhou no `pnpm lint` ([run](https://github.com/JackBowln/portfolio/actions/runs/40317914335)) e passou depois da correção ([run](https://github.com/JackBowln/portfolio/actions/runs/40319741293)). O repositório é **público** (Q-07), então não há custo de minutos. Actions fixadas por SHA e atualizadas pelo Dependabot.
 
 ## Referências
 

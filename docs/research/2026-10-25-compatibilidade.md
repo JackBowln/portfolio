@@ -145,6 +145,11 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - **Peers:** o `h3` é peer **opcional** do `@nuxt/test-utils` 4.3.4, então nenhum `h3` é instalado direto.
 - **Navegadores do Playwright:** Chrome for Testing 156 e WebKit 27.2, instalados com `pnpm exec playwright install chromium webkit` no cache do usuário. Na F00-T5, o CI precisa rodar `--with-deps`.
 
+**26/10/2026 — F00-T5.** Achados:
+- **Actions fixadas por SHA:** `actions/checkout` v7.0.1, `actions/setup-node` v7.1.0, `pnpm/action-setup` v6.1.0 e `actions/upload-artifact` v7.0.2.
+- **`pnpm audit`:** o `@cloudflare/vitest-plugin` 1.4.7 fixa `zod` 4.6.5 (GHSA-mrhx-c7xc-m3w5, alta) e um miniflare com `undici` < 7.30.1 (GHSA-xjj6-f33q-929c, alta; GHSA-4qv8-2p9j-2685 e GHSA-f72v-6w45-q472, moderadas). As correções foram aplicadas com `pnpm.overrides` restritos a esses caminhos (`@cloudflare/vitest-plugin>zod: ~4.6.7`, `miniflare>undici: ~7.30.1`), com os testes verdes. **Remover os overrides quando o plugin e o miniflare atualizarem.**
+- **Exceção de auditoria:** `pnpm.auditConfig.ignoreGhsas` contém `GHSA-86w9-cpqp-85rv` (`node-forge` ≤ 1.4.0, via `nitropack` → `listhen`), que é só de dev, não tem correção, só gera certificados e não vai para o build. Rever a cada atualização do `nitropack` e remover quando houver versão corrigida.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.
