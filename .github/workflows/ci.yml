@@ -33,6 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm check:i18n
       - run: pnpm test
       # Includes the test-only routes (server/api/_test); CI never deploys this build
       - run: pnpm build
