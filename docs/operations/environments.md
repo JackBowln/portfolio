@@ -77,10 +77,17 @@ Contas necessárias, todas gratuitas:
 ## 5. Desenvolvimento local (preenchido na F00)
 
 ```bash
-corepack enable
+nvm use                          # Node 24 (.nvmrc)
+corepack enable pnpm
 pnpm install
 cp .dev.vars.example .dev.vars   # preencher valores de desenvolvimento
-pnpm db:migrate:local
-pnpm db:seed                     # conteúdo [PLACEHOLDER]
-pnpm dev
+pnpm db:migrate:local            # a partir da F02-T1
+pnpm db:seed                     # conteúdo [PLACEHOLDER], a partir da F02-T1
+pnpm dev                         # http://localhost:3000, bindings emulados pelo wrangler
 ```
+
+- **Bindings no `nuxt dev`:** o preset `cloudflare_module` do Nitro carrega o `wrangler.jsonc` via `getPlatformProxy`, e o código lê os bindings com `useEnv(event)` (`server/utils/env.ts`). O estado do D1 e do R2 locais fica em `.wrangler/state` (no `.gitignore`).
+- **Diagnóstico:** `GET /api/_dev/bindings` grava e lê no D1 e no R2 locais. A rota só existe em dev.
+- **Build de produção local:** `pnpm build && pnpm preview` roda o Worker no `wrangler dev` (http://localhost:8787), com o mesmo estado local do dev.
+- **Tipos:** `pnpm cf:types` regenera o `worker-configuration.d.ts` depois de qualquer mudança no `wrangler.jsonc`.
+- **Redirecionamento do wrangler:** depois de um build, o arquivo `.wrangler/deploy/config.json` faz os comandos do wrangler rodados na raiz usarem `.output/server/wrangler.json`, que tem os mesmos bindings e é o artefato de deploy.

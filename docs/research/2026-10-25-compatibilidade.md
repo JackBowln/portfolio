@@ -133,6 +133,12 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - **`h3` 2.0.8 transitivo:** vem de `@eslint/config-inspector`, que é só de dev. O runtime segue no `h3` 1.15.11 do Nitro, e nenhum `h3` é instalado diretamente.
 - **Hashes de produção:** com o `eslint` instalado, o `vite-plugin-checker` passa a resolver esse peer opcional. Isso muda os caminhos no store do pnpm e, com eles, os ids de CSS scoped das páginas de erro padrão do Nuxt. Os hashes dos chunks mudam sem mudança de conteúdo nem de tamanho, então comparações de orçamento devem olhar tamanhos, não hashes.
 
+**26/10/2026 — F00-T3.** O `wrangler` 4.152.0 (22/10/2026) traz o `workerd` 1.20261019.1, então a `compatibility_date` vai no máximo até **2026-10-19** (registrado no ADR-0002). Achados:
+- **Build script:** o do `workerd` foi bloqueado pelo pnpm 10. O binário pré-compilado (`@cloudflare/workerd-*`) funciona sem ele, e a decisão está em `pnpm.ignoredBuiltDependencies`.
+- **`no_nodejs_compat_v2`:** com `nodeCompat`, o Nitro 2.13 acrescenta essa flag ao `wrangler.json` gerado, além do `nodejs_compat`. É escolha do preset, que usa os polyfills do unenv; reavaliar se algum pacote exigir o compat v2.
+- **Tipos:** o `wrangler types` gera os tipos do runtime (~627 KB) e recomenda `@types/node`. Não foi preciso, porque o typecheck passa sem ele.
+- **`ignore` do Nitro:** os padrões de `ignore` valem a partir de `server/` no Nitro, por isso o padrão `**/server/api/_dev/**` não excluía a rota; o certo é `**/_dev/**`.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

@@ -66,7 +66,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T1 | RNF-08, RNF-09 | `/architecture-guardian` |
+| concluída | F00-T1 | RNF-08, RNF-09 | `/architecture-guardian` |
 
 **Objetivo.** Configurar o preset `cloudflare_module` (`deployConfig`, `nodeCompat`), um `wrangler.jsonc` com os ambientes `preview` e `production` e os bindings de [environments](../operations/environments.md), a emulação local no `nuxt dev` e os tipos gerados.
 
@@ -75,11 +75,11 @@
 **Fora do escopo.** Criar recursos remotos (isso é na F00-T6, com autorização); schema do banco (F02-T1).
 
 **Critérios de aceite**
-- [ ] `wrangler` é devDependency (`^4.152`) e `compatibility_date` fica fixada e registrada no ADR-0002.
-- [ ] Bindings `DB`, `MEDIA`, `AI`, `RL_AUTH`, `RL_PUBLIC` e `RL_ADMIN` declarados. Os IDs remotos ficam como placeholders comentados até a F00-T6. `cache` e `observability` são configurados por ambiente.
-- [ ] No `nuxt dev`, uma rota de diagnóstico **só de dev** lê e grava no D1 local e no R2 local. A rota é removida ou bloqueada no build de produção.
-- [ ] `pnpm build && pnpm preview` (`wrangler dev`) serve a página e o `/api/health`.
-- [ ] `.dev.vars.example` só com os nomes das variáveis; `.dev.vars` no `.gitignore`.
+- [x] `wrangler` é devDependency (`^4.152`) e `compatibility_date` fica fixada e registrada no ADR-0002.
+- [x] Bindings `DB`, `MEDIA`, `AI`, `RL_AUTH`, `RL_PUBLIC` e `RL_ADMIN` declarados. Os IDs remotos ficam como placeholders comentados até a F00-T6. `cache` e `observability` são configurados por ambiente.
+- [x] No `nuxt dev`, uma rota de diagnóstico **só de dev** lê e grava no D1 local e no R2 local. A rota é removida ou bloqueada no build de produção.
+- [x] `pnpm build && pnpm preview` (`wrangler dev`) serve a página e o `/api/health`.
+- [x] `.dev.vars.example` só com os nomes das variáveis; `.dev.vars` no `.gitignore`.
 
 **Testes**
 - Saídas coladas de `pnpm cf:types`, `pnpm typecheck` e de uma chamada à rota de diagnóstico em dev.
