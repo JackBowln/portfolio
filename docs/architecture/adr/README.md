@@ -15,7 +15,8 @@
 | [0010](0010-design-system.md) | Design system (Tailwind 4 e tokens) | Aceito |
 | [0011](0011-motion.md) | Motion (GSAP sob demanda) | Aceito |
 | [0012](0012-seguranca.md) | Segurança | Aceito |
-| [0013](0013-testes-e-qualidade.md) | Testes e qualidade | Aceito, com gate F00-T7 |
+| [0013](0013-testes-e-qualidade.md) | Testes e qualidade | Aceito, com gate F00-T7; §1 substituído pelo 0015 |
 | [0014](0014-operacao.md) | Operação, CI/CD e backups | Aceito |
+| [0015](0015-vitest-5-e-vitest-plugin.md) | Vitest 5 com `@cloudflare/vitest-plugin` | Aceito |
 
 Para propor um ADR novo, copie o [template](0000-template.md) e siga o [ADR-0001](0001-registro-de-decisoes.md).

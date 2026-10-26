@@ -23,9 +23,9 @@
 | `@better-auth/passkey` | 1.7.13 (usa `@simplewebauthn/server ^13`) | `~1.7` | WebAuthn via WebCrypto, com verificação barata em CPU |
 | `@tiptap/*` | 3.32.0 | `~3.32` | DragHandle, UniqueID, TableOfContents e FileHandler viraram MIT (jun/2025) |
 | `@nuxtjs/i18n` | 10.6.0 (vue-i18n `^11.4.8`) | `~10.6` | `customRoutes: 'meta'`, `definePageMeta({ i18n: { paths } })`, `useSetI18nParams` |
-| `vitest` **⚠** | 5.0.5; linha 4: 4.1.12 | `~4.1` | `@cloudflare/vitest-pool-workers` 0.23 exige `vitest ^4.1.0` |
+| `vitest` | 5.0.5; linha 4: 4.1.12 | `~5.0` ([ADR-0015](../architecture/adr/0015-vitest-5-e-vitest-plugin.md)) | O `@cloudflare/vitest-plugin` aceita `^4.1 || ^5`; a decisão inicial (`~4.1`) foi substituída na F00-T4 |
 | `@nuxt/test-utils` | 4.3.4 (peer `vitest ^4.0.2 \|\| ^5`) | `~4.3` | Compatível com a 4.1 |
-| `@cloudflare/vitest-pool-workers` | 0.23.0 | `~0.23` | Testes de servidor dentro do workerd, com D1 e R2 reais em miniflare |
+| `@cloudflare/vitest-pool-workers` → `@cloudflare/vitest-plugin` | 0.23.0 (depreciado) → 1.4.7 | `@cloudflare/vitest-plugin ~1.4` | Testes de servidor dentro do workerd, com D1 e R2 reais em miniflare |
 | `@playwright/test` / `@axe-core/playwright` | 1.64.1 / 4.14.0 | `~1.64` / `~4.14` | — |
 | `@lhci/cli` **⚠** | 0.15.1 (jun/2025) com `lighthouse` 12.6.1 embutido | Não adotar por padrão | O Lighthouse atual é o 13.5; medir com 12.6 diverge do Chrome DevTools/PSI |
 | `unlighthouse` | 0.19.1 (`lighthouse ^13.5.0`) | Candidato | Decisão final no spike F00-T7 (Unlighthouse ou script com `lighthouse@13`) |
@@ -89,7 +89,7 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 2. **Cache API (fallback).** É por data center, e o Worker roda em todo hit. O purge global vale para "tudo", tag, host e prefixo, com ressalvas para cache key customizada.
 3. **Better Auth no Workers.** O binding do D1 só existe dentro do request, então a instância é criada por request (factory). O hash de senha padrão (scrypt em JS) não cabe em 10 ms de CPU. Por isso: passkey + GitHub, sem senha.
 4. **TypeScript 7** saiu em julho de 2026, mas a recomendação para projetos Vue é ficar no 6.0 até o 7.1 e um Volar compatível.
-5. **Vitest 5** é o `latest`, mas o pool do Workers ainda está na linha 4.1. Fixar 4.1 para manter um único Vitest no repositório.
+5. **Vitest 5** é o `latest`, mas o pool do Workers ainda está na linha 4.1. Fixar 4.1 para manter um único Vitest no repositório. _Superado na F00-T4: o pool foi substituído pelo `@cloudflare/vitest-plugin`, e o projeto usa Vitest 5 (ADR-0015)._
 6. **Lighthouse CI** está parado (jun/2025) e embute o Lighthouse 12.6. Para a meta de 100 medida no Chrome atual (Lighthouse 13), usar uma ferramenta baseada no Lighthouse 13.
 7. **Tiptap:** extensões antes pagas viraram MIT. As que continuam pagas (colaboração, IA, conversão, documentos) não serão usadas.
 8. **NuxtHub 0.10:** o Admin foi descontinuado e o módulo virou multi-provedor (`@nuxthub/db` com Drizzle e migrações automáticas). Não adotado, para manter controle explícito dos bindings e das migrações.
@@ -103,13 +103,13 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 | Quanta CPU o SSR gasta em cache-miss (p50/p95) numa página representativa? | F00-T6 | p95 ≤ 10 ms (ou estouros só ocasionais) → seguir no Free. Senão → pedir aprovação para o Paid ou cair para pré-render |
 | Lighthouse 13 no CI: Unlighthouse ou script próprio? | F00-T7 | Mediana estável em 3 execuções, relatório em artefato, asserção por categoria |
 | Passkey do Better Auth funciona no workerd com o RP ID do domínio de preview? | F03-T2 | Registro e login E2E com autenticador virtual |
-| O `@cloudflare/vitest-pool-workers` roda os handlers do Nitro com bindings? | F00-T4 | Um teste de integração lê e grava no D1 local |
+| O `@cloudflare/vitest-pool-workers` roda os handlers do Nitro com bindings? | F00-T4 | Um teste de integração lê e grava no D1 local  **Respondido na F00-T4:** sim, com o `@cloudflare/vitest-plugin` (D1 do miniflare). |
 | Qual modelo do Workers AI traduz melhor pt-BR → de/fr preservando segmentos? | F09-T3 | Avaliação manual de 3 artigos + custo em neurons registrado |
 
 ## 5. Política de revalidação
 
 - Antes de cada fase, rode `npm view` nas dependências que a fase vai adicionar e registre aqui qualquer mudança.
-- A cada trimestre, revise os itens com **⚠** (TS 7.1/Volar, Vitest 5/pool-workers, Lighthouse CI) e atualize os ADRs 0002 e 0013.
+- A cada trimestre, revise os itens com **⚠** (TS 7.1/Volar, Lighthouse CI) e atualize os ADRs 0002 e 0013.
 - Nenhuma major é atualizada sem ADR.
 
 ### Registro
@@ -138,6 +138,12 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - **`no_nodejs_compat_v2`:** com `nodeCompat`, o Nitro 2.13 acrescenta essa flag ao `wrangler.json` gerado, além do `nodejs_compat`. É escolha do preset, que usa os polyfills do unenv; reavaliar se algum pacote exigir o compat v2.
 - **Tipos:** o `wrangler types` gera os tipos do runtime (~627 KB) e recomenda `@types/node`. Não foi preciso, porque o typecheck passa sem ele.
 - **`ignore` do Nitro:** os padrões de `ignore` valem a partir de `server/` no Nitro, por isso o padrão `**/server/api/_dev/**` não excluía a rota; o certo é `**/_dev/**`.
+
+**26/10/2026 — F00-T4.** Achados:
+- **Pool depreciado:** o `@cloudflare/vitest-pool-workers` 0.23.0 foi depreciado e renomeado para `@cloudflare/vitest-plugin`. O 0.23 fixava o wrangler 4.124, com um workerd de agosto. O 1.4.7 usa o wrangler 4.152.0 do projeto e aceita `vitest ^4.1 || ^5`, e o owner escolheu o Vitest 5.0.5 (ADR-0015).
+- **AI e conexão remota:** declarar `AI` no ambiente local faz o `nuxt dev` e os testes abrirem uma sessão remota com a conta Cloudflare, porque o Workers AI não tem emulação. O `AI` saiu do topo do `wrangler.jsonc` (fica em preview e produção, e o tipo gerado vira `AI?: Ai`), e os testes usam `remoteBindings: false`.
+- **Peers:** o `h3` é peer **opcional** do `@nuxt/test-utils` 4.3.4, então nenhum `h3` é instalado direto.
+- **Navegadores do Playwright:** Chrome for Testing 156 e WebKit 27.2, instalados com `pnpm exec playwright install chromium webkit` no cache do usuário. Na F00-T5, o CI precisa rodar `--with-deps`.
 
 ## 6. Fontes
 

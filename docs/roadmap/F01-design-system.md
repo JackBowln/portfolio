@@ -14,9 +14,9 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| em andamento | F00 (gate) | RX-01, RNF-10, RNF-11 | `/frontend-design` |
+| concluída | F00 (gate) | RX-01, RNF-10, RNF-11 | `/frontend-design` |
 
-> Iniciada em 2026-10-25 antes do gate da F00, por decisão do owner. O `pnpm lint` já passa na styleguide (F00-T2). O axe e o E2E do 404 entram com a F00-T4, e a tarefa só é concluída depois deles.
+> Iniciada em 2026-10-25 antes do gate da F00, por decisão do owner, e concluída em 2026-10-26: `pnpm lint` verde (F00-T2), E2E do 404 e axe nas 8 combinações da styleguide sem violações sérias ou críticas (F00-T4).
 
 **Objetivo.** Montar a rota `/dev/styleguide`, que existe **só em desenvolvimento**, com duas variações de par tipográfico e paleta para você escolher.
 
@@ -28,7 +28,7 @@
 - [x] Duas variações navegáveis: escala tipográfica, títulos, parágrafo longo, bloco de código, card, botão, link e cores em claro e escuro.
 - [x] Conteúdo real fornecido por você, ou `[PLACEHOLDER]` marcado; nenhuma biografia inventada.
 - [x] Contraste calculado e mostrado para cada par texto/fundo; licença de cada fonte registrada.
-- [x] A rota não existe no build de produção (404). Conferido com `curl` no preview; o teste E2E entra com a F00-T4.
+- [x] A rota não existe no build de produção (404), coberto por `tests/e2e/home.spec.ts` e `tests/api/health.spec.ts`.
 - [x] **Você escolhe** a variação, e a escolha é registrada no §9 com data. Par tipográfico A (escolha do owner) e paleta B (por delegação), em 2026-10-25.
 
 **Testes**

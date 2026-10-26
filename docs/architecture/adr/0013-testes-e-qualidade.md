@@ -1,6 +1,6 @@
 # ADR-0013 — Testes e qualidade: Vitest 4.1, Playwright, axe e Lighthouse 13
 
-- **Status:** Aceito (2026-10-25), com gate F00-T7 para a ferramenta de Lighthouse
+- **Status:** Aceito (2026-10-25), com gate F00-T7 para a ferramenta de Lighthouse. O §1, na versão do Vitest e no pacote do projeto `workers`, foi substituído pelo [ADR-0015](0015-vitest-5-e-vitest-plugin.md) (Vitest `~5.0` com `@cloudflare/vitest-plugin`)
 - **Decisores:** Owner · Claude Code
 - **Relacionados:** ADR-0002, [test-strategy](../../quality/test-strategy.md), [performance-budgets](../../quality/performance-budgets.md), RNF-01, RNF-09, RNF-10
 
@@ -67,6 +67,7 @@
 
 - F00-T4: um teste de cada projeto (unit, nuxt, workers) roda verde.
 - F00-T7: decisão da ferramenta de Lighthouse registrada nesta seção.
+- **F00-T4 (2026-10-26):** `pnpm test` com 3 de 3 (unit, nuxt, workers; ver ADR-0015), `test:api` com 2 de 2, `test:e2e` com 4 de 4 (Chromium desktop e WebKit mobile) e `test:a11y` com 10 de 10 (home em claro e escuro; styleguide nas 8 combinações), sem violações sérias ou críticas. Um teste negativo comprovou que o helper do axe reprova `image-alt` e `color-contrast`.
 
 | Spike F00-T7 | Ferramenta | Variação entre execuções | Tempo de CI | Decisão | Data |
 |---|---|---|---|---|---|

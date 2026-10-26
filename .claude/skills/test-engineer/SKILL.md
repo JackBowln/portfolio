@@ -1,6 +1,6 @@
 ---
 name: test-engineer
-description: Cria e corrige testes deste portfólio — unitários e de componente (Vitest 4.1 + @nuxt/test-utils), integração com D1/R2 reais (@cloudflare/vitest-pool-workers), API e E2E (Playwright contra o build em wrangler dev, com passkey via autenticador WebAuthn virtual), acessibilidade (axe) e visuais — seguindo a estratégia do projeto e relatando sempre a saída real. Use ao implementar qualquer tarefa que precise de testes, ao corrigir bugs (teste que falha primeiro), ao investigar testes instáveis ou ao configurar a infraestrutura de testes.
+description: Cria e corrige testes deste portfólio — unitários e de componente (Vitest 5 + @nuxt/test-utils), integração com D1/R2 reais (@cloudflare/vitest-plugin), API e E2E (Playwright contra o build em wrangler dev, com passkey via autenticador WebAuthn virtual), acessibilidade (axe) e visuais — seguindo a estratégia do projeto e relatando sempre a saída real. Use ao implementar qualquer tarefa que precise de testes, ao corrigir bugs (teste que falha primeiro), ao investigar testes instáveis ou ao configurar a infraestrutura de testes.
 when_to_use: "Gatilhos: 'teste', 'testar', 'cobertura', 'Vitest', 'Playwright', 'E2E', 'axe', 'acessibilidade automatizada', 'teste falhando', 'flaky', 'mock', 'fixture', 'regressão', 'TDD'."
 argument-hint: "[arquivo | módulo | jornada J-0x]"
 ---

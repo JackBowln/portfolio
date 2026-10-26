@@ -91,7 +91,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T3 | RNF-09, RNF-10 | `/test-engineer` |
+| concluída | F00-T3 | RNF-09, RNF-10 | `/test-engineer` |
 
 **Objetivo.** Montar as camadas de teste da [estratégia](../quality/test-strategy.md), com um teste real por camada.
 
@@ -100,10 +100,10 @@
 **Fora do escopo.** Testes de funcionalidades ainda inexistentes; CI (F00-T5).
 
 **Critérios de aceite**
-- [ ] `vitest` fixado em `~4.1`, compatível com `@cloudflare/vitest-pool-workers ~0.23` e `@nuxt/test-utils ~4.3` (peer deps conferidos).
-- [ ] O projeto `workers` lê o `wrangler.jsonc`; o teste cria uma tabela temporária e lê e grava no D1 do miniflare.
-- [ ] Os projetos Playwright sobem o build de produção em `wrangler dev`; o teste a11y roda axe na home com tags WCAG 2.2 AA.
-- [ ] `pnpm test`, `pnpm test:api`, `pnpm test:e2e` e `pnpm test:a11y` funcionam localmente.
+- [x] `vitest` fixado em `~4.1`, compatível com `@cloudflare/vitest-pool-workers ~0.23` e `@nuxt/test-utils ~4.3` (peer deps conferidos). **Substituído pelo ADR-0015:** o pool foi depreciado, e o projeto usa `vitest ~5.0` com `@cloudflare/vitest-plugin ~1.4`, com os peers conferidos.
+- [x] O projeto `workers` lê o `wrangler.jsonc`; o teste cria uma tabela temporária e lê e grava no D1 do miniflare.
+- [x] Os projetos Playwright sobem o build de produção em `wrangler dev`; o teste a11y roda axe na home com tags WCAG 2.2 AA.
+- [x] `pnpm test`, `pnpm test:api`, `pnpm test:e2e` e `pnpm test:a11y` funcionam localmente.
 
 **Testes**
 - Saída colada de cada comando acima, com a contagem de testes.

@@ -1,6 +1,6 @@
 # Padrões de teste (referência)
 
-> Confira as APIs nas versões instaladas. A configuração exata do `@cloudflare/vitest-pool-workers` 0.23 com Vitest 4.1 é definida na F00-T4: siga o README do pacote nessa versão.
+> Confira as APIs nas versões instaladas. O projeto `workers` usa `cloudflareTest()` do `@cloudflare/vitest-plugin` com Vitest 5 (ADR-0015), configurado em `vitest.config.ts` com `remoteBindings: false`; o `env` vem de `cloudflare:test`.
 
 ## Factories determinísticas
 

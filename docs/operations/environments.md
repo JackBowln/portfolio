@@ -48,7 +48,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 |---|---|---|
 | `DB` | D1 | `migrations_dir: server/db/migrations` |
 | `MEDIA`, `BACKUPS` | R2 | `BACKUPS` só em produção |
-| `AI` | Workers AI | Free: 10 mil neurons/dia |
+| `AI` | Workers AI | Free: 10 mil neurons/dia. Só em preview e produção: não tem emulação local, e declará-lo localmente abriria uma sessão remota no `nuxt dev` e nos testes (ADR-0015) |
 | `RL_AUTH`, `RL_PUBLIC`, `RL_ADMIN` | Rate limiting | `simple: { limit, period: 60 }` |
 | `CONTACT_EMAIL` | `send_email` | Destino = endereço verificado no Email Routing (Q-05) |
 | `ASSETS` | Static Assets | Gerado pelo Nitro |

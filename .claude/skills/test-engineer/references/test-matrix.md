@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Função pura (schema zod, segmentador, slugify, guarda de custo, tags de cache, CSP hash, permissões) | unit | `tests/unit/` | Vitest `unit` (node) |
 | Componente ou composable (render, ARIA, teclado, `usePageSeo`, `useMotion` com mocks) | componente | `tests/nuxt/` | Vitest `nuxt` (@nuxt/test-utils + happy-dom) |
-| Repositório ou serviço com banco/bucket (unicidade, batch atômico, revisões, poda, número de queries) | integração | `tests/workers/` | Vitest `workers` (@cloudflare/vitest-pool-workers) |
+| Repositório ou serviço com banco/bucket (unicidade, batch atômico, revisões, poda, número de queries) | integração | `tests/workers/` | Vitest `workers` (@cloudflare/vitest-plugin) |
 | Contrato HTTP (status, headers, cookies, authz, CSRF, rate limit, upload, cache) | API | `tests/api/` | Playwright `api` (`request`) contra `wrangler dev` |
 | Jornada do usuário (J-01…J-08), i18n, sem JS | E2E | `tests/e2e/` | Playwright `e2e` |
 | WCAG automatizado | a11y | `tests/a11y/` | Playwright `a11y` + axe |

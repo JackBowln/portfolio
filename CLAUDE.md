@@ -37,7 +37,7 @@ Portfólio profissional e blog pessoal full-stack com CMS próprio:
 | Tiptap | `~3.32` | Só extensões MIT; nunca no bundle público |
 | @nuxtjs/i18n | `~10.6` | `customRoutes: 'meta'`, sem detecção por cookie |
 | GSAP | `~3.15` | Só sob demanda, depois do LCP (licença no-charge) |
-| Vitest | **`~4.1`** | O `@cloudflare/vitest-pool-workers` não suporta a v5 |
+| Vitest | **`~5.0`** | Com o `@cloudflare/vitest-plugin` (sucessor do pool-workers), no mesmo wrangler do projeto ([ADR-0015](docs/architecture/adr/0015-vitest-5-e-vitest-plugin.md)) |
 | Playwright / axe | `~1.64` / `~4.14` | — |
 | Lighthouse | 13 (ferramenta definida no F00-T7) | O `@lhci/cli` embute o Lighthouse 12.6 |
 | Wrangler | `^4.152` | Preset Nitro `cloudflare_module` |

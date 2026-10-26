@@ -261,7 +261,7 @@ Rotas sem idioma: `/sitemap.xml` (índice), `/robots.txt`, `/admin/**` (interfac
 | Ambição de motion derruba performance ou clareza | Storyboard aprovado, motion carregado após o LCP, versão reduzida |
 | Qualidade da tradução automática | Revisão humana obrigatória; glossário; Claude como opção |
 | Nota 100 instável entre execuções | Protocolo com mediana e tolerância; CWV de campo |
-| Versões fixadas (TS 6, Vitest 4.1) envelhecem | Revisão trimestral ([ADR-0002](../architecture/adr/0002-plataforma-e-toolchain.md)) |
+| Versões fixadas (TS 6) envelhecem | Revisão trimestral ([ADR-0002](../architecture/adr/0002-plataforma-e-toolchain.md)) |
 
 ## 13. Insumos pendentes
 

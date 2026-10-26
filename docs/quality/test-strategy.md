@@ -6,9 +6,9 @@ Decisão em [ADR-0013](../architecture/adr/0013-testes-e-qualidade.md). A skill 
 
 | Camada | Ferramenta | Pasta | O que cobre | Quando roda |
 |---|---|---|---|---|
-| Unit | Vitest 4.1 (`unit`, node) | `tests/unit/` | Funções puras de `shared/` e de `server/services/` (schemas, permissões, segmentador, guarda de custo, slugify, máquina de estados, CSP) | Todo PR |
+| Unit | Vitest 5 (`unit`, node) | `tests/unit/` | Funções puras de `shared/` e de `server/services/` (schemas, permissões, segmentador, guarda de custo, slugify, máquina de estados, CSP) | Todo PR |
 | Componente | Vitest + `@nuxt/test-utils` (`nuxt`, happy-dom) | `tests/nuxt/` | Componentes e composables (renderer, ResponsiveImage, usePageSeo, useMotion com `matchMedia` mockado) | Todo PR |
-| Integração com bindings | Vitest + `@cloudflare/vitest-pool-workers` (`workers`) | `tests/workers/` | Repositórios e serviços contra D1 e R2 reais (miniflare), migrações, `batch`, unicidade, contagem de queries | Todo PR |
+| Integração com bindings | Vitest + `@cloudflare/vitest-plugin` (`workers`) | `tests/workers/` | Repositórios e serviços contra D1 e R2 reais (miniflare), migrações, `batch`, unicidade, contagem de queries | Todo PR |
 | API | Playwright `api` contra o build em `wrangler dev` | `tests/api/` | Handlers HTTP: matriz de autorização, CSRF, rate limit, validação, uploads, headers de cache e segurança, ausência de `Set-Cookie` público | Todo PR |
 | E2E | Playwright `e2e` (Chromium desktop, WebKit mobile) | `tests/e2e/` | Jornadas J-01…J-08 do PRD, i18n e seletor de idioma, sem JS (conteúdo presente) | Smoke em PR; completa diária e pré-release |
 | Acessibilidade | Playwright `a11y` + `@axe-core/playwright` | `tests/a11y/` | Templates × (pt-BR, de) × (claro, escuro) × movimento reduzido; teclado nos fluxos críticos | Templates afetados em PR; completa diária |

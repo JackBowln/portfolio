@@ -27,7 +27,7 @@ Fontes de verdade: `docs/architecture/adr/` (índice em `README.md`), `docs/arch
 - Com build disponível: o manifest não mostra chunks de admin, Tiptap ou Shiki nas rotas públicas.
 
 ### 2. Versões fixadas (CLAUDE.md, ADR-0002, ADR-0013)
-- `typescript ~6.0`, `vitest ~4.1`, `nuxt ~4.6`, `tailwindcss ~4.3` via `@tailwindcss/vite`.
+- `typescript ~6.0`, `vitest ~5.0` (ADR-0015), `nuxt ~4.6`, `tailwindcss ~4.3` via `@tailwindcss/vite`.
 - Nenhum `h3`, `nitropack`, `nitro`, `@nuxthub/*`, `@nuxtjs/tailwindcss`, `nuxt-security` ou `nuxt-og-image` declarado sem ADR.
 - Comando: `pnpm why typescript vitest h3` e conferência do `package.json`.
 
