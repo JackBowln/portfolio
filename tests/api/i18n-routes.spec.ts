@@ -36,9 +36,11 @@ for (const [name, paths] of Object.entries(ROUTES)) {
   })
 }
 
-test('skeleton pages are noindex, the home is not', async ({ request }) => {
-  expect(await (await request.get('/en/about')).text()).toContain('<meta name="robots" content="noindex">')
-  expect(await (await request.get('/en')).text()).not.toContain('noindex')
+test('skeleton pages are noindex; the home and about are indexable (F02-T3)', async ({ request }) => {
+  expect(await (await request.get('/en/projects')).text()).toContain('<meta name="robots" content="noindex">')
+  for (const path of ['/en', '/en/about']) {
+    expect(await (await request.get(path)).text(), path).not.toContain('<meta name="robots"')
+  }
 })
 
 test('no redirect or cookie from Accept-Language', async ({ request }) => {
