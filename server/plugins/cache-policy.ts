@@ -5,6 +5,9 @@ import { cacheTags } from '#shared/cache/tags'
 
 const CACHEABLE_METHODS = new Set(['GET', 'HEAD'])
 const NEVER_PUBLIC_PREFIXES = ['/api/', '/admin', '/__nuxt_error']
+// @nuxtjs/i18n messages are prerendered static assets; the Worker only sees unknown hashes, answered with the
+// current messages and cached at the edge like a page so they cannot pile up Worker invocations
+const I18N_MESSAGES_PREFIX = '/_i18n/'
 
 function isPublicPage(path: string): boolean {
   return !NEVER_PUBLIC_PREFIXES.some(prefix => path.startsWith(prefix))
@@ -18,6 +21,11 @@ export default defineNitroPlugin((nitroApp) => {
     if (status >= 400 || (!isPublicPage(path) && !getResponseHeader(event, 'cache-control'))) {
       setCachePolicy(event, 'none')
       return
+    }
+
+    if (path.startsWith(I18N_MESSAGES_PREFIX)) {
+      setCachePolicy(event, 'public')
+      setCacheTags(event, [cacheTags.i18n()])
     }
 
     if (!getResponseHeader(event, 'cache-control')) {
