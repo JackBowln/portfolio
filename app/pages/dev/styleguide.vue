@@ -432,14 +432,33 @@ useHead({
       <p class="sg-lede">
         Duas direções candidatas, a partir da design-direction e das referências. Tipografia e paleta trocam separadamente; o tema segue o sistema até você escolher um.
       </p>
-      <nav class="sg-controls" aria-label="Controles da styleguide">
-        <div v-for="control in controls" :key="control.id">
-          <p :id="`sg-control-${control.id}`" class="sg-eyebrow">
+      <nav
+        class="sg-controls"
+        aria-label="Controles da styleguide"
+      >
+        <div
+          v-for="control in controls"
+          :key="control.id"
+        >
+          <p
+            :id="`sg-control-${control.id}`"
+            class="sg-eyebrow"
+          >
             {{ control.label }}
           </p>
-          <ul class="sg-control__options" :aria-labelledby="`sg-control-${control.id}`">
-            <li v-for="option in control.options" :key="option.href">
-              <a class="sg-option" :href="option.href" :aria-current="option.current ? 'true' : undefined">{{ option.label }}</a>
+          <ul
+            class="sg-control__options"
+            :aria-labelledby="`sg-control-${control.id}`"
+          >
+            <li
+              v-for="option in control.options"
+              :key="option.href"
+            >
+              <a
+                class="sg-option"
+                :href="option.href"
+                :aria-current="option.current ? 'true' : undefined"
+              >{{ option.label }}</a>
             </li>
           </ul>
         </div>
@@ -447,41 +466,69 @@ useHead({
     </header>
 
     <main>
-      <section class="sg-section" aria-labelledby="sg-scale">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-scale"
+      >
         <p class="sg-eyebrow">
           01
         </p>
-        <h2 id="sg-scale" class="sg-section__title">
+        <h2
+          id="sg-scale"
+          class="sg-section__title"
+        >
           Escala tipográfica
         </h2>
         <p class="sg-note">
           {{ pairing.name }}. Tamanhos fluidos entre {{ FLUID_VIEWPORT.minPx }} e {{ FLUID_VIEWPORT.maxPx }} px de largura; display a partir do passo {{ DISPLAY_FROM_STEP }}.
         </p>
         <ul class="sg-scale">
-          <li v-for="step in SCALE_ROWS" :key="step.step" class="sg-scale__row">
+          <li
+            v-for="step in SCALE_ROWS"
+            :key="step.step"
+            class="sg-scale__row"
+          >
             <p class="sg-eyebrow">
               Passo {{ step.step }} · {{ step.range }} · entrelinha {{ step.leadingLabel }}
             </p>
-            <p class="sg-specimen" :class="step.display ? 'sg-font-display' : 'sg-font-sans'" :style="stepStyle(step.step)">
+            <p
+              class="sg-specimen"
+              :class="step.display ? 'sg-font-display' : 'sg-font-sans'"
+              :style="stepStyle(step.step)"
+            >
               {{ step.display ? SAMPLE.title : SAMPLE.opening }}
             </p>
           </li>
         </ul>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-headings">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-headings"
+      >
         <p class="sg-eyebrow">
           02
         </p>
-        <h2 id="sg-headings" class="sg-section__title">
+        <h2
+          id="sg-headings"
+          class="sg-section__title"
+        >
           Títulos
         </h2>
         <div class="sg-specimens">
-          <div v-for="heading in HEADING_SPECIMENS" :key="heading.level" class="sg-scale__row">
+          <div
+            v-for="heading in HEADING_SPECIMENS"
+            :key="heading.level"
+            class="sg-scale__row"
+          >
             <p class="sg-eyebrow">
               {{ heading.level }} · {{ heading.display ? 'display' : 'sans' }} · passo {{ heading.step }}
             </p>
-            <p class="sg-specimen" :class="heading.display ? 'sg-font-display' : 'sg-font-sans sg-specimen--strong'" :style="stepStyle(heading.step)">
+            <p
+              class="sg-specimen"
+              :class="heading.display ? 'sg-font-display' : 'sg-font-sans sg-specimen--strong'"
+              :style="stepStyle(heading.step)"
+            >
               {{ heading.text }}
             </p>
           </div>
@@ -491,11 +538,18 @@ useHead({
             Eixos variáveis da Fraunces
           </p>
           <ul class="sg-axes">
-            <li v-for="axis in DISPLAY_AXES" :key="axis.label" class="sg-scale__row">
+            <li
+              v-for="axis in DISPLAY_AXES"
+              :key="axis.label"
+              class="sg-scale__row"
+            >
               <p class="sg-eyebrow">
                 {{ axis.label }}
               </p>
-              <p class="sg-specimen sg-font-display" :style="{ ...stepStyle(5), fontVariationSettings: axis.settings }">
+              <p
+                class="sg-specimen sg-font-display"
+                :style="{ ...stepStyle(5), fontVariationSettings: axis.settings }"
+              >
                 {{ SAMPLE.title }}
               </p>
             </li>
@@ -503,19 +557,31 @@ useHead({
         </template>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-text">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-text"
+      >
         <p class="sg-eyebrow">
           03
         </p>
-        <h2 id="sg-text" class="sg-section__title">
+        <h2
+          id="sg-text"
+          class="sg-section__title"
+        >
           Texto corrido
         </h2>
         <div class="sg-prose">
-          <p v-for="paragraph in SAMPLE.paragraphs" :key="paragraph">
+          <p
+            v-for="paragraph in SAMPLE.paragraphs"
+            :key="paragraph"
+          >
             {{ paragraph }}
           </p>
           <p>
-            [PLACEHOLDER] Frase de teste com <a class="sg-link" href="#sg-colors">um link</a>, um termo em <em>itálico</em>, um <strong>destaque</strong> e código inline como <code class="sg-mono">getHealth()</code>.
+            [PLACEHOLDER] Frase de teste com <a
+              class="sg-link"
+              href="#sg-colors"
+            >um link</a>, um termo em <em>itálico</em>, um <strong>destaque</strong> e código inline como <code class="sg-mono">getHealth()</code>.
           </p>
           <p class="sg-note">
             [PLACEHOLDER] Texto de exemplo: {{ SAMPLE.source }}
@@ -523,15 +589,26 @@ useHead({
         </div>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-code">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-code"
+      >
         <p class="sg-eyebrow">
           04
         </p>
-        <h2 id="sg-code" class="sg-section__title">
+        <h2
+          id="sg-code"
+          class="sg-section__title"
+        >
           Bloco de código
         </h2>
         <figure class="sg-figure">
-          <div class="sg-code" role="region" tabindex="0" aria-label="Exemplo de código em TypeScript">
+          <div
+            class="sg-code"
+            role="region"
+            tabindex="0"
+            aria-label="Exemplo de código em TypeScript"
+          >
             <pre><code>{{ CODE_SAMPLE }}</code></pre>
           </div>
           <figcaption class="sg-note">
@@ -540,11 +617,17 @@ useHead({
         </figure>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-components">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-components"
+      >
         <p class="sg-eyebrow">
           05
         </p>
-        <h2 id="sg-components" class="sg-section__title">
+        <h2
+          id="sg-components"
+          class="sg-section__title"
+        >
           Card, botões e links
         </h2>
         <div class="sg-components">
@@ -560,13 +643,23 @@ useHead({
             </p>
           </article>
           <div class="sg-buttons">
-            <button type="button" class="sg-button sg-button--primary">
+            <button
+              type="button"
+              class="sg-button sg-button--primary"
+            >
               Primário
             </button>
-            <button type="button" class="sg-button sg-button--secondary">
+            <button
+              type="button"
+              class="sg-button sg-button--secondary"
+            >
               Secundário
             </button>
-            <button type="button" class="sg-button sg-button--primary" disabled>
+            <button
+              type="button"
+              class="sg-button sg-button--primary"
+              disabled
+            >
               Desabilitado
             </button>
           </div>
@@ -574,16 +667,25 @@ useHead({
             Passe o mouse ou use Tab para ver hover e foco.
           </p>
           <p>
-            <a class="sg-link" href="#sg-colors">Ir para cores e contraste</a>
+            <a
+              class="sg-link"
+              href="#sg-colors"
+            >Ir para cores e contraste</a>
           </p>
         </div>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-colors">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-colors"
+      >
         <p class="sg-eyebrow">
           06
         </p>
-        <h2 id="sg-colors" class="sg-section__title">
+        <h2
+          id="sg-colors"
+          class="sg-section__title"
+        >
           Cores e contraste
         </h2>
         <p class="sg-note">
@@ -597,18 +699,34 @@ useHead({
             :data-sg-panel="panel.theme"
             :aria-labelledby="`sg-panel-${panel.theme}`"
           >
-            <h3 :id="`sg-panel-${panel.theme}`" class="sg-panel__title">
+            <h3
+              :id="`sg-panel-${panel.theme}`"
+              class="sg-panel__title"
+            >
               {{ panel.label }}
             </h3>
             <ul class="sg-swatches">
-              <li v-for="swatch in panel.swatches" :key="swatch.token" class="sg-swatch">
-                <span class="sg-swatch__chip" aria-hidden="true" :style="{ background: `var(--color-${swatch.token})` }" />
+              <li
+                v-for="swatch in panel.swatches"
+                :key="swatch.token"
+                class="sg-swatch"
+              >
+                <span
+                  class="sg-swatch__chip"
+                  aria-hidden="true"
+                  :style="{ background: `var(--color-${swatch.token})` }"
+                />
                 <code class="sg-mono">{{ swatch.token }}</code>
                 <span class="sg-mono sg-swatch__value">{{ swatch.value }}</span>
                 <strong v-if="!swatch.inGamut">fora do gamut sRGB</strong>
               </li>
             </ul>
-            <div class="sg-table-wrap" role="region" tabindex="0" :aria-label="`Contraste no tema ${panel.label.toLowerCase()}`">
+            <div
+              class="sg-table-wrap"
+              role="region"
+              tabindex="0"
+              :aria-label="`Contraste no tema ${panel.label.toLowerCase()}`"
+            >
               <table class="sg-table">
                 <thead>
                   <tr>
@@ -627,7 +745,10 @@ useHead({
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in panel.rows" :key="row.key">
+                  <tr
+                    v-for="row in panel.rows"
+                    :key="row.key"
+                  >
                     <td><code class="sg-mono">{{ row.foreground }}</code> × <code class="sg-mono">{{ row.background }}</code></td>
                     <td>{{ USE_LABEL[row.use] }} (≥ {{ row.minimum }})</td>
                     <td>{{ row.ratio }}</td>
@@ -636,27 +757,46 @@ useHead({
                 </tbody>
               </table>
             </div>
-            <p v-if="panel.note" class="sg-note">
+            <p
+              v-if="panel.note"
+              class="sg-note"
+            >
               {{ panel.note }}
             </p>
           </section>
         </div>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-languages">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-languages"
+      >
         <p class="sg-eyebrow">
           07
         </p>
-        <h2 id="sg-languages" class="sg-section__title">
+        <h2
+          id="sg-languages"
+          class="sg-section__title"
+        >
           Diacríticos nos 5 idiomas
         </h2>
         <dl class="sg-languages">
-          <div v-for="pangram in PANGRAMS" :key="pangram.lang" class="sg-language">
-            <dt class="sg-eyebrow" :lang="pangram.lang">
+          <div
+            v-for="pangram in PANGRAMS"
+            :key="pangram.lang"
+            class="sg-language"
+          >
+            <dt
+              class="sg-eyebrow"
+              :lang="pangram.lang"
+            >
               {{ pangram.label }}
             </dt>
             <dd :lang="pangram.lang">
-              <p class="sg-specimen sg-font-display" :style="stepStyle(3)">
+              <p
+                class="sg-specimen sg-font-display"
+                :style="stepStyle(3)"
+              >
                 {{ pangram.text }}
               </p>
               <p class="sg-language__text">
@@ -667,17 +807,28 @@ useHead({
         </dl>
       </section>
 
-      <section class="sg-section" aria-labelledby="sg-fonts">
+      <section
+        class="sg-section"
+        aria-labelledby="sg-fonts"
+      >
         <p class="sg-eyebrow">
           08
         </p>
-        <h2 id="sg-fonts" class="sg-section__title">
+        <h2
+          id="sg-fonts"
+          class="sg-section__title"
+        >
           Fontes e orçamento
         </h2>
         <p class="sg-note">
           {{ pairing.name }} ({{ pairing.reference }}). Todas sob a SIL Open Font License 1.1, self-hosted via Fontsource 5.3.0. Tamanhos do subset latin em WOFF2; o latin-ext só é baixado quando a página usa esses caracteres.
         </p>
-        <div class="sg-table-wrap" role="region" tabindex="0" aria-label="Arquivos de fonte">
+        <div
+          class="sg-table-wrap"
+          role="region"
+          tabindex="0"
+          aria-label="Arquivos de fonte"
+        >
           <table class="sg-table">
             <thead>
               <tr>
@@ -699,8 +850,14 @@ useHead({
               </tr>
             </thead>
             <tbody>
-              <template v-for="font in pairing.fonts" :key="font.family">
-                <tr v-for="file in font.files" :key="`${font.family}-${file.axes}`">
+              <template
+                v-for="font in pairing.fonts"
+                :key="font.family"
+              >
+                <tr
+                  v-for="file in font.files"
+                  :key="`${font.family}-${file.axes}`"
+                >
                   <td>{{ font.role }}</td>
                   <td>{{ font.family }}</td>
                   <td><code class="sg-mono">{{ font.pkg }}</code></td>
@@ -715,7 +872,10 @@ useHead({
           Preload da primeira tela (até {{ FONT_BUDGET_FILES }} arquivos e {{ formatKb(FONT_BUDGET_KB) }})
         </h3>
         <ul class="sg-budget">
-          <li v-for="row in preloadRows" :key="row.label">
+          <li
+            v-for="row in preloadRows"
+            :key="row.label"
+          >
             {{ row.label }}: {{ row.total }} · {{ row.withinBudget ? '✓ dentro do orçamento' : '✗ acima do orçamento' }}
           </li>
         </ul>
