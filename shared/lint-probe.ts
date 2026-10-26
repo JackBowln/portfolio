@@ -1,1 +1,1 @@
-export const lintProbe = "double quotes break the stylistic rule"
+export const lintProbe = 'single quotes satisfy the stylistic rule'
