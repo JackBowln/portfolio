@@ -1,0 +1,14 @@
+{
+  "$comment": "docs/quality/performance-budgets.md §3–§4. Sizes in kB (1 kB = 1000 bytes, gzip), as Vite reports them. Initial JS = entry + the route's page chunk + their static imports; dynamic imports are excluded.",
+  "routes": {
+    "R1": { "path": "/", "page": "pages/index.vue", "js": 110, "css": 30 },
+    "E404": { "path": "/__budget-not-found", "page": "nuxt/dist/app/components/error-404.vue", "js": 110, "css": 30, "lighthouse": false }
+  },
+  "forbiddenInPublicRoutes": ["/admin/", "@tiptap/", "/shiki/", "@shikijs/", "@jsquash/"],
+  "lighthouse": {
+    "minScores": {
+      "mobile": { "performance": 95, "accessibility": 100, "best-practices": 100, "seo": 100 },
+      "desktop": { "performance": 98, "accessibility": 100, "best-practices": 100, "seo": 100 }
+    }
+  }
+}
