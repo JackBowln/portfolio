@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T3, F00-T4 | RF-08, RNF-09 | `/architecture-guardian`, `/test-engineer` |
+| concluída | F00-T3, F00-T4 | RF-08, RNF-09 | `/architecture-guardian`, `/test-engineer` |
 
 **Objetivo.** Instalar `drizzle-orm ~0.45` e `drizzle-kit ~0.31` e criar:
 - `useDb(event)`;
@@ -27,10 +27,10 @@
 **Fora do escopo.** Tabelas de conteúdo (F05-T1), de auth (F03-T1) e de mídia (F04-T1).
 
 **Critérios de aceite**
-- [ ] `pnpm db:generate` gera SQL determinístico; `pnpm db:migrate:local` aplica a migração; FKs ativas confirmadas (`PRAGMA foreign_keys`).
-- [ ] Convenções do ADR-0004 aplicadas: snake_case, UUIDv7, timestamps em ms, JSON com zod na leitura e na escrita.
-- [ ] Os serviços recebem `db` por parâmetro; os handlers não importam o schema (regra de lint ou revisão do guardian).
-- [ ] O seed de dev só cria registros `[PLACEHOLDER]` e se recusa a rodar fora de `ENVIRONMENT=local`.
+- [x] `pnpm db:generate` gera SQL determinístico; `pnpm db:migrate:local` aplica a migração; FKs ativas confirmadas (`PRAGMA foreign_keys`).
+- [x] Convenções do ADR-0004 aplicadas: snake_case, UUIDv7, timestamps em ms, JSON com zod na leitura e na escrita.
+- [x] Os serviços recebem `db` por parâmetro; os handlers não importam o schema (regra de lint ou revisão do guardian).
+- [x] O seed de dev só cria registros `[PLACEHOLDER]` e se recusa a rodar fora de `ENVIRONMENT=local`.
 
 **Testes**
 - Unit: o UUIDv7 é ordenável e único em lote; o (de)serializador JSON com zod rejeita formato inválido.

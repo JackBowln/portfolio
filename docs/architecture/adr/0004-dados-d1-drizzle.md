@@ -67,6 +67,18 @@
 - F00-T4: um teste no pool do Workers lê e grava no D1 local com as migrações aplicadas.
 - F02-T1: migração inicial aplicada no local e no preview (quando autorizado), com FKs verificadas.
 
+| Verificação | Resultado | Data |
+|---|---|---|
+| F02-T1: migração `0000_init` | Gerada pelo `drizzle-kit` 0.31.11 e **determinística** (mesmo SHA-256 em duas gerações do zero). Aplicada no D1 local com `pnpm db:migrate:local`; a segunda aplicação não faz nada. **No preview ainda não foi aplicada**, porque depende de pedido explícito | 2026-10-26 |
+| F02-T1: foreign keys no D1 | `PRAGMA foreign_keys` = 1, no local e no workerd dos testes. Uma inserção que viola a FK é recusada | 2026-10-26 |
+| F02-T1: `db.batch` atômico | Um batch com uma violação de unicidade no segundo statement não grava nada (teste `workers`) | 2026-10-26 |
+
+**Detalhes de implementação registrados na F02-T1:**
+- Os imports relativos de `server/db/**` levam a extensão `.ts`, para o seed e o `drizzle-kit` rodarem direto no Node 24, sem `tsx` nem aliases do Nuxt.
+- Os enums de texto (`text({ enum })`) só valem no TypeScript e no zod: o Drizzle não gera `CHECK` para eles. A exceção é o `status_code` de `redirects`, que tem um `CHECK` explícito.
+- `created_by`, `updated_by` e `actor_user_id` ficam sem FK até a tabela de usuários existir (F03-T1), que as acrescenta numa migração própria.
+- Os nomes de constraints e índices são dados em snake_case de forma explícita, porque o `casing` do Drizzle não se aplica a eles.
+
 ## Referências
 
 - [D1 limits](https://developers.cloudflare.com/d1/platform/limits/)

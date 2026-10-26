@@ -152,6 +152,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **26/10/2026 — F00-T7.** O `lighthouse` 13.5.0 (18/09/2026) traz o `@sentry/node`, cuja árvore de OpenTelemetry tem peers desencontrados (`@opentelemetry/api` 1.10 contra `<1.10`). É só aviso, porque a telemetria do Lighthouse vem desligada. O Unlighthouse 0.19.1 foi testado e removido: ele puxa o puppeteer, que tenta baixar um Chrome, e o `@lhci/utils` 0.15. O Lighthouse não audita documentos que não sejam 2xx (`ERRORED_DOCUMENT_REQUEST`), por isso a página 404 fica só no `check:budgets`.
 
+**26/10/2026 — F02-T1.** O `npm view` confirmou `drizzle-orm` 0.45.4 (08/10/2026; a 1.0 está em `rc.5`), `drizzle-kit` 0.31.11 e `zod` 4.6.7, que bate com a pesquisa. O `drizzle-kit` traz o `@esbuild-kit/esm-loader` e o `core-utils`, ambos depreciados, e um `esbuild` ≤ 0.24.2 com o GHSA-67mh-4wv8-2f99 (moderada). Essa falha trata do servidor `serve` do esbuild, que o `drizzle-kit` não usa, e o audit em nível `high` segue limpo. Reavaliar quando o Drizzle 1.0 sair.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.
