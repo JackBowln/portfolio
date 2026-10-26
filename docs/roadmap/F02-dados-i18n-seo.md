@@ -78,7 +78,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F02-T2 | RF-12.2, RF-12.3, RF-12.4, RF-12.5, RF-12.7, RNF-04 | `/i18n-manager`, `/performance-audit` |
+| concluída | F02-T2 | RF-12.2, RF-12.3, RF-12.4, RF-12.5, RF-12.7, RNF-04 | `/i18n-manager`, `/performance-audit` |
 
 **Objetivo.** Criar:
 - o composable `usePageSeo` (title com modelo, description, canonical, `og:*`/`twitter:*` com `og:locale`, hreflang só dos alternates informados, `x-default`);
@@ -91,14 +91,20 @@
 **Fora do escopo.** Sitemap com conteúdo dinâmico real (F11-T3) e JSON-LD completo (F11-T1).
 
 **Critérios de aceite**
-- [ ] Head correto em cada página-esqueleto e idioma: canonical absoluto para a própria página; hreflang recíproco e `x-default` conforme a regra.
-- [ ] Em produção, `robots.txt` bloqueia `/admin`, `/api` e `/preview` e aponta para o sitemap. Fora de produção, `Disallow: /` e `X-Robots-Tag: noindex, nofollow` em todas as respostas.
-- [ ] O sitemap é XML válido, com URLs absolutas e alternates.
-- [ ] Lighthouse SEO = 100 em 2 páginas-esqueleto (relatório anexado).
+- [x] Head correto em cada página-esqueleto e idioma: canonical absoluto para a própria página; hreflang recíproco e `x-default` conforme a regra.
+- [x] Em produção, `robots.txt` bloqueia `/admin`, `/api` e `/preview` e aponta para o sitemap. Fora de produção, `Disallow: /` e `X-Robots-Tag: noindex, nofollow` em todas as respostas.
+- [x] O sitemap é XML válido, com URLs absolutas e alternates.
+- [x] Lighthouse SEO = 100 em 2 páginas-esqueleto (relatório anexado).
 
 **Testes**
 - Nuxt: `usePageSeo` com e sem alternates; regra do `x-default`.
 - API: `robots.txt` e `X-Robots-Tag` por ambiente; sitemap válido.
+
+**Resultado (26/10/2026).**
+- Sitemap por endpoint próprio (decisão do owner, ADR-0008); home e sobre indexáveis, demais esqueletos com `noindex`.
+- `tests/unit/{seo-head,seo-sitemap-jsonld,wrangler-config}.test.ts`; `tests/nuxt/page-seo.test.ts`; `tests/api/seo-local.spec.ts`; `tests/api-prod/seo.spec.ts` (robots e headers de produção, sitemap válido, crawl com canonical e hreflang recíproco, head por idioma, JSON-LD).
+- Lighthouse SEO 100 em R1 e R6, mobile e desktop, na instância "como produção" ([perf-log](../quality/perf-log.md)).
+- Limitações: a medição "como produção" é local; o número real só vem de um deploy de produção. Sem `og:image` até a F11. O título e o nome do site são `[PLACEHOLDER]` até as configurações de identidade.
 
 ---
 

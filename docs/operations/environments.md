@@ -24,6 +24,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 |---|---|---|---|
 | `ENVIRONMENT` | var | todos | `local`, `preview`, `production` (`test` nos builds de teste) |
 | `SITE_URL` | var | todos | Origem canônica (sem barra final) |
+| `NUXT_PUBLIC_SITE_URL` | var | todos | Mesmo valor da `SITE_URL`, lido pelo app como `runtimeConfig.public.siteUrl` (canonical, hreflang, JSON-LD). Um teste garante a igualdade |
 | `MEDIA_BASE_URL` | var | todos | Base pública da mídia |
 | `TURNSTILE_SITE_KEY` | var pública | todos | Widget do contato |
 | `BETTER_AUTH_SECRET` | segredo | todos | Assinatura de sessões (≥ 32 bytes aleatórios) |

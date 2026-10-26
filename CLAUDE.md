@@ -8,7 +8,7 @@ Portfólio profissional e blog pessoal full-stack com CMS próprio:
 
 **Metas:** Lighthouse 100 nas 4 categorias, WCAG 2.2 AA e custo de ~US$ 0 (plano Free).
 
-**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor) e F02-T2 (i18n e rotas nos 5 idiomas) concluídas. Próximo passo: **F02-T3** (SEO base) ou **F01-T2** ([roadmap](docs/roadmap/README.md)).
+**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor), F02-T2 (i18n e rotas nos 5 idiomas) e F02-T3 (SEO base) concluídas: a F02 está completa. Próximo passo: **F03** (auth) ou **F01-T2** ([roadmap](docs/roadmap/README.md)).
 
 ## Onde está cada coisa
 

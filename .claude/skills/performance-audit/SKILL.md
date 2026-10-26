@@ -12,7 +12,7 @@ Regra de ouro: **nunca afirmar uma nota sem um relatório gerado nesta sessão**
 ## Procedimento
 
 1. **Escopo:** rota(s) de `$ARGUMENTS` (IDs R1–R8 da tabela de rotas-chave) ou as afetadas pela tarefa.
-2. **Build de produção** e servidor (`pnpm build` + `pnpm preview`, ou URL de preview autorizada).
+2. **Build de produção** e servidor (`pnpm build` + `pnpm preview:prod`, ou URL de preview autorizada).
 3. **Orçamentos:** `pnpm check:budgets` (JS por rota) e conferência de CSS, fontes, imagem LCP e requisições.
 4. **Lighthouse 13:** `pnpm lighthouse` nas rotas × mobile/desktop × 3 execuções → mediana por categoria + LCP, FCP, TBT, CLS, SI e elemento LCP.
 5. **Diagnóstico**, para cada desvio:

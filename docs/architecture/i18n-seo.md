@@ -75,7 +75,7 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 
 ## 6. Sitemap e feeds
 
-- `/sitemap.xml` (índice) e sitemaps por idioma, ou um sitemap único com `xhtml:link` de alternates (decidido na F02-T3 com o `@nuxtjs/sitemap`).
+- `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008).
 - **Entram:** home, índices, artigos, projetos, temas com pelo menos 1 artigo publicado no idioma, sobre, contato e privacidade.
 - `lastmod`: `published_at` da revisão publicada; para índices, o mais recente dos itens.
 - **Não entram:** `/admin`, `/api`, `/preview`, páginas com `noindex`, paginação além da página 1.

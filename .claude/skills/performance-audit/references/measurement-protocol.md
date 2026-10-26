@@ -6,8 +6,10 @@
 
 ```bash
 pnpm build                 # build de produção (preset cloudflare_module)
-pnpm preview               # wrangler dev servindo .output em http://localhost:8787
+pnpm preview:prod          # wrangler dev servindo .output em http://localhost:8788 com ENVIRONMENT=production
 ```
+
+O `pnpm lighthouse` mede por padrão a porta 8788. Fora de produção, toda resposta leva `X-Robots-Tag: noindex, nofollow` (ADR-0008 §6), e o Lighthouse reprovaria o SEO (`is-crawlable`) no `pnpm preview` comum (8787). A instância "como produção" usa um nome e um estado local próprios (`portfolio-prodlike`, `.wrangler/state-prod`), sem nenhum recurso remoto.
 
 Para medir o TTFB real da borda, use a URL de preview (o deploy exige autorização do owner).
 

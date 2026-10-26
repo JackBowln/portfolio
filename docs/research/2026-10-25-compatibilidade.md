@@ -158,6 +158,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **26/10/2026 — F02-T2.** O `npm view` confirmou `@nuxtjs/i18n` 10.6.0 (13/10/2026, MIT), com `vue-i18n` 11.4. Ele declara `h3 ^1.15.11`, que deduplica com o h3 do Nitro (1.15.11); o h3 2.x do lockfile já vinha de ferramentas de dev (`@nuxt/test-utils`, config inspector do ESLint). No 10.6, o cliente busca as mensagens do idioma ativo em `/_i18n/<hash>/<locale>/messages.json` em toda hidratação, mesmo com `experimental.preload`. Com `experimental.prerenderMessages`, o build gera esses arquivos em `.output/public/` e o hash vem do conteúdo dos arquivos de idioma e do `i18n.config.ts`. As mensagens chegam como JSON cru, então `bundle.dropMessageCompiler` não se aplica (economizaria ~4,8 KB). Custo medido: +33 KB gz de JS inicial por rota pública.
 
+**26/10/2026 — F02-T3.** Sem dependências novas; o `@nuxtjs/sitemap` (9.1.0) foi avaliado e preterido por um endpoint próprio (ADR-0008). No preset `cloudflare_module`, o Nitro 2.13 lê as variáveis `NUXT_*` do `env` do Worker em runtime (`globalThis.__env__`), então `NUXT_PUBLIC_SITE_URL` no `wrangler.jsonc` sobrescreve o `runtimeConfig.public.siteUrl` sem novo build. Duas instâncias de `wrangler dev` com o mesmo nome de Worker conflitam no socket interno (`Address already in use (socket "direct:1:default")`); a instância "como produção" usa `--name portfolio-prodlike`. O `wrangler dev --var` sobrescreve as vars do `wrangler.json` gerado.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

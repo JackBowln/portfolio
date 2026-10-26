@@ -10,6 +10,10 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-26 | `490e1eb` | `pnpm lighthouse` / 13.5.0 | Chrome for Testing 156.0.8078.4 | local, `wrangler dev` (build de produção) | R1 `/` | desktop | 100 | 100 | 100 | 90 | 412 ms | 0 ms | 0 | Idem. FCP 332 ms, SI 332 ms |
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `wrangler dev` (build de produção) | R1 `/` | mobile | 99 | 100 | 100 | 90 | 1809 ms | 0 ms | 0 | Com `@nuxtjs/i18n` (+33 KB de JS). FCP 1510 ms (era 1212): o JS maior compete com o HTML na simulação. SEO 90 pelo mesmo motivo da baseline (F02-T3). Elemento LCP: `<h1>` |
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `wrangler dev` (build de produção) | R1 `/` | desktop | 100 | 100 | 100 | 90 | 409 ms | 0 ms | 0 | Idem. FCP 329 ms |
+| 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` (build de produção, `ENVIRONMENT=production`) | R1 `/` | mobile | 99 (±1) | 100 | 100 | 100 | 1662 ms | 0 ms | 0 | SEO 100 com `usePageSeo` (description, canonical, hreflang). Elemento LCP: `<h1>` |
+| 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 411 ms | 0 ms | 0 | — |
+| 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | mobile | 99 (±2) | 100 | 100 | 100 | 1811 ms | 0 ms | 0 | Esqueleto indexável; LCP 11 ms acima da meta de 1,8 s. Elemento LCP: `<h1>` |
+| 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 382 ms | 0 ms | 0 | — |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -23,3 +27,4 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R2–R7 (esqueletos) | 102,05–102,18 | 0,00 | 125 / 30 | Páginas `[PLACEHOLDER]` com `noindex`; fora do Lighthouse |
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R3 e R8 `/blog/x`, `/de/blog/x` | 102,20 | 0,00 | 120 / 25 | Acima dos 100 KB iniciais; limite revisto pelo owner |
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | E404 | 103,38 | 0,92 | 125 / 30 | — |
+| 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | R1 / R3 / R6 | 104,92 / 104,87 / 104,87 | 0,00 | 125 / 120 / 125 | `usePageSeo` + helpers de head (+~3 kB) |
