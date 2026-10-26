@@ -34,7 +34,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      # Includes the test-only routes (server/api/_test); CI never deploys this build
       - run: pnpm build
+        env:
+          PORTFOLIO_TEST_BUILD: '1'
       - run: pnpm check:budgets
 
       - run: pnpm exec playwright install --with-deps chromium

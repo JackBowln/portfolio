@@ -13,8 +13,9 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    // CI builds in an earlier step; locally the suite builds first
+    // CI builds in an earlier step; locally the suite builds first, with the test-only routes (server/api/_test)
     command: process.env.CI ? 'pnpm preview' : 'pnpm build && pnpm preview',
+    env: { PORTFOLIO_TEST_BUILD: '1' },
     url: `${PREVIEW_URL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
