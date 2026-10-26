@@ -127,6 +127,12 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **25/10/2026 — F01-T1.** Seis devDependencies **temporárias**, usadas só pela styleguide de dev (fora do build de produção): `@fontsource-variable/fraunces`, `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono`, `@fontsource/instrument-serif`, `@fontsource-variable/instrument-sans` e `@fontsource-variable/geist-mono`, todas na 5.3.0 (19/07/2026), sob OFL-1.1 e sem script de instalação. Saem na F01-T3, quando o `@nuxt/fonts` assume o par escolhido.
 
+**25/10/2026 — F00-T2.** O `npm view` confirmou `eslint` 10.13.0 e `@nuxt/eslint` 1.17.0 (06/08/2026). Achados:
+- **Peers:** todos os plugins do `@nuxt/eslint-config` aceitam ESLint 10. O `typescript-eslint` 8.72 declara `typescript >=4.8.4 <6.1.0` (mais um motivo para manter o `~6.0`), e o `eslint-plugin-unicorn` 73 exige `eslint >=10.4`.
+- **Build scripts:** o do `unrs-resolver` 1.12.2 (resolver do `import-x`) foi bloqueado pelo pnpm 10. O binário pré-compilado (`@unrs/resolver-binding-*`) funciona sem ele, e a decisão está em `pnpm.ignoredBuiltDependencies`.
+- **`h3` 2.0.8 transitivo:** vem de `@eslint/config-inspector`, que é só de dev. O runtime segue no `h3` 1.15.11 do Nitro, e nenhum `h3` é instalado diretamente.
+- **Hashes de produção:** com o `eslint` instalado, o `vite-plugin-checker` passa a resolver esse peer opcional. Isso muda os caminhos no store do pnpm e, com eles, os ids de CSS scoped das páginas de erro padrão do Nuxt. Os hashes dos chunks mudam sem mudança de conteúdo nem de tamanho, então comparações de orçamento devem olhar tamanhos, não hashes.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

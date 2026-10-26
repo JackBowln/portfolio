@@ -33,11 +33,18 @@ request → server/middleware (sessão admin, origem/CSRF, rate limit, redirects
 
 ## Como impor (implementado na F00-T2)
 
-- ESLint `no-restricted-imports` com `patterns` por glob de arquivo (overrides por pasta):
-  - `app/**` (exceto admin): proibir `~~/server/*`, `**/admin/**`, `@tiptap/*`, `shiki`, `@jsquash/*`; proibir `gsap` e `three` como import estático (permitido só em `app/composables/motion/**`, via `import()`).
-  - `server/**`: proibir `~/*` e `#app`.
-  - `shared/**`: proibir `vue`, `h3`, `nitropack*`, `#imports`.
-  - `server/api/**`: proibir `~~/server/db/schema*`.
+- `eslint.config.mjs`, com escopos disjuntos por pasta. No flat config, a mesma regra em dois escopos que se sobrepõem é substituída, não somada.
+  - **Imports estáticos:** `@typescript-eslint/no-restricted-imports`, com padrões para aliases e caminhos relativos.
+    - `app/**` público: proibir `server/` (incluindo o alias `#server`, que o Nuxt 4.6 expõe também no app), `**/admin/**`, `@tiptap/*`, `shiki` e `@jsquash/*`.
+    - `gsap` e `three` estáticos ficam proibidos em todo o `app/`, mas `import type` deles é permitido.
+    - `app/**/admin/**`, `app/pages/admin/**` e `app/workers/**`: proibir `server/`, `gsap` e `three`.
+    - `server/**`: proibir `~`, `@`, `#app`, `#components` e `app/` relativo.
+    - `server/api/**`: proíbe também `server/db/schema`.
+    - `shared/**`: proibir `vue`, `vue-router`, `h3`, `nitro*`, `nuxt`, `#imports`/`#app`/`#build`/`#server`, `cloudflare:*`, `app/` e `server/`.
+  - **`import()` dinâmico:** `no-restricted-syntax`. No público, proíbe `server/`, `admin/`, Tiptap, Shiki e codecs. `gsap` e `three` só passam em `app/composables/motion/**` e `app/components/motion/**`.
+  - **Componentes de admin auto-importados** (`<AdminFoo>`, `<LazyAdminFoo>`, `<admin-foo>`) em templates públicos: `vue/no-restricted-syntax`.
+  - **Globais em `shared/**`:** `no-restricted-globals` para `process`, `window`, `document`, `navigator`, `localStorage` e `sessionStorage`.
+  - **Atenção ao editar:** os padrões seguem a sintaxe do gitignore, em que `#` no início é comentário. Os aliases `#…` precisam ser escapados com `\#` (helper `alias()`).
 - Checagem de build (`check:budgets` ou teste dedicado): o manifest das rotas públicas não contém chunks com `tiptap`, `shiki`, `jsquash` ou `admin`.
 - Meta-teste: todo arquivo em `server/api/admin/**` exporta um handler criado por `defineAdminHandler` com `permission` definida.
 

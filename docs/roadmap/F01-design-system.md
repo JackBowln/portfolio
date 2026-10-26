@@ -16,7 +16,7 @@
 |---|---|---|---|
 | em andamento | F00 (gate) | RX-01, RNF-10, RNF-11 | `/frontend-design` |
 
-> Iniciada em 2026-10-25 antes do gate da F00, por decisão do owner. O `pnpm lint` (F00-T2), o axe e o E2E do 404 (F00-T4) rodam quando essas tarefas existirem; a tarefa só é concluída depois deles e da escolha do owner.
+> Iniciada em 2026-10-25 antes do gate da F00, por decisão do owner. O `pnpm lint` já passa na styleguide (F00-T2). O axe e o E2E do 404 entram com a F00-T4, e a tarefa só é concluída depois deles.
 
 **Objetivo.** Montar a rota `/dev/styleguide`, que existe **só em desenvolvimento**, com duas variações de par tipográfico e paleta para você escolher.
 

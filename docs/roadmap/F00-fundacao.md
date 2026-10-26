@@ -39,7 +39,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T1 | RNF-09 | `/architecture-guardian` |
+| concluída | F00-T1 | RNF-09 | `/architecture-guardian` |
 
 **Objetivo.** Lint e formatação unificados com `@nuxt/eslint` (flat config + `stylistic`), mais as regras de fronteira da [boundaries](../../.claude/skills/architecture-guardian/references/boundaries.md).
 
@@ -48,14 +48,14 @@
 **Fora do escopo.** Regras de i18n (F02-T2).
 
 **Critérios de aceite**
-- [ ] `pnpm lint` passa no esqueleto; `pnpm lint:fix` formata.
-- [ ] `no-restricted-imports` (ou equivalente) bloqueia:
+- [x] `pnpm lint` passa no esqueleto; `pnpm lint:fix` formata.
+- [x] `no-restricted-imports` (ou equivalente) bloqueia:
   - `app/**` → `server/**`;
   - `server/**` → `app/**`;
   - `shared/**` → Vue, h3 ou bindings;
   - componentes, páginas e composables públicos → `**/admin/**` e `@tiptap/*`;
   - imports estáticos de `gsap`/`three` fora de `app/composables/motion/**`.
-- [ ] Cada regra é demonstrada com um fixture temporário que falha (saída colada) e é removido em seguida.
+- [x] Cada regra é demonstrada com um fixture temporário que falha (saída colada) e é removido em seguida.
 
 **Testes**
 - Execução de `pnpm lint` com e sem os fixtures de violação (saídas coladas).

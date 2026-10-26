@@ -73,7 +73,7 @@ Detalhes em [compatibilidade](../../research/2026-10-25-compatibilidade.md).
 | Verificação | Resultado | Data |
 |---|---|---|
 | F00-T1: `pnpm typecheck` e `pnpm build` no esqueleto | Passam com Nuxt 4.6.2, Nitro 2.13.5, Vite 8.3.5, Vue 3.5.44, TypeScript 6.0.3 e vue-tsc 3.3.13 (Node 24.22.1, pnpm 10.34.8). `strict`, `noUncheckedIndexedAccess` e `exactOptionalPropertyTypes` estão ativos nos 4 tsconfigs gerados, comprovado por fixtures temporárias que falharam em app, server e shared | 2026-10-25 |
-| F00-T2: `pnpm lint` | _pendente_ | |
+| F00-T2: `pnpm lint` | Passa com ESLint 10.13.0 e `@nuxt/eslint` 1.17.0 (`stylistic`, sem Prettier). As regras de fronteira foram comprovadas por fixtures temporárias: 29 violações detectadas e nenhum falso positivo nos casos permitidos | 2026-10-25 |
 | F00-T3: D1 e R2 locais no `nuxt dev` | _pendente_ | |
 
 ## Referências
