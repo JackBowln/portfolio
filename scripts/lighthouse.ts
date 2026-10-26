@@ -1,5 +1,6 @@
-// pnpm lighthouse [--routes R1,E404] [--runs 3] [--devices mobile,desktop] [--base http://localhost:8787] [--assert]
-// Protocol: docs/quality/performance-budgets.md §2. Serve the production build first (`pnpm build && pnpm preview`).
+// pnpm lighthouse [--routes R1,E404] [--runs 3] [--devices mobile,desktop] [--base http://localhost:8788] [--assert]
+// Protocol: docs/quality/performance-budgets.md §2. Serve the production build first (`pnpm build && pnpm preview:prod`):
+// the default base runs with ENVIRONMENT=production, since every other environment sends X-Robots-Tag: noindex.
 // Chrome: CHROME_PATH or Playwright's Chrome for Testing, so local and CI measure with the same browser.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -33,7 +34,7 @@ const { values } = parseArgs({
     routes: { type: 'string', default: Object.entries(budgets.routes).filter(([, route]) => route.lighthouse !== false).map(([id]) => id).join(',') },
     runs: { type: 'string', default: '3' },
     devices: { type: 'string', default: 'mobile,desktop' },
-    base: { type: 'string', default: 'http://localhost:8787' },
+    base: { type: 'string', default: 'http://localhost:8788' },
     assert: { type: 'boolean', default: false },
   },
 })

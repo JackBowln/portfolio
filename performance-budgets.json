@@ -1,5 +1,5 @@
 {
-  "$comment": "docs/quality/performance-budgets.md §3–§4. Sizes in kB (1 kB = 1000 bytes, gzip), as Vite reports them. Initial JS = entry + the route's page chunk + their static imports; dynamic imports are excluded. R2–R8 are F02-T2 skeletons (noindex), so `lighthouse: false` until each page gets its phase.",
+  "$comment": "docs/quality/performance-budgets.md §3–§4. Sizes in kB (1 kB = 1000 bytes, gzip), as Vite reports them. Initial JS = entry + the route's page chunk + their static imports; dynamic imports are excluded. R2–R5, R7 and R8 are noindex skeletons (F02-T2), so `lighthouse: false` until each page gets its phase; R6 is indexable since F02-T3.",
   "routes": {
     "R1": {
       "path": "/",
@@ -39,8 +39,7 @@
       "path": "/sobre",
       "page": "pages/sobre.vue",
       "js": 125,
-      "css": 30,
-      "lighthouse": false
+      "css": 30
     },
     "R7": {
       "path": "/contato",

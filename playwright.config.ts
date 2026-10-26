@@ -2,6 +2,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PREVIEW_URL = 'http://localhost:8787'
+const PROD_LIKE_URL = 'http://localhost:8788'
 
 export default defineConfig({
   testDir: './tests',
@@ -12,16 +13,26 @@ export default defineConfig({
     baseURL: PREVIEW_URL,
     trace: 'retain-on-failure',
   },
-  webServer: {
-    // CI builds in an earlier step; locally the suite builds first, with the test-only routes (server/api/_test)
-    command: process.env.CI ? 'pnpm preview' : 'pnpm build && pnpm preview',
-    env: { PORTFOLIO_TEST_BUILD: '1' },
-    url: `${PREVIEW_URL}/api/health`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-  },
+  webServer: [
+    {
+      // CI builds in an earlier step; locally the suite builds first, with the test-only routes (server/api/_test)
+      command: process.env.CI ? 'pnpm preview' : 'pnpm build && pnpm preview',
+      env: { PORTFOLIO_TEST_BUILD: '1' },
+      url: `${PREVIEW_URL}/api/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+    },
+    {
+      // Same build with ENVIRONMENT=production (indexable robots, HSTS); started after the first one has built
+      command: 'pnpm preview:prod',
+      url: `${PROD_LIKE_URL}/api/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
   projects: [
     { name: 'api', testDir: './tests/api' },
+    { name: 'api-prod', testDir: './tests/api-prod', use: { baseURL: PROD_LIKE_URL } },
     { name: 'e2e', testDir: './tests/e2e', use: { ...devices['Desktop Chrome'] } },
     { name: 'e2e-mobile', testDir: './tests/e2e', use: { ...devices['iPhone 15'] } },
     { name: 'a11y', testDir: './tests/a11y', use: { ...devices['Desktop Chrome'] } },

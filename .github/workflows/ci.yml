@@ -42,8 +42,8 @@ jobs:
       - run: pnpm check:budgets
 
       - run: pnpm exec playwright install --with-deps chromium
-      - name: Playwright (api, e2e smoke, a11y)
-        run: pnpm exec playwright test --project api --project e2e --project a11y
+      - name: Playwright (api, api-prod, e2e smoke, a11y)
+        run: pnpm exec playwright test --project api --project api-prod --project e2e --project a11y
       - name: Playwright a11y on dev-only pages
         run: pnpm exec playwright test --config playwright.dev.config.ts
 
