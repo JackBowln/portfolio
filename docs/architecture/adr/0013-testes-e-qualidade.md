@@ -71,7 +71,7 @@
 
 | Spike F00-T7 | Ferramenta | Variação entre execuções | Tempo de CI | Decisão | Data |
 |---|---|---|---|---|---|
-| _pendente_ | | | | | |
+| Unlighthouse CI 0.19.1 × script `lighthouse@13.5.0` + `chrome-launcher` (R1 × mobile/desktop × 3, Chrome for Testing 156, build no `wrangler dev`) | Script: ±0 em todas as categorias. Unlighthouse: só expõe o agregado, e o `throttle: true` aplica rede móvel ao desktop (Performance 92, contra 100 no preset oficial) | Script: 37 s. Unlighthouse: ~62 s (31 s por dispositivo) | **Script `pnpm lighthouse`** (escolha do owner): presets oficiais, asserção por categoria e dispositivo lida do `performance-budgets.json`, HTML e JSON por execução, sem puppeteer nem `@lhci/utils` 0.15 | 2026-10-26 |
 
 ## Referências
 

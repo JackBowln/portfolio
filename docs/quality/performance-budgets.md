@@ -43,6 +43,8 @@ O artigo e o estudo de referência são definidos na F06/F07 (conteúdo real ou 
 
 ## 4. Orçamentos (valores iniciais; revisar com a baseline do F00-T7)
 
+Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB de CSS ([perf-log](perf-log.md)). Os limites abaixo seguem os mesmos e são revistos quando as rotas reais existirem (F06/F07). A fonte que o `pnpm check:budgets` lê é o `performance-budgets.json`.
+
 | Recurso | R3 (artigo) | R1 (home) | Demais públicas |
 |---|---|---|---|
 | JS inicial (gzip, carregado até o `load`) | ≤ 100 KB | ≤ 110 KB | ≤ 110 KB |

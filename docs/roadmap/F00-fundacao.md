@@ -168,7 +168,7 @@ Os números vão para o ADR-0003.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F00-T4 | RNF-01, RNF-03 | `/performance-audit` |
+| concluída | F00-T4 | RNF-01, RNF-03 | `/performance-audit` |
 
 **Objetivo.** Escolher entre Unlighthouse CI e um script com `lighthouse@13` + `chrome-launcher`, criar `pnpm lighthouse` e `pnpm check:budgets`, e registrar a baseline do esqueleto.
 
@@ -177,10 +177,10 @@ Os números vão para o ADR-0003.
 **Fora do escopo.** Job de Lighthouse no CI com asserções (F11-T5).
 
 **Critérios de aceite**
-- [ ] As duas opções foram testadas em 2 rotas × mobile/desktop × 3 execuções; variação, tempo e facilidade de asserção comparados numa tabela no ADR-0013; decisão registrada.
-- [ ] `pnpm lighthouse` gera os relatórios (HTML/JSON) em `reports/lighthouse/` e imprime a mediana por categoria.
-- [ ] `pnpm check:budgets` lê o manifest do build, calcula o JS gzip por rota e falha acima do `performance-budgets.json`; a falha é demonstrada com um limite artificialmente baixo.
-- [ ] `perf-log.md` criado, com a baseline do esqueleto (versões do Chrome e do Lighthouse, commit, data).
+- [x] As duas opções foram testadas em 2 rotas × mobile/desktop × 3 execuções; variação, tempo e facilidade de asserção comparados numa tabela no ADR-0013; decisão registrada. _Só a R1 é mensurável hoje: o Lighthouse não audita a página 404, que não é 2xx, e as demais rotas só existem a partir da F06; a 404 fica no `check:budgets`._
+- [x] `pnpm lighthouse` gera os relatórios (HTML/JSON) em `reports/lighthouse/` e imprime a mediana por categoria.
+- [x] `pnpm check:budgets` lê o manifest do build, calcula o JS gzip por rota e falha acima do `performance-budgets.json`; a falha é demonstrada com um limite artificialmente baixo.
+- [x] `perf-log.md` criado, com a baseline do esqueleto (versões do Chrome e do Lighthouse, commit, data).
 
 **Testes**
 - Teste unitário do cálculo do `check:budgets` (com manifest de fixture).

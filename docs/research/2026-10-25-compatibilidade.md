@@ -28,7 +28,7 @@
 | `@cloudflare/vitest-pool-workers` → `@cloudflare/vitest-plugin` | 0.23.0 (depreciado) → 1.4.7 | `@cloudflare/vitest-plugin ~1.4` | Testes de servidor dentro do workerd, com D1 e R2 reais em miniflare |
 | `@playwright/test` / `@axe-core/playwright` | 1.64.1 / 4.14.0 | `~1.64` / `~4.14` | — |
 | `@lhci/cli` **⚠** | 0.15.1 (jun/2025) com `lighthouse` 12.6.1 embutido | Não adotar por padrão | O Lighthouse atual é o 13.5; medir com 12.6 diverge do Chrome DevTools/PSI |
-| `unlighthouse` | 0.19.1 (`lighthouse ^13.5.0`) | Candidato | Decisão final no spike F00-T7 (Unlighthouse ou script com `lighthouse@13`) |
+| `unlighthouse` | 0.19.1 (`lighthouse ^13.5.0`) | Não adotado (F00-T7) | O script com `lighthouse ~13.5` e `chrome-launcher ~1.2` venceu: presets oficiais, variação visível e menos dependências (ADR-0013) |
 | `eslint` / `@nuxt/eslint` | 10.13.0 / 1.17.0 (peer `eslint ^9 \|\| ^10`) | `~10` / `~1.17` | Flat config com `stylistic`, sem Prettier |
 | `@nuxt/fonts` | 1.2.0 | `~1.2` | Self-hosting e fallback métrico (evita CLS) |
 | `@nuxt/image` | 2.2.0 | Não usar no início | As variantes de mídia são pré-geradas (ADR-0007) |
@@ -149,6 +149,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 - **Actions fixadas por SHA:** `actions/checkout` v7.0.1, `actions/setup-node` v7.1.0, `pnpm/action-setup` v6.1.0 e `actions/upload-artifact` v7.0.2.
 - **`pnpm audit`:** o `@cloudflare/vitest-plugin` 1.4.7 fixa `zod` 4.6.5 (GHSA-mrhx-c7xc-m3w5, alta) e um miniflare com `undici` < 7.30.1 (GHSA-xjj6-f33q-929c, alta; GHSA-4qv8-2p9j-2685 e GHSA-f72v-6w45-q472, moderadas). As correções foram aplicadas com `pnpm.overrides` restritos a esses caminhos (`@cloudflare/vitest-plugin>zod: ~4.6.7`, `miniflare>undici: ~7.30.1`), com os testes verdes. **Remover os overrides quando o plugin e o miniflare atualizarem.**
 - **Exceção de auditoria:** `pnpm.auditConfig.ignoreGhsas` contém `GHSA-86w9-cpqp-85rv` (`node-forge` ≤ 1.4.0, via `nitropack` → `listhen`), que é só de dev, não tem correção, só gera certificados e não vai para o build. Rever a cada atualização do `nitropack` e remover quando houver versão corrigida.
+
+**26/10/2026 — F00-T7.** O `lighthouse` 13.5.0 (18/09/2026) traz o `@sentry/node`, cuja árvore de OpenTelemetry tem peers desencontrados (`@opentelemetry/api` 1.10 contra `<1.10`). É só aviso, porque a telemetria do Lighthouse vem desligada. O Unlighthouse 0.19.1 foi testado e removido: ele puxa o puppeteer, que tenta baixar um Chrome, e o `@lhci/utils` 0.15. O Lighthouse não audita documentos que não sejam 2xx (`ERRORED_DOCUMENT_REQUEST`), por isso a página 404 fica só no `check:budgets`.
 
 ## 6. Fontes
 

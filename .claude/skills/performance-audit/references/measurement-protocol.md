@@ -1,12 +1,12 @@
 # Protocolo de medição — comandos
 
-> A ferramenta final (Unlighthouse CI ou script com `lighthouse@13`) é decidida no F00-T7 e registrada no ADR-0013. Os comandos abaixo são o contrato dos scripts do `package.json`.
+> Ferramenta decidida no F00-T7 (ADR-0013): o script `scripts/lighthouse.ts`, com `lighthouse@13` e `chrome-launcher`, usando o Chrome for Testing do Playwright (ou `CHROME_PATH`). As rotas, os orçamentos e as notas mínimas ficam em `performance-budgets.json`.
 
 ## Preparação
 
 ```bash
 pnpm build                 # build de produção (preset cloudflare_module)
-pnpm preview               # wrangler dev servindo .output (porta registrada no script)
+pnpm preview               # wrangler dev servindo .output em http://localhost:8787
 ```
 
 Para medir o TTFB real da borda, use a URL de preview (o deploy exige autorização do owner).
@@ -15,7 +15,8 @@ Para medir o TTFB real da borda, use a URL de preview (o deploy exige autorizaç
 
 ```bash
 pnpm check:budgets                         # JS gzip por rota vs performance-budgets.json
-pnpm lighthouse --routes=R1,R3 --runs=3    # mobile + desktop; mediana por categoria
+pnpm lighthouse --routes R1 --runs 3 --assert   # mobile + desktop; mediana por categoria; --assert aplica a política §3
+pnpm lighthouse --base https://<preview>             # mede outro host (por exemplo, o deploy de preview)
 ```
 
 Saída esperada do `pnpm lighthouse`:
