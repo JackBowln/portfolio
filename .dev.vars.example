@@ -1,0 +1,10 @@
+# Copy to .dev.vars (gitignored) and fill with development values; never commit real values.
+# Names and purpose: docs/operations/environments.md §2. Non-secret vars live in wrangler.jsonc.
+BETTER_AUTH_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+OWNER_GITHUB_ID=
+BOOTSTRAP_TOKEN=
+PREVIEW_TOKEN_SECRET=
+IP_HASH_SALT=
+TURNSTILE_SECRET_KEY=

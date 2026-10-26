@@ -1,0 +1,85 @@
+// Bindings source of truth (ADR-0002); Nitro's cloudflare_module preset merges this file and fills `main`/`assets`.
+// Names follow docs/operations/environments.md. Bindings are not inherited by `env.*`, so each environment lists them all.
+// Not yet configured: crons (F06), send_email/CONTACT_EMAIL (Q-05), BACKUPS bucket (F12).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Top level = local development (emulated resources)
+  "name": "portfolio-local",
+  // Latest date supported by the pinned workerd (1.20261019.1)
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "vars": {
+    "ENVIRONMENT": "local",
+    "SITE_URL": "http://localhost:3000",
+    "MEDIA_BASE_URL": "http://localhost:3000/media",
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "portfolio-local", "database_id": "portfolio-local", "migrations_dir": "server/db/migrations" },
+  ],
+  "r2_buckets": [
+    { "binding": "MEDIA", "bucket_name": "portfolio-media-local" },
+  ],
+  "ai": { "binding": "AI" },
+  // Limits from ADR-0012 §6; namespace_id is any account-unique integer, distinct per environment
+  "ratelimits": [
+    { "name": "RL_AUTH", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_PUBLIC", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } },
+    { "name": "RL_ADMIN", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } },
+  ],
+  "cache": { "enabled": false },
+  "observability": { "enabled": false },
+
+  "env": {
+    "preview": {
+      "name": "portfolio-preview",
+      "vars": {
+        "ENVIRONMENT": "preview",
+        // workers.dev subdomain: vinivdias
+        "SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
+        "MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev/media",
+      },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "portfolio-preview", "database_id": "6e4be818-aeba-4fe7-8e55-c07b6f880332", "migrations_dir": "server/db/migrations" },
+      ],
+      "r2_buckets": [
+        { "binding": "MEDIA", "bucket_name": "portfolio-media-preview" },
+      ],
+      "ai": { "binding": "AI" },
+      "ratelimits": [
+        { "name": "RL_AUTH", "namespace_id": "2001", "simple": { "limit": 10, "period": 60 } },
+        { "name": "RL_PUBLIC", "namespace_id": "2002", "simple": { "limit": 3, "period": 60 } },
+        { "name": "RL_ADMIN", "namespace_id": "2003", "simple": { "limit": 120, "period": 60 } },
+      ],
+      // Availability on the Free plan is validated in the F00-T6 spike (ADR-0003)
+      "cache": { "enabled": true },
+      "observability": { "enabled": true },
+    },
+
+    "production": {
+      "name": "portfolio",
+      "vars": {
+        "ENVIRONMENT": "production",
+        // [PLACEHOLDER] domain pending (Q-01, F12)
+        "SITE_URL": "https://DOMAIN",
+        "MEDIA_BASE_URL": "https://media.DOMAIN",
+      },
+      "d1_databases": [
+        // [PLACEHOLDER] created only at launch (F12): wrangler d1 create portfolio-production
+        { "binding": "DB", "database_name": "portfolio-production", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "server/db/migrations" },
+      ],
+      "r2_buckets": [
+        { "binding": "MEDIA", "bucket_name": "portfolio-media-production" },
+      ],
+      "ai": { "binding": "AI" },
+      "ratelimits": [
+        { "name": "RL_AUTH", "namespace_id": "3001", "simple": { "limit": 10, "period": 60 } },
+        { "name": "RL_PUBLIC", "namespace_id": "3002", "simple": { "limit": 3, "period": 60 } },
+        { "name": "RL_ADMIN", "namespace_id": "3003", "simple": { "limit": 120, "period": 60 } },
+      ],
+      "cache": { "enabled": true },
+      "observability": { "enabled": true },
+    },
+  },
+}
