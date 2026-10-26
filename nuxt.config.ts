@@ -6,8 +6,9 @@ export default defineNuxtConfig({
 
   $production: {
     // Dev-only pages and routes (styleguide, binding diagnostics) never reach the production build
-    // Nitro matches server patterns from inside server/, so the server one has no prefix
-    ignore: ['**/pages/dev/**', '**/_dev/**'],
+    // Nitro matches server patterns from inside server/, so the server one has no prefix.
+    // Test-only routes (server/api/_test) ship only in the Playwright/CI build (PORTFOLIO_TEST_BUILD=1), never in a deploy
+    ignore: ['**/pages/dev/**', '**/_dev/**', ...(process.env.PORTFOLIO_TEST_BUILD === '1' ? [] : ['**/_test/**'])],
   },
 
   devtools: { enabled: true },
@@ -23,8 +24,12 @@ export default defineNuxtConfig({
     appVersion: version,
   },
 
+  // ADR-0003 §2: APIs are never stored; the admin is private and never indexed. Public pages get their policy in
+  // server/plugins/cache-policy.ts
   routeRules: {
-    '/api/health': { headers: { 'cache-control': 'no-store' } },
+    '/api/**': { headers: { 'cache-control': 'no-store' } },
+    '/api/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
+    '/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
   },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
