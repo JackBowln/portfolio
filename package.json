@@ -24,12 +24,17 @@
     "test:a11y": "playwright test --project a11y && playwright test --config playwright.dev.config.ts",
     "check:budgets": "node scripts/check-budgets.ts",
     "lighthouse": "node scripts/lighthouse.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state",
+    "db:seed": "node server/db/seed/dev.ts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "drizzle-orm": "~0.45.4",
     "nuxt": "~4.6.2",
     "vue": "~3.5.44",
-    "vue-router": "~5.4.0"
+    "vue-router": "~5.4.0",
+    "zod": "~4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "~4.14.0",
@@ -46,6 +51,7 @@
     "@types/node": "~24.19.2",
     "@vue/test-utils": "~2.5.1",
     "chrome-launcher": "~1.2.2",
+    "drizzle-kit": "~0.31.11",
     "eslint": "~10.13.0",
     "happy-dom": "~21.0.4",
     "lighthouse": "~13.5.0",
