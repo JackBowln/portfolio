@@ -13,7 +13,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm build && pnpm preview',
+    // CI builds in an earlier step; locally the suite builds first
+    command: process.env.CI ? 'pnpm preview' : 'pnpm build && pnpm preview',
     url: `${PREVIEW_URL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
