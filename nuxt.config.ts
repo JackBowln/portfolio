@@ -2,6 +2,8 @@
 import { version } from './package.json'
 
 export default defineNuxtConfig({
+  modules: ['@nuxt/eslint'],
+
   $production: {
     // Dev-only pages (the F01-T1 styleguide) never reach the production build
     ignore: ['**/pages/dev/**'],
@@ -20,11 +22,11 @@ export default defineNuxtConfig({
     appVersion: version,
   },
 
-  compatibilityDate: '2026-10-25',
-
   routeRules: {
     '/api/health': { headers: { 'cache-control': 'no-store' } },
   },
+
+  compatibilityDate: '2026-10-25',
 
   typescript: {
     strict: true,
@@ -33,6 +35,13 @@ export default defineNuxtConfig({
         noUncheckedIndexedAccess: true,
         exactOptionalPropertyTypes: true,
       },
+    },
+  },
+
+  // ADR-0002 §6: ESLint flat config with stylistic formatting, no Prettier
+  eslint: {
+    config: {
+      stylistic: true,
     },
   },
 })
