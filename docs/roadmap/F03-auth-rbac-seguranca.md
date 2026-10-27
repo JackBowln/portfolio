@@ -69,7 +69,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F03-T1 | RF-03.4, RNF-06 | `/security-audit`, `/test-engineer` |
+| concluída | F03-T1 | RF-03.4, RNF-06 | `/security-audit`, `/test-engineer` |
 
 **Objetivo.** Implementar:
 - `shared/auth/permissions.ts` (statements e papéis exatamente como a matriz do [security-model](../architecture/security-model.md#4-matriz-de-autorização-padrão));
@@ -82,15 +82,31 @@
 **Fora do escopo.** UI de gestão de papéis.
 
 **Critérios de aceite**
-- [ ] Sem sessão → 401 em qualquer `/api/admin/**`; sem permissão → 403; com permissão → 2xx.
-- [ ] A matriz de testes é **gerada** a partir de `permissions.ts` (sem casos escritos à mão para cada célula).
-- [ ] O meta-teste falha se algum arquivo em `server/api/admin/**` não usar `defineAdminHandler` com permissão.
-- [ ] `author` não altera conteúdo de outro autor (`assertOwnership`).
+- [x] Sem sessão → 401 em qualquer `/api/admin/**`; sem permissão → 403; com permissão → 2xx.
+- [x] A matriz de testes é **gerada** a partir de `permissions.ts` (sem casos escritos à mão para cada célula).
+- [x] O meta-teste falha se algum arquivo em `server/api/admin/**` não usar `defineAdminHandler` com permissão.
+- [x] `author` não altera conteúdo de outro autor (`assertOwnership`).
 
 **Testes**
 - Unit: resolução de permissões por papel.
 - API: matriz completa com rotas de exemplo (até haver rotas reais).
 - Unit: o meta-teste.
+
+**Resultado (27/10/2026).**
+- `shared/auth/permissions.ts` (statements, escopos `any`/`own`/`own-draft`, `can`, `canOnResource`, `canManageUser`).
+- Servidor:
+  - `server/services/auth/access.ts`: plugin `admin`, com a API HTTP desligada;
+  - `server/middleware/admin-session.ts`;
+  - `server/utils/authz.ts`: `defineAdminHandler`, com `fresh` opcional, `requirePermission`, `assertOwnership` e `requireFreshSession`.
+- Decisões no ADR-0005 ("Decisões da F03-T3"); linha `media:read` acrescentada ao security-model §4.
+- Testes:
+  - `tests/unit/permissions.test.ts`, que lê a matriz do security-model, e `tests/unit/admin-routes-meta.test.ts`;
+  - `tests/api/authz-matrix.spec.ts`, com 6 papéis × 34 permissões gerados do código;
+  - as rotas de exemplo ficam em `server/api/admin/_test/` (só no build de teste), e a rota `TEST_AUTH` de sessão aceita `?role=` e `?ageSeconds=`.
+- Worker com 400 kB gzip (+5 kB); o bundle público não mudou.
+- Pendências:
+  - a mudança de papel e a revogação valem com até 5 min de atraso (cookie cache), a decidir na F03-T5;
+  - checagem de `Origin` nas mutações do admin na F03-T4.
 
 ---
 

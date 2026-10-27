@@ -53,6 +53,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `article/project/page:delete` | ✅ | ✅ | ✅ | 🟡 (rascunho) | — | — |
 | `article/project/page:publish`, `:schedule` | ✅ | ✅ | ✅ | — | — | — |
 | `article/project/page:restore` | ✅ | ✅ | ✅ | 🟡 | — | — |
+| `media:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `media:create/update` | ✅ | ✅ | ✅ | ✅ | — | — |
 | `media:delete` | ✅ | ✅ | ✅ | 🟡 | — | — |
 | `translation:run` | ✅ | ✅ | ✅ | — | ✅ | — |
@@ -62,7 +63,10 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `user:invite`, `:update-role`, `:revoke-session` | ✅ | ✅ (exceto owner) | — | — | — | — |
 | `audit:read` | ✅ | ✅ | — | — | — | — |
 
-A tabela é a especificação de `shared/auth/permissions.ts`. Os testes da F03-T3 geram casos a partir dela.
+A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
+
+- **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
+- **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).
 
 ## 5. Controles por camada (checklist resumido)
 

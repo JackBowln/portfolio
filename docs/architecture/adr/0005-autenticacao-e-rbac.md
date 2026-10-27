@@ -30,7 +30,8 @@
    - Ações sensíveis exigem sessão "fresca" (≤ 15 min): mudar papéis, apagar conteúdo publicado, alterar orçamento de IA, remover passkey.
 5. **RBAC.**
    - As permissões ficam em `shared/auth/permissions.ts` como statements `recurso: ações[]`:
-     - `article`, `project`, `page`: `create`, `read`, `update`, `delete`, `publish`, `schedule`, `restore`
+     - `article`, `project`: `create`, `read`, `update`, `delete`, `publish`, `schedule`, `restore`
+     - `page`: as mesmas, sem `create` (as chaves são fixas)
      - `media`: `create`, `read`, `update`, `delete`
      - `translation`: `run`, `review`, `approve`
      - `settings`: `read`, `update`
@@ -87,17 +88,34 @@
 - **IP:** `advanced.ipAddress.disableIpTracking: true`. Mesmo assim o Better Auth grava `''`, então um hook de sessão grava `NULL`. O hash de IP para auditoria e rate limit vem na F03-T4.
 - **Tokens OAuth:** descartados. Hooks `account.create/update.before` zeram `accessToken`, `refreshToken`, `idToken` e as expirações; só o ID numérico da conta importa.
 - **Instância:** `createAuth(env)` em `server/utils/auth.ts`, memorizada por isolate num `WeakMap` indexado pelo `env` do Worker (que carrega o binding do D1), em vez de ser reconstruída a cada request. As opções ficam puras em `server/services/auth/options.ts`.
-- **Schema:** escrito à mão em `server/db/schema/auth.ts` (o `@better-auth/cli` está na 1.4 e traz `prisma`, `pg` e `better-sqlite3`). `tests/unit/auth-schema.test.ts` compara as colunas com o `getAuthTables()` do Better Auth (com o plugin `admin`). Os campos do `admin` (`role`, padrão `viewer`, e `ban*`) já existem; o plugin é ativado na F03-T3. IDs em UUIDv7.
+- **Schema:** escrito à mão em `server/db/schema/auth.ts` (o `@better-auth/cli` está na 1.4 e traz `prisma`, `pg` e `better-sqlite3`). `tests/unit/auth-schema.test.ts` compara as colunas com o `getAuthTables()` do Better Auth (com o plugin `admin`). Os campos do `admin` (`role`, padrão `viewer`, e `ban*`) já existem; o plugin foi ativado na F03-T3. IDs em UUIDv7.
 - **Cookies:** `HttpOnly`, `SameSite=Lax`, `Path=/`; `Secure` + `__Secure-` quando a `SITE_URL` é `https`. `session_token` com 7 dias; `session_data` (cookie cache, estratégia `compact`, assinado) com 5 min.
 - **Secret:** `BETTER_AUTH_SECRET` (≥ 32 caracteres) é obrigatório fora de `ENVIRONMENT=local`, onde a falta gera um secret aleatório por isolate, com aviso no log.
 - **Telemetria** desligada; `emailAndPassword` desligado (`*_DISABLED` nas rotas de senha, testado); `delete-user` fica indisponível (404).
 - **Exceção registrada:** o input de `/api/auth/*` é validado pelos schemas do próprio Better Auth, não pelos nossos helpers `strict`.
 
+### Decisões da F03-T3 (owner, 2026-10-27)
+
+- **Fonte única:** `shared/auth/permissions.ts` traz os statements e, por papel, o escopo de cada ação: `any`, `own` (🟡) ou `own-draft` (🟡 rascunho). São dados puros, sem importar o better-auth. O `server/services/auth/access.ts` monta deles o `createAccessControl` e os papéis do plugin `admin` (`defaultRole: 'viewer'`, `adminRoles: ['owner', 'admin']`).
+- **API HTTP do plugin `admin` desligada:** os 15 endpoints de `/api/auth/admin/*` (incluindo `create-user` com senha, `set-user-password` e `impersonate-user`) estão em `disabledPaths` e respondem 404. Usuários e sessões passam a ser geridos por rotas próprias em `/api/admin/**` (F03-T5), sob `defineAdminHandler` e o meta-teste.
+- **`media:read`:** liberado para todos os papéis, como a leitura de conteúdo; a linha foi acrescentada à matriz do security-model.
+- **`admin` (exceto owner):** `canManageUser(actor, target, newRole?)` impede um admin de agir sobre um owner ou de conceder `owner`. As rotas de usuários da F03-T5 devem chamá-la.
+- **Sessão fresca:** `defineAdminHandler({ permission, fresh: true, handler })` responde 403 `session_not_fresh` quando a sessão tem mais de 15 min (`freshAge`), contados do `createdAt`.
+- **Camadas:**
+  - `server/middleware/admin-session.ts` autentica `/api/admin/**` (401) e põe `{ user, session }` em `event.context.auth`; os cookies renovados pelo `getSession` voltam ao navegador.
+  - `defineAdminHandler` refaz o 401 (defesa em profundidade), checa a permissão (403) e expõe `permission` e `fresh` no handler.
+  - `requirePermission(event, permission)` serve para permissões decididas no handler; `assertOwnership(event, permission, item)` serve para os escopos `own` e `own-draft`.
+  - Papel desconhecido ou vazio não recebe nada; a resolução só considera chaves próprias (sem `__proto__`, `constructor` etc.).
+- **Atraso do cookie cache:** o papel lido vem do `session_data` assinado, então uma mudança de papel ou uma revogação leva até 5 min para valer. A F03-T5 decide se essas ações também invalidam o cache.
+
 ## Validação
 
 - F03-T2: E2E de registro e login por passkey (autenticador virtual) e de login GitHub mockado; tentativa com ID fora da allowlist rejeitada; CPU de login medida (< 5 ms).
 - F03-T1: `tests/unit/auth-{options,schema}.test.ts`, `tests/workers/auth-schema.test.ts` e `tests/api/auth.spec.ts` (sem cadastro, flags do cookie numa sessão criada pela rota de teste `TEST_AUTH`, CSRF de outra origem → 403 conferido no `/security-audit`).
-- F03-T3: matriz papel × rota 100% coberta.
+- F03-T3:
+  - `tests/unit/permissions.test.ts` lê a tabela do security-model §4 e a compara célula por célula com o `permissions.ts` e com os papéis do Better Auth;
+  - `tests/unit/admin-routes-meta.test.ts` analisa cada arquivo de `server/api/admin/**` com o parser do TypeScript, inclusive com casos negativos;
+  - `tests/api/authz-matrix.spec.ts` cobre 6 papéis × 34 permissões gerados do código, além de 401 (sem sessão, cookie adulterado, variações de caminho), ownership, sessão fresca, plugin `admin` → 404 e `role` não editável pelo próprio usuário.
 
 ## Referências
 
