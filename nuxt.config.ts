@@ -1,10 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite'
 import { version } from './package.json'
+import { FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from './shared/design/fonts'
 import { THEME_INIT_SCRIPT } from './shared/design/theme'
 
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n', '@nuxt/fonts'],
 
   $production: {
     // Dev-only pages and routes (styleguide, binding diagnostics) never reach the production build
@@ -17,8 +18,13 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      // Applies the stored theme before the first paint (shared/design/theme.ts)
-      script: [{ innerHTML: THEME_INIT_SCRIPT, tagPosition: 'head' }],
+      // Before the first paint: the stored theme (shared/design/theme.ts) and, on a first visit, fallback fonts
+      // until `load` (shared/design/fonts.ts)
+      script: [
+        { innerHTML: THEME_INIT_SCRIPT, tagPosition: 'head' },
+        { innerHTML: FONT_LOADING_SCRIPT, tagPosition: 'head' },
+      ],
+      style: [{ innerHTML: FONT_PENDING_CSS }],
     },
   },
 
@@ -43,6 +49,8 @@ export default defineNuxtConfig({
     '/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     // Prerendered i18n messages: the path carries a hash of the locale files, so a change means a new URL
     '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    // Font files live under a versioned path (shared/design/fonts.ts), so they never change in place
+    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
   },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
@@ -79,6 +87,27 @@ export default defineNuxtConfig({
   eslint: {
     config: {
       stylistic: true,
+    },
+  },
+
+  // ADR-0010 §4: vendored files only (shared/design/fonts.ts). Remote providers are off, so neither the build nor
+  // the visitor ever fetches a font from a third party; @nuxt/fonts writes the @font-face rules and the
+  // metric-matched fallbacks (size-adjust) for --font-*. No preload: the fonts load after `load` (fonts.ts)
+  fonts: {
+    families: FONT_FAMILIES.flatMap(family => fontFaces(family).map(face => ({
+      name: family.name,
+      src: face.src,
+      weight: face.weight,
+      style: face.style,
+      unicodeRange: face.unicodeRange,
+      display: 'swap' as const,
+      fallbacks: [...family.fallbacks],
+    }))),
+    defaults: { preload: false },
+    providers: { adobe: false, bunny: false, fontshare: false, fontsource: false, google: false, googleicons: false, npm: false },
+    experimental: {
+      // No local('…') sources: a visitor's installed copy may lack the axes we ship
+      disableLocalFallbacks: true,
     },
   },
 
