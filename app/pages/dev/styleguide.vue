@@ -1,37 +1,21 @@
 <script setup lang="ts">
-// Dev-only page (F01-T1): `$production.ignore` in nuxt.config keeps it out of production builds.
+// Dev-only page: `$production.ignore` in nuxt.config keeps it out of production builds, and main.css keeps its markup
+// out of the public CSS. It documents the final tokens of app/assets/css/main.css (F01-T2): colors and contrast are
+// read from that file, the type scale and motion from shared/design/tokens.ts (whose match with the CSS is tested).
 // The @fontsource packages are temporary devDependencies; F01-T3 replaces them with @nuxt/fonts.
 import '@fontsource-variable/fraunces/full.css'
 import '@fontsource-variable/inter/index.css'
 import '@fontsource-variable/inter/wght-italic.css'
 import '@fontsource-variable/jetbrains-mono/index.css'
-import '@fontsource/instrument-serif/400.css'
-import '@fontsource/instrument-serif/400-italic.css'
-import '@fontsource-variable/instrument-sans/index.css'
-import '@fontsource-variable/instrument-sans/wght-italic.css'
-import '@fontsource-variable/geist-mono/index.css'
-import '~/assets/css/styleguide-variants.css'
-import { AA_MINIMUM, contrastRatio, isInSrgbGamut, meetsAA } from '#shared/design/contrast'
+import mainCss from '~/assets/css/main.css?raw'
+import { AA_MINIMUM, checkContrast, isInSrgbGamut } from '#shared/design/contrast'
 import type { ContrastUse, Oklch } from '#shared/design/contrast'
+import { themeColors } from '#shared/design/css-tokens'
+import type { ThemeName } from '#shared/design/css-tokens'
+import { DISPLAY_FROM_STEP, DISTANCES, DURATIONS, EASINGS, FLUID_VIEWPORT, TYPE_SCALE } from '#shared/design/tokens'
 
 // Dev tool, not part of the localized site
 definePageMeta({ i18n: false })
-
-type VariantId = 'a' | 'b'
-type ThemeName = 'light' | 'dark'
-type ColorToken = 'bg' | 'surface' | 'text' | 'text-muted' | 'border' | 'link' | 'accent' | 'accent-contrast' | 'focus'
-type QueryState = Partial<Record<'type' | 'palette' | 'theme', string | undefined>>
-
-interface PaletteTheme {
-  colors: Record<ColorToken, Oklch>
-  note?: string
-}
-
-interface Palette {
-  name: string
-  reference: string
-  themes: Record<ThemeName, PaletteTheme>
-}
 
 interface FontFile {
   axes: string
@@ -45,175 +29,12 @@ interface FontFact {
   files: readonly FontFile[]
 }
 
-interface TypePairing {
-  short: string
-  name: string
-  reference: string
-  fonts: readonly FontFact[]
-  preload: readonly { label: string, kb: readonly number[] }[]
-}
-
-interface TypeStep {
-  step: number
-  minPx: number
-  maxPx: number
-  leading: number
-}
-
-interface ContrastPair {
-  foreground: ColorToken
-  background: ColorToken
-  use: ContrastUse
-}
-
-const VARIANTS = ['a', 'b'] as const satisfies readonly VariantId[]
 const THEMES = ['light', 'dark'] as const satisfies readonly ThemeName[]
 
-// Direction chosen on 2026-10-25 (design-direction §9): type pairing A with palette B
-const CHOSEN_TYPE: VariantId = 'a'
-const CHOSEN_PALETTE: VariantId = 'b'
-
-const PALETTES: Record<VariantId, Palette> = {
-  a: {
-    name: 'Papel e marca-texto',
-    reference: 'ingrassiadaniel.it',
-    themes: {
-      light: {
-        colors: {
-          'bg': { l: 0.965, c: 0.006, h: 135 },
-          'surface': { l: 0.93, c: 0.008, h: 135 },
-          'text': { l: 0.24, c: 0.008, h: 135 },
-          'text-muted': { l: 0.5, c: 0.012, h: 140 },
-          'border': { l: 0.62, c: 0.01, h: 140 },
-          'link': { l: 0.24, c: 0.008, h: 135 },
-          'accent': { l: 0.87, c: 0.17, h: 96 },
-          'accent-contrast': { l: 0.24, c: 0.008, h: 135 },
-          'focus': { l: 0.46, c: 0.085, h: 96 },
-        },
-        note: 'No claro, o amarelo só preenche (botão, marca-texto no hover): sobre o papel ele fica abaixo de 3:1. Os links usam a tinta, sublinhados, e o foco usa um oliva derivado do acento.',
-      },
-      dark: {
-        colors: {
-          'bg': { l: 0.19, c: 0.006, h: 135 },
-          'surface': { l: 0.24, c: 0.008, h: 135 },
-          'text': { l: 0.95, c: 0.006, h: 110 },
-          'text-muted': { l: 0.72, c: 0.01, h: 130 },
-          'border': { l: 0.52, c: 0.01, h: 135 },
-          'link': { l: 0.87, c: 0.17, h: 96 },
-          'accent': { l: 0.87, c: 0.17, h: 96 },
-          'accent-contrast': { l: 0.19, c: 0.006, h: 135 },
-          'focus': { l: 0.87, c: 0.17, h: 96 },
-        },
-      },
-    },
-  },
-  b: {
-    name: 'Noite e rosa',
-    reference: 'junkbranding.com',
-    themes: {
-      light: {
-        colors: {
-          'bg': { l: 0.955, c: 0.012, h: 75 },
-          'surface': { l: 0.915, c: 0.015, h: 75 },
-          'text': { l: 0.21, c: 0.03, h: 250 },
-          'text-muted': { l: 0.48, c: 0.03, h: 245 },
-          'border': { l: 0.6, c: 0.025, h: 245 },
-          'link': { l: 0.52, c: 0.17, h: 358 },
-          'accent': { l: 0.52, c: 0.17, h: 358 },
-          'accent-contrast': { l: 0.97, c: 0.01, h: 75 },
-          'focus': { l: 0.52, c: 0.17, h: 358 },
-        },
-        note: 'No claro, o rosa escurece para funcionar como texto e foco; o rosa vivo fica para o tema escuro.',
-      },
-      dark: {
-        colors: {
-          'bg': { l: 0.16, c: 0.03, h: 250 },
-          'surface': { l: 0.22, c: 0.035, h: 235 },
-          'text': { l: 0.94, c: 0.012, h: 75 },
-          'text-muted': { l: 0.74, c: 0.025, h: 240 },
-          'border': { l: 0.5, c: 0.035, h: 240 },
-          'link': { l: 0.81, c: 0.115, h: 355 },
-          'accent': { l: 0.81, c: 0.115, h: 355 },
-          'accent-contrast': { l: 0.16, c: 0.03, h: 250 },
-          'focus': { l: 0.81, c: 0.115, h: 355 },
-        },
-      },
-    },
-  },
+const THEME_LABEL: Record<ThemeName, string> = {
+  light: 'Claro',
+  dark: 'Escuro',
 }
-
-// Latin WOFF2 sizes measured in the 5.3.0 packages (2026-10-25)
-const TYPE_PAIRINGS: Record<VariantId, TypePairing> = {
-  a: {
-    short: 'Fraunces + Inter',
-    name: 'Fraunces + Inter + JetBrains Mono',
-    reference: 'par A da design-direction §3',
-    fonts: [
-      {
-        role: 'Display',
-        family: 'Fraunces',
-        pkg: '@fontsource-variable/fraunces',
-        files: [
-          { axes: 'opsz, SOFT, WONK e wght (esta página)', kb: 118.2 },
-          { axes: 'opsz e wght', kb: 65.7 },
-          { axes: 'wght', kb: 35.8 },
-        ],
-      },
-      { role: 'Texto e UI', family: 'Inter', pkg: '@fontsource-variable/inter', files: [{ axes: 'wght', kb: 47.1 }] },
-      { role: 'Código e rótulos', family: 'JetBrains Mono', pkg: '@fontsource-variable/jetbrains-mono', files: [{ axes: 'wght', kb: 39.5 }] },
-    ],
-    preload: [
-      { label: 'Fraunces (opsz e wght) + Inter', kb: [65.7, 47.1] },
-      { label: 'Fraunces completa + Inter', kb: [118.2, 47.1] },
-    ],
-  },
-  b: {
-    short: 'Instrument',
-    name: 'Instrument Serif + Instrument Sans + Geist Mono',
-    reference: 'junkbranding.com usa a Instrument Serif',
-    fonts: [
-      { role: 'Display', family: 'Instrument Serif', pkg: '@fontsource/instrument-serif', files: [{ axes: '400 estática (itálico em arquivo à parte)', kb: 20.5 }] },
-      { role: 'Texto e UI', family: 'Instrument Sans', pkg: '@fontsource-variable/instrument-sans', files: [{ axes: 'wght', kb: 29.4 }] },
-      { role: 'Código e rótulos', family: 'Geist Mono', pkg: '@fontsource-variable/geist-mono', files: [{ axes: 'wght', kb: 22.6 }] },
-    ],
-    preload: [
-      { label: 'Instrument Serif + Instrument Sans', kb: [20.5, 29.4] },
-    ],
-  },
-}
-
-// performance-budgets §4: at most 2 font files and 120 KB on the first screen
-const FONT_BUDGET_KB = 120
-const FONT_BUDGET_FILES = 2
-
-const TYPE_SCALE: readonly TypeStep[] = [
-  { step: -1, minPx: 13, maxPx: 14, leading: 1.5 },
-  { step: 0, minPx: 17, maxPx: 20, leading: 1.65 },
-  { step: 1, minPx: 20, maxPx: 24, leading: 1.5 },
-  { step: 2, minPx: 24, maxPx: 32, leading: 1.3 },
-  { step: 3, minPx: 28, maxPx: 42, leading: 1.2 },
-  { step: 4, minPx: 34, maxPx: 56, leading: 1.1 },
-  { step: 5, minPx: 40, maxPx: 76, leading: 1.05 },
-  { step: 6, minPx: 48, maxPx: 104, leading: 1 },
-  { step: 7, minPx: 56, maxPx: 160, leading: 0.95 },
-]
-const FLUID_VIEWPORT = { minPx: 360, maxPx: 1440 } as const
-const ROOT_PX = 16
-const DISPLAY_FROM_STEP = 3
-
-const CONTRAST_PAIRS: readonly ContrastPair[] = [
-  { foreground: 'text', background: 'bg', use: 'text' },
-  { foreground: 'text', background: 'surface', use: 'text' },
-  { foreground: 'text-muted', background: 'bg', use: 'text' },
-  { foreground: 'text-muted', background: 'surface', use: 'text' },
-  { foreground: 'link', background: 'bg', use: 'text' },
-  { foreground: 'link', background: 'surface', use: 'text' },
-  { foreground: 'accent-contrast', background: 'accent', use: 'text' },
-  { foreground: 'accent', background: 'bg', use: 'ui' },
-  { foreground: 'focus', background: 'bg', use: 'ui' },
-  { foreground: 'focus', background: 'surface', use: 'ui' },
-  { foreground: 'border', background: 'bg', use: 'ui' },
-]
 
 const USE_LABEL: Record<ContrastUse, string> = {
   'text': 'texto',
@@ -221,10 +42,28 @@ const USE_LABEL: Record<ContrastUse, string> = {
   'ui': 'UI',
 }
 
-const THEME_LABEL: Record<ThemeName, string> = {
-  light: 'Claro',
-  dark: 'Escuro',
-}
+// Latin WOFF2 sizes measured in the 5.3.0 packages (2026-10-25); pairing A chosen on 2026-10-25 (design-direction §9)
+const FONTS: readonly FontFact[] = [
+  {
+    role: 'Display',
+    family: 'Fraunces',
+    pkg: '@fontsource-variable/fraunces',
+    files: [
+      { axes: 'opsz, SOFT, WONK e wght (esta página)', kb: 118.2 },
+      { axes: 'opsz e wght (alvo da F01-T3)', kb: 65.7 },
+      { axes: 'wght', kb: 35.8 },
+    ],
+  },
+  { role: 'Texto e UI', family: 'Inter', pkg: '@fontsource-variable/inter', files: [{ axes: 'wght', kb: 47.1 }] },
+  { role: 'Código e rótulos', family: 'JetBrains Mono', pkg: '@fontsource-variable/jetbrains-mono', files: [{ axes: 'wght', kb: 39.5 }] },
+]
+
+// performance-budgets §4: at most 2 font files and 120 KB on the first screen
+const FONT_BUDGET_KB = 120
+const FONT_BUDGET_FILES = 2
+const PRELOAD = { label: 'Fraunces (opsz e wght) + Inter', kb: [65.7, 47.1] } as const
+
+const SPACING_STEPS = [1, 2, 3, 4, 6, 8, 12, 16] as const
 
 // [PLACEHOLDER] until the owner provides real copy
 const SAMPLE = {
@@ -283,44 +122,15 @@ const cardDate = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone:
 // Truncated, so a ratio just under the AA minimum never displays as passing
 const formatRatio = (ratio: number) => `${ratioFormat.format(Math.floor(ratio * 100) / 100)}:1`
 const formatKb = (kb: number) => `${kbFormat.format(kb)} KB`
-const round = (value: number) => Number(value.toFixed(4))
+const toCss = ({ l, c, h }: Oklch) => `oklch(${l} ${c} ${h})`
 
-function fluidSize({ minPx, maxPx }: TypeStep): string {
-  const slope = (maxPx - minPx) / (FLUID_VIEWPORT.maxPx - FLUID_VIEWPORT.minPx)
-  const intercept = minPx - slope * FLUID_VIEWPORT.minPx
-  return `clamp(${round(minPx / ROOT_PX)}rem, ${round(intercept / ROOT_PX)}rem + ${round(slope * 100)}vw, ${round(maxPx / ROOT_PX)}rem)`
+function stepStyle(step: number) {
+  return {
+    fontSize: `var(--text-step-${step})`,
+    lineHeight: `var(--text-step-${step}--line-height)`,
+    letterSpacing: `var(--text-step-${step}--letter-spacing, normal)`,
+  }
 }
-
-function toCss({ l, c, h }: Oklch): string {
-  return `oklch(${l} ${c} ${h})`
-}
-
-function declarations(entries: readonly (readonly [string, string])[]): string {
-  return entries.map(([name, value]) => `${name}:${value};`).join('')
-}
-
-function colorDeclarations(theme: ThemeName, colors: Record<ColorToken, Oklch>): string {
-  const tokens = Object.keys(colors) as ColorToken[]
-  return declarations([...tokens.map(token => [`--color-${token}`, toCss(colors[token])] as const), ['color-scheme', theme]])
-}
-
-// System theme by default; `data-theme` on <html> forces one; `data-sg-panel` pins a panel to a theme
-function paletteCss(id: VariantId): string {
-  const scope = `html[data-sg][data-palette="${id}"]`
-  const { light, dark } = PALETTES[id].themes
-  return [
-    `${scope},${scope} [data-sg-panel="light"]{${colorDeclarations('light', light.colors)}}`,
-    `@media (prefers-color-scheme: dark){${scope}:not([data-theme="light"]){${colorDeclarations('dark', dark.colors)}}}`,
-    `${scope}[data-theme="dark"],${scope} [data-sg-panel="dark"]{${colorDeclarations('dark', dark.colors)}}`,
-  ].join('\n')
-}
-
-const typeScaleCss = `html[data-sg]{${declarations(TYPE_SCALE.flatMap(step => [
-  [`--text-step-${step.step}`, fluidSize(step)] as const,
-  [`--leading-step-${step.step}`, String(step.leading)] as const,
-]))}}`
-
-const TOKENS_CSS = [typeScaleCss, ...VARIANTS.map(paletteCss)].join('\n')
 
 const SCALE_ROWS = TYPE_SCALE.toReversed().map(step => ({
   ...step,
@@ -329,143 +139,46 @@ const SCALE_ROWS = TYPE_SCALE.toReversed().map(step => ({
   display: step.step >= DISPLAY_FROM_STEP,
 }))
 
-function stepStyle(step: number) {
-  return { fontSize: `var(--text-step-${step})`, lineHeight: `var(--leading-step-${step})` }
-}
+const preloadTotal = PRELOAD.kb.reduce((sum, kb) => sum + kb, 0)
+const preloadWithinBudget = PRELOAD.kb.length <= FONT_BUDGET_FILES && preloadTotal <= FONT_BUDGET_KB
 
-function pick<T extends string>(value: unknown, options: readonly T[]): T | undefined {
-  return options.find(option => option === value)
-}
+// The values shipped in main.css, checked like `pnpm check:contrast` does
+const colors = themeColors(mainCss)
+const report = checkContrast(colors)
 
-const route = useRoute()
-const type = computed<VariantId>(() => pick(route.query.type, VARIANTS) ?? CHOSEN_TYPE)
-const explicitPalette = computed(() => pick(route.query.palette, VARIANTS))
-const palette = computed<VariantId>(() => explicitPalette.value ?? CHOSEN_PALETTE)
-const theme = computed(() => pick(route.query.theme, THEMES))
-
-// Plain links with a query string: works without JS and keeps aria-current accurate
-function hrefWith(change: QueryState): string {
-  const state: QueryState = { type: type.value, palette: explicitPalette.value, theme: theme.value, ...change }
-  const entries = Object.entries(state).filter((entry): entry is [string, string] => entry[1] !== undefined)
-  return `?${new URLSearchParams(entries).toString()}`
-}
-
-const controls = computed(() => [
-  {
-    id: 'type',
-    label: 'Tipografia',
-    options: VARIANTS.map(id => ({
-      label: `${id.toUpperCase()} · ${TYPE_PAIRINGS[id].short}${id === CHOSEN_TYPE ? ' · escolhida' : ''}`,
-      href: hrefWith({ type: id }),
-      current: type.value === id,
-    })),
-  },
-  {
-    id: 'palette',
-    label: 'Paleta',
-    options: VARIANTS.map(id => ({
-      label: `${id.toUpperCase()} · ${PALETTES[id].name}${id === CHOSEN_PALETTE ? ' · escolhida' : ''}`,
-      href: hrefWith({ palette: id }),
-      current: palette.value === id,
-    })),
-  },
-  {
-    id: 'theme',
-    label: 'Tema',
-    options: [
-      { label: 'Sistema', href: hrefWith({ theme: undefined }), current: theme.value === undefined },
-      ...THEMES.map(id => ({ label: THEME_LABEL[id], href: hrefWith({ theme: id }), current: theme.value === id })),
-    ],
-  },
-])
-
-const pairing = computed(() => TYPE_PAIRINGS[type.value])
-
-const preloadRows = computed(() => pairing.value.preload.map((estimate) => {
-  const total = estimate.kb.reduce((sum, kb) => sum + kb, 0)
-  return {
-    label: estimate.label,
-    total: formatKb(total),
-    withinBudget: estimate.kb.length <= FONT_BUDGET_FILES && total <= FONT_BUDGET_KB,
-  }
+const contrastPanels = THEMES.map(theme => ({
+  theme,
+  label: THEME_LABEL[theme],
+  swatches: Object.entries(colors[theme]).map(([token, color]) => ({ token, value: toCss(color), inGamut: isInSrgbGamut(color) })),
+  rows: report.results.filter(result => result.theme === theme).map(result => ({
+    ...result,
+    key: `${result.foreground}-${result.background}`,
+    ratioLabel: formatRatio(result.ratio),
+    minimum: formatRatio(AA_MINIMUM[result.use]),
+  })),
 }))
 
-const contrastPanels = computed(() => THEMES.map((themeName) => {
-  const { colors, note } = PALETTES[palette.value].themes[themeName]
-  const tokens = Object.keys(colors) as ColorToken[]
-  return {
-    theme: themeName,
-    label: THEME_LABEL[themeName],
-    note,
-    swatches: tokens.map(token => ({ token, value: toCss(colors[token]), inGamut: isInSrgbGamut(colors[token]) })),
-    rows: CONTRAST_PAIRS.map((pair) => {
-      const ratio = contrastRatio(colors[pair.foreground], colors[pair.background])
-      return {
-        ...pair,
-        key: `${pair.foreground}-${pair.background}`,
-        ratio: formatRatio(ratio),
-        minimum: formatRatio(AA_MINIMUM[pair.use]),
-        passes: meetsAA(ratio, pair.use),
-      }
-    }),
-  }
-}))
+const motionRows = [
+  ...Object.entries(DURATIONS).map(([name, ms]) => ({ token: `--dur-${name}`, value: `${ms} ms` })),
+  ...Object.entries(EASINGS).map(([name, value]) => ({ token: `--ease-${name}`, value })),
+  ...Object.entries(DISTANCES).map(([name, px]) => ({ token: `--distance-${name}`, value: `${px} px` })),
+]
 
-useHead({
-  title: 'Styleguide (dev)',
-  htmlAttrs: {
-    'data-sg': '',
-    'data-type': type,
-    'data-palette': palette,
-    'data-theme': theme,
-  },
-  style: [{ key: 'sg-tokens', textContent: TOKENS_CSS }],
-})
+useHead({ title: 'Styleguide (dev)' })
 </script>
 
 <template>
   <div class="sg">
     <header class="sg-header">
       <p class="sg-eyebrow">
-        F01-T1 · só em desenvolvimento
+        F01-T2 · só em desenvolvimento
       </p>
       <h1 class="sg-title">
         Styleguide
       </h1>
       <p class="sg-lede">
-        Duas direções candidatas, a partir da design-direction e das referências. Tipografia e paleta trocam separadamente; o tema segue o sistema até você escolher um.
+        Tokens finais de <code class="sg-mono">app/assets/css/main.css</code>: tipografia A (Fraunces, Inter e JetBrains Mono), paleta B "Noite e rosa" e cantos retos. O tema segue o sistema até você usar o botão de tema no topo.
       </p>
-      <nav
-        class="sg-controls"
-        aria-label="Controles da styleguide"
-      >
-        <div
-          v-for="control in controls"
-          :key="control.id"
-        >
-          <p
-            :id="`sg-control-${control.id}`"
-            class="sg-eyebrow"
-          >
-            {{ control.label }}
-          </p>
-          <ul
-            class="sg-control__options"
-            :aria-labelledby="`sg-control-${control.id}`"
-          >
-            <li
-              v-for="option in control.options"
-              :key="option.href"
-            >
-              <a
-                class="sg-option"
-                :href="option.href"
-                :aria-current="option.current ? 'true' : undefined"
-              >{{ option.label }}</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
     </header>
 
     <main>
@@ -483,7 +196,7 @@ useHead({
           Escala tipográfica
         </h2>
         <p class="sg-note">
-          {{ pairing.name }}. Tamanhos fluidos entre {{ FLUID_VIEWPORT.minPx }} e {{ FLUID_VIEWPORT.maxPx }} px de largura; display a partir do passo {{ DISPLAY_FROM_STEP }}.
+          Tamanhos fluidos entre {{ FLUID_VIEWPORT.minPx }} e {{ FLUID_VIEWPORT.maxPx }} px de largura; display a partir do passo {{ DISPLAY_FROM_STEP }}. Utilitários <code class="sg-mono">text-step--1</code> a <code class="sg-mono">text-step-7</code>.
         </p>
         <ul class="sg-scale">
           <li
@@ -536,28 +249,26 @@ useHead({
             </p>
           </div>
         </div>
-        <template v-if="type === 'a'">
-          <p class="sg-eyebrow">
-            Eixos variáveis da Fraunces
-          </p>
-          <ul class="sg-axes">
-            <li
-              v-for="axis in DISPLAY_AXES"
-              :key="axis.label"
-              class="sg-scale__row"
+        <p class="sg-eyebrow">
+          Eixos variáveis da Fraunces
+        </p>
+        <ul class="sg-axes">
+          <li
+            v-for="axis in DISPLAY_AXES"
+            :key="axis.label"
+            class="sg-scale__row"
+          >
+            <p class="sg-eyebrow">
+              {{ axis.label }}
+            </p>
+            <p
+              class="sg-specimen sg-font-display"
+              :style="{ ...stepStyle(5), fontVariationSettings: axis.settings }"
             >
-              <p class="sg-eyebrow">
-                {{ axis.label }}
-              </p>
-              <p
-                class="sg-specimen sg-font-display"
-                :style="{ ...stepStyle(5), fontVariationSettings: axis.settings }"
-              >
-                {{ SAMPLE.title }}
-              </p>
-            </li>
-          </ul>
-        </template>
+              {{ SAMPLE.title }}
+            </p>
+          </li>
+        </ul>
       </section>
 
       <section
@@ -675,6 +386,17 @@ useHead({
               href="#sg-colors"
             >Ir para cores e contraste</a>
           </p>
+          <ul class="sg-status">
+            <li class="sg-status__item sg-status__item--success">
+              [PLACEHOLDER] Publicado
+            </li>
+            <li class="sg-status__item sg-status__item--warning">
+              [PLACEHOLDER] Tradução desatualizada
+            </li>
+            <li class="sg-status__item sg-status__item--danger">
+              [PLACEHOLDER] Falha ao salvar
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -692,14 +414,14 @@ useHead({
           Cores e contraste
         </h2>
         <p class="sg-note">
-          Paleta {{ palette.toUpperCase() }} · {{ PALETTES[palette].name }}, inspirada em {{ PALETTES[palette].reference }}. Mínimos AA: texto 4,5:1; UI 3:1.
+          Tokens semânticos lidos do main.css (light-dark), cada painel fixado num tema. Mínimos AA: texto 4,5:1; UI 3:1. O mesmo cálculo roda em <code class="sg-mono">pnpm check:contrast</code>.
         </p>
         <div class="sg-panels">
           <section
             v-for="panel in contrastPanels"
             :key="panel.theme"
             class="sg-panel"
-            :data-sg-panel="panel.theme"
+            :style="{ colorScheme: panel.theme }"
             :aria-labelledby="`sg-panel-${panel.theme}`"
           >
             <h3
@@ -754,20 +476,77 @@ useHead({
                   >
                     <td><code class="sg-mono">{{ row.foreground }}</code> × <code class="sg-mono">{{ row.background }}</code></td>
                     <td>{{ USE_LABEL[row.use] }} (≥ {{ row.minimum }})</td>
-                    <td>{{ row.ratio }}</td>
-                    <td>{{ row.passes ? '✓ passa' : '✗ não passa' }}</td>
+                    <td>{{ row.ratioLabel }}</td>
+                    <td>{{ row.pass ? '✓ passa' : '✗ não passa' }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <p
-              v-if="panel.note"
-              class="sg-note"
-            >
-              {{ panel.note }}
-            </p>
           </section>
         </div>
+      </section>
+
+      <section
+        class="sg-section"
+        aria-labelledby="sg-space"
+      >
+        <p class="sg-eyebrow">
+          07
+        </p>
+        <h2
+          id="sg-space"
+          class="sg-section__title"
+        >
+          Espaço, forma e motion
+        </h2>
+        <p class="sg-note">
+          Base de 4 px (<code class="sg-mono">--spacing</code>), mais <code class="sg-mono">--spacing-gutter</code> e <code class="sg-mono">--spacing-section</code> fluidos. Cantos retos (<code class="sg-mono">--radius-control/card/chip: 0</code>); a estrutura vem das hairlines.
+        </p>
+        <ul class="sg-spacing">
+          <li
+            v-for="step in SPACING_STEPS"
+            :key="step"
+            class="sg-spacing__row"
+          >
+            <code class="sg-mono">{{ step }}</code>
+            <span
+              class="sg-spacing__bar"
+              aria-hidden="true"
+              :style="{ inlineSize: `calc(var(--spacing) * ${step})` }"
+            />
+          </li>
+        </ul>
+        <div
+          class="sg-table-wrap"
+          role="region"
+          tabindex="0"
+          aria-label="Tokens de motion"
+        >
+          <table class="sg-table">
+            <thead>
+              <tr>
+                <th scope="col">
+                  Token
+                </th>
+                <th scope="col">
+                  Valor
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in motionRows"
+                :key="row.token"
+              >
+                <td><code class="sg-mono">{{ row.token }}</code></td>
+                <td><code class="sg-mono">{{ row.value }}</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sg-note">
+          Com movimento reduzido, as durações acima de <code class="sg-mono">--dur-fast</code> caem para ela e as distâncias vão a zero.
+        </p>
       </section>
 
       <section
@@ -775,7 +554,7 @@ useHead({
         aria-labelledby="sg-languages"
       >
         <p class="sg-eyebrow">
-          07
+          08
         </p>
         <h2
           id="sg-languages"
@@ -815,7 +594,7 @@ useHead({
         aria-labelledby="sg-fonts"
       >
         <p class="sg-eyebrow">
-          08
+          09
         </p>
         <h2
           id="sg-fonts"
@@ -824,7 +603,7 @@ useHead({
           Fontes e orçamento
         </h2>
         <p class="sg-note">
-          {{ pairing.name }} ({{ pairing.reference }}). Todas sob a SIL Open Font License 1.1, self-hosted via Fontsource 5.3.0. Tamanhos do subset latin em WOFF2; o latin-ext só é baixado quando a página usa esses caracteres.
+          Todas sob a SIL Open Font License 1.1; aqui via Fontsource 5.3.0, self-hosted pelo @nuxt/fonts na F01-T3. Tamanhos do subset latin em WOFF2; o latin-ext só é baixado quando a página usa esses caracteres.
         </p>
         <div
           class="sg-table-wrap"
@@ -854,7 +633,7 @@ useHead({
             </thead>
             <tbody>
               <template
-                v-for="font in pairing.fonts"
+                v-for="font in FONTS"
                 :key="font.family"
               >
                 <tr
@@ -871,33 +650,36 @@ useHead({
             </tbody>
           </table>
         </div>
-        <h3 class="sg-panel__title">
-          Preload da primeira tela (até {{ FONT_BUDGET_FILES }} arquivos e {{ formatKb(FONT_BUDGET_KB) }})
-        </h3>
-        <ul class="sg-budget">
-          <li
-            v-for="row in preloadRows"
-            :key="row.label"
-          >
-            {{ row.label }}: {{ row.total }} · {{ row.withinBudget ? '✓ dentro do orçamento' : '✗ acima do orçamento' }}
-          </li>
-        </ul>
+        <p class="sg-note">
+          Preload da primeira tela (até {{ FONT_BUDGET_FILES }} arquivos e {{ formatKb(FONT_BUDGET_KB) }}): {{ PRELOAD.label }}, {{ formatKb(preloadTotal) }} · {{ preloadWithinBudget ? '✓ dentro do orçamento' : '✗ acima do orçamento' }}
+        </p>
       </section>
     </main>
   </div>
 </template>
 
 <style scoped>
+/* Only tokens from main.css; `--sg-*` are layout sizes of this page alone */
 .sg {
+  --sg-gap-xs: calc(var(--spacing) * 1);
+  --sg-gap-sm: calc(var(--spacing) * 2);
+  --sg-gap-md: calc(var(--spacing) * 4);
+  --sg-gap-lg: calc(var(--spacing) * 6);
+  --sg-gap-xl: calc(var(--spacing) * 8);
+  --sg-gap-2xl: calc(var(--spacing) * 12);
+  --sg-panel-min: 22rem;
+  --sg-swatch-min: 7.5rem;
+  --sg-card-max: 26rem;
+
   max-inline-size: var(--container-max);
   margin-inline: auto;
-  padding: var(--space-12) var(--space-gutter);
+  padding: var(--sg-gap-2xl) var(--spacing-gutter);
 }
 
 .sg-header {
   display: grid;
-  gap: var(--space-6);
-  padding-block-end: var(--space-12);
+  gap: var(--sg-gap-lg);
+  padding-block-end: var(--sg-gap-2xl);
 }
 
 .sg-eyebrow {
@@ -905,7 +687,7 @@ useHead({
   color: var(--color-text-muted);
   font-family: var(--font-mono);
   font-size: var(--text-step--1);
-  line-height: var(--leading-step--1);
+  line-height: var(--text-step--1--line-height);
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
@@ -915,14 +697,14 @@ useHead({
 .sg-card__title,
 .sg-font-display {
   font-family: var(--font-display);
-  font-weight: var(--weight-display);
-  letter-spacing: var(--tracking-display);
+  font-weight: var(--font-weight-regular);
 }
 
 .sg-title {
   margin: 0;
   font-size: var(--text-step-7);
-  line-height: var(--leading-step-7);
+  line-height: var(--text-step-7--line-height);
+  letter-spacing: var(--text-step-7--letter-spacing);
   text-wrap: balance;
 }
 
@@ -930,62 +712,22 @@ useHead({
   margin: 0;
   max-inline-size: var(--container-reading);
   font-size: var(--text-step-1);
-  line-height: var(--leading-step-1);
+  line-height: var(--text-step-1--line-height);
   text-wrap: pretty;
-}
-
-.sg-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-}
-
-.sg-control__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: var(--space-2) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sg-option {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: var(--target-min);
-  padding-inline: var(--space-4);
-  border: var(--border-hairline) solid var(--color-border);
-  border-radius: var(--radius-control);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: var(--text-step--1);
-  letter-spacing: var(--tracking-label);
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: border-color var(--dur-instant) var(--ease-out);
-}
-
-.sg-option:hover {
-  border-color: var(--color-text);
-}
-
-.sg-option[aria-current='true'] {
-  border-color: var(--color-text);
-  background: var(--color-text);
-  color: var(--color-bg);
 }
 
 .sg-section {
   display: grid;
-  gap: var(--space-6);
-  padding-block: var(--space-12);
+  gap: var(--sg-gap-lg);
+  padding-block: var(--sg-gap-2xl);
   border-block-start: var(--border-hairline) solid var(--color-border);
 }
 
 .sg-section__title {
   margin: 0;
   font-size: var(--text-step-4);
-  line-height: var(--leading-step-4);
+  line-height: var(--text-step-4--line-height);
+  letter-spacing: var(--text-step-4--letter-spacing);
   text-wrap: balance;
 }
 
@@ -999,23 +741,14 @@ useHead({
 
 .sg-scale,
 .sg-axes,
-.sg-swatches,
-.sg-budget {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sg-scale,
-.sg-axes,
 .sg-specimens {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--sg-gap-xl);
 }
 
 .sg-scale__row {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--sg-gap-sm);
 }
 
 .sg-specimen {
@@ -1025,12 +758,12 @@ useHead({
 }
 
 .sg-specimen--strong {
-  font-weight: var(--weight-strong);
+  font-weight: var(--font-weight-strong);
 }
 
 .sg-prose {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--sg-gap-md);
   max-inline-size: var(--container-reading);
 }
 
@@ -1044,14 +777,12 @@ useHead({
   max-inline-size: var(--container-reading);
   color: var(--color-text-muted);
   font-size: var(--text-step--1);
-  line-height: var(--leading-step--1);
+  line-height: var(--text-step--1--line-height);
 }
 
 .sg-link {
-  color: var(--color-link);
+  color: var(--color-accent);
   text-decoration-line: underline;
-  text-decoration-thickness: var(--underline-thickness);
-  text-underline-offset: var(--underline-offset);
   transition: background-color var(--dur-instant) var(--ease-out), color var(--dur-instant) var(--ease-out);
 }
 
@@ -1062,13 +793,13 @@ useHead({
 
 .sg-figure {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--sg-gap-sm);
   margin: 0;
 }
 
 .sg-code {
   overflow-x: auto;
-  padding: var(--space-6);
+  padding: var(--sg-gap-lg);
   border: var(--border-hairline) solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
@@ -1078,22 +809,22 @@ useHead({
   margin: 0;
   font-family: var(--font-mono);
   font-size: var(--text-step--1);
-  line-height: var(--leading-step-0);
+  line-height: var(--text-step-0--line-height);
   tab-size: 2;
 }
 
 .sg-components {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--sg-gap-xl);
   justify-items: start;
 }
 
 .sg-card {
   display: grid;
-  gap: var(--space-3);
+  gap: calc(var(--spacing) * 3);
   inline-size: 100%;
   max-inline-size: var(--sg-card-max);
-  padding: var(--space-6);
+  padding: var(--sg-gap-lg);
   border: var(--border-hairline) solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
@@ -1102,7 +833,8 @@ useHead({
 .sg-card__title {
   margin: 0;
   font-size: var(--text-step-3);
-  line-height: var(--leading-step-3);
+  line-height: var(--text-step-3--line-height);
+  letter-spacing: var(--text-step-3--letter-spacing);
   text-wrap: balance;
 }
 
@@ -1113,8 +845,6 @@ useHead({
 
 .sg-card__title a:hover {
   text-decoration-line: underline;
-  text-decoration-thickness: var(--underline-thickness);
-  text-underline-offset: var(--underline-offset);
 }
 
 .sg-card__meta {
@@ -1127,17 +857,17 @@ useHead({
 .sg-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--sg-gap-md);
 }
 
 .sg-button {
-  min-block-size: var(--target-min);
-  padding-inline: var(--space-6);
+  min-block-size: var(--target-comfortable);
+  padding-inline: var(--sg-gap-lg);
   border: var(--border-hairline) solid transparent;
   border-radius: var(--radius-control);
   font-family: var(--font-sans);
   font-size: var(--text-step-0);
-  font-weight: var(--weight-strong);
+  font-weight: var(--font-weight-strong);
   line-height: var(--leading-none);
   cursor: pointer;
   transition: background-color var(--dur-instant) var(--ease-out);
@@ -1152,10 +882,6 @@ useHead({
   background: color-mix(in oklch, var(--color-accent), var(--color-text) var(--state-hover-mix));
 }
 
-.sg-button--primary:active:enabled {
-  background: color-mix(in oklch, var(--color-accent), var(--color-text) var(--state-active-mix));
-}
-
 .sg-button--secondary {
   border-color: var(--color-text);
   background: transparent;
@@ -1166,26 +892,51 @@ useHead({
   background: var(--color-surface);
 }
 
-.sg-button--secondary:active:enabled {
-  background: color-mix(in oklch, var(--color-surface), var(--color-text) var(--state-hover-mix));
-}
-
 .sg-button:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
 
+.sg-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-gap-md);
+}
+
+.sg-status__item {
+  padding: var(--sg-gap-xs) var(--sg-gap-sm);
+  border: var(--border-hairline) solid currentcolor;
+  border-radius: var(--radius-chip);
+  font-family: var(--font-mono);
+  font-size: var(--text-step--1);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.sg-status__item--success {
+  color: var(--color-success);
+}
+
+.sg-status__item--warning {
+  color: var(--color-warning);
+}
+
+.sg-status__item--danger {
+  color: var(--color-danger);
+}
+
 .sg-panels {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sg-panel-min)), 1fr));
-  gap: var(--space-6);
+  gap: var(--sg-gap-lg);
 }
 
+/* color-scheme pins the panel to one theme; its colors resolve light-dark() again inside it */
 .sg-panel {
   display: grid;
   align-content: start;
-  gap: var(--space-6);
-  padding: var(--space-6);
+  gap: var(--sg-gap-lg);
+  padding: var(--sg-gap-lg);
   border: var(--border-hairline) solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-bg);
@@ -1196,25 +947,25 @@ useHead({
   margin: 0;
   font-family: var(--font-sans);
   font-size: var(--text-step-1);
-  font-weight: var(--weight-strong);
-  line-height: var(--leading-step-1);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--text-step-1--line-height);
 }
 
 .sg-swatches {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--sg-swatch-min), 1fr));
-  gap: var(--space-4);
+  gap: var(--sg-gap-md);
 }
 
 .sg-swatch {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--sg-gap-xs);
   font-size: var(--text-step--1);
-  line-height: var(--leading-step--1);
+  line-height: var(--text-step--1--line-height);
 }
 
 .sg-swatch__chip {
-  block-size: var(--space-12);
+  block-size: var(--sg-gap-2xl);
   border: var(--border-hairline) solid var(--color-border);
   border-radius: var(--radius-chip);
 }
@@ -1222,6 +973,26 @@ useHead({
 .sg-swatch__value {
   color: var(--color-text-muted);
   overflow-wrap: anywhere;
+}
+
+.sg-spacing {
+  display: grid;
+  gap: var(--sg-gap-sm);
+}
+
+.sg-spacing__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-gap-md);
+}
+
+.sg-spacing__row code {
+  min-inline-size: var(--sg-gap-xl);
+}
+
+.sg-spacing__bar {
+  block-size: var(--sg-gap-md);
+  background: var(--color-accent);
 }
 
 .sg-table-wrap {
@@ -1232,46 +1003,41 @@ useHead({
   inline-size: 100%;
   border-collapse: collapse;
   font-size: var(--text-step--1);
-  line-height: var(--leading-step--1);
+  line-height: var(--text-step--1--line-height);
   font-variant-numeric: tabular-nums;
 }
 
 .sg-table th,
 .sg-table td {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--sg-gap-sm) calc(var(--spacing) * 3);
   border-block-end: var(--border-hairline) solid var(--color-border);
   text-align: start;
   vertical-align: top;
 }
 
 .sg-table th {
-  font-weight: var(--weight-strong);
+  font-weight: var(--font-weight-strong);
 }
 
 .sg-languages {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--sg-gap-xl);
   margin: 0;
 }
 
 .sg-language {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--sg-gap-sm);
 }
 
 .sg-language dd {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--sg-gap-sm);
   margin: 0;
 }
 
 .sg-language__text {
   margin: 0;
   max-inline-size: var(--container-reading);
-}
-
-.sg-budget {
-  display: grid;
-  gap: var(--space-2);
 }
 </style>
