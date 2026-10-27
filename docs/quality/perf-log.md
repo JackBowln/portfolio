@@ -14,6 +14,10 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 411 ms | 0 ms | 0 | — |
 | 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | mobile | 99 (±2) | 100 | 100 | 100 | 1811 ms | 0 ms | 0 | Esqueleto indexável; LCP 11 ms acima da meta de 1,8 s. Elemento LCP: `<h1>` |
 | 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 382 ms | 0 ms | 0 | — |
+| 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` | R1 `/` | mobile | 99 (±1) | 100 | 100 | 100 | 1815 ms | 0 ms | 0 | Tailwind 4 + tokens: primeira folha de CSS (3,2 kB gzip), que bloqueia a renderização. FCP 1708 ms. Elemento LCP: link da navegação (o `<h1>` do esqueleto é menor) |
+| 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 370 ms | 0 ms | 0 | — |
+| 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | mobile | 99 | 100 | 100 | 100 | 1812 ms | 0 ms | 0 | LCP 12 ms acima da meta de 1,8 s, como na F02-T3; as fontes (F01-T3) e o layout (F01-T5) remedem |
+| 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 457 ms | 0 ms | 0 | — |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -28,3 +32,4 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | R3 e R8 `/blog/x`, `/de/blog/x` | 102,20 | 0,00 | 120 / 25 | Acima dos 100 KB iniciais; limite revisto pelo owner |
 | 2026-10-26 | F02-T2 (não commitado, base `af5738e`) | E404 | 103,38 | 0,92 | 125 / 30 | — |
 | 2026-10-26 | F02-T3 (não commitado, base `1f3bcd5`) | R1 / R3 / R6 | 104,92 / 104,87 / 104,87 | 0,00 | 125 / 120 / 125 | `usePageSeo` + helpers de head (+~3 kB) |
+| 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | R1 / R3 / R6 | 105,54 / 105,49 / 105,49 | 3,23 | 125 / 120 / 125 | Tailwind 4 (preflight + utilitários usados + tokens `static`) e o toggle de tema (+0,6 kB de JS) |

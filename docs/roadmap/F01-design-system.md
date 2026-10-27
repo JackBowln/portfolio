@@ -41,7 +41,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F01-T1 | RX-01, RNF-10 | `/frontend-design`, `/architecture-guardian` |
+| concluída | F01-T1 | RX-01, RNF-10 | `/frontend-design`, `/architecture-guardian` |
 
 **Objetivo.** Instalar `tailwindcss ~4.3` com `@tailwindcss/vite` e definir os tokens finais em `@theme`, com os temas por `data-theme` e `prefers-color-scheme`.
 
@@ -50,16 +50,36 @@
 **Fora do escopo.** Fontes (T3); a CSP do script inline (F03-T4, que calcula o hash).
 
 **Critérios de aceite**
-- [ ] Tokens de cor (OKLCH), tipografia fluida, espaço, raios, camadas, breakpoints e motion conforme o ADR-0010, com nomes semânticos.
-- [ ] `pnpm check:contrast` valida todos os pares e falha abaixo de AA (falha demonstrada com um par ruim).
-- [ ] Trocar de tema não causa FOUC; a preferência fica em `localStorage` e **nenhum cookie é emitido**.
-- [ ] Sem valores mágicos fora dos tokens (revisão pelo `/frontend-design`).
-- [ ] O `app/assets/css/styleguide-variants.css` (temporário da F01-T1) foi removido, e a styleguide lê os tokens finais; o `check:contrast` reaproveita `shared/design/contrast.ts`.
+- [x] Tokens de cor (OKLCH), tipografia fluida, espaço, raios, camadas, breakpoints e motion conforme o ADR-0010, com nomes semânticos.
+- [x] `pnpm check:contrast` valida todos os pares e falha abaixo de AA (falha demonstrada com um par ruim).
+- [x] Trocar de tema não causa FOUC; a preferência fica em `localStorage` e **nenhum cookie é emitido**.
+- [x] Sem valores mágicos fora dos tokens (revisão pelo `/frontend-design`).
+- [x] O `app/assets/css/styleguide-variants.css` (temporário da F01-T1) foi removido, e a styleguide lê os tokens finais; o `check:contrast` reaproveita `shared/design/contrast.ts`.
 
 **Testes**
 - Unit: as funções de contraste do script.
 - Nuxt: o toggle de tema grava e lê a preferência e respeita `prefers-color-scheme`.
 - API: a resposta da home não contém `Set-Cookie`.
+
+**Resultado (27/10/2026).**
+- `tailwindcss` e `@tailwindcss/vite` 4.3.3. Tokens em `app/assets/css/main.css`:
+  - `@theme static` com reset dos padrões do Tailwind;
+  - semânticos em `light-dark()`;
+  - `success`, `warning` e `danger` novos.
+- Tema:
+  - `shared/design/theme.ts` (script inline estático);
+  - `useTheme` e `LayoutThemeToggle` (2 estados, `aria-pressed`);
+  - chave `layout.themeToggle.label` nos 5 idiomas.
+- `pnpm check:contrast`: 16 pares × 2 temas, todos em AA. A styleguide lê o `main.css`. Saíram o `styleguide-variants.css` e as 3 fontes da variação B.
+- Decisões no ADR-0010 ("Decisões da F01-T2") e na design-direction §9.
+- Testes:
+  - `tests/unit/{check-contrast,design-tokens}.test.ts`;
+  - `tests/nuxt/theme-toggle.test.ts`;
+  - `tests/api/theme.spec.ts`;
+  - `tests/e2e/theme.spec.ts`, sem FOUC com o JS do app bloqueado e sem JS;
+  - `tests/a11y/theme.spec.ts` e o a11y-dev da styleguide.
+- CSS público com 3,23 kB gzip, JS +0,6 kB; Lighthouse R1/R6 com 99–100 (perf-log).
+- Pendência: o LCP mobile do R6 fica 12 ms acima da meta de 1,8 s, como na F02-T3; as fontes (F01-T3) e o layout (F01-T5) remedem.
 
 ---
 

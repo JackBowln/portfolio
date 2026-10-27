@@ -162,6 +162,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **27/10/2026 — F03-T1.** O `npm view` confirmou `better-auth` 1.7.13 (25/10/2026, MIT), com peers `drizzle-orm ^0.45.2` e `drizzle-kit >=0.31.4` (compatíveis); o zod deduplica em 4.6.7. O `@better-auth/cli` está parado na 1.4.21 e não foi usado. Na 1.7, `internalAdapter.createUser` exige uma fonte de provisionamento (`{ method }`), e existe o gate `user.validateUserInfo`, candidato para a allowlist do GitHub na F03-T2. Com `disableIpTracking`, o Better Auth grava `''` em `ip_address`. Worker total: 1,41 MB (395 kB gzip).
 
+**27/10/2026 — F01-T2.** Instalados `tailwindcss` e `@tailwindcss/vite` 4.3.3 (MIT). Eles trazem o `lightningcss` (MPL-2.0, só no build, como o `axe-core`). Com `@theme`, o Tailwind 4.3 emite só as variáveis usadas por utilitários; `@theme static` emite todas. A varredura automática inclui `app/pages/dev`, por isso existe o `@source not` no `main.css`. O `light-dark()` funciona dentro de `@theme`, e o valor computado de `color-scheme` é o declarado (`light dark`) quando o tema segue o sistema.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

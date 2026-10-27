@@ -2,7 +2,7 @@
 
 Portfólio profissional e blog pessoal full-stack, com CMS próprio, em **Nuxt 4** na **Cloudflare** (Workers, D1, R2 e Workers AI). O conteúdo original é escrito em pt-BR e traduzido para en, es, de e fr com assistência de IA e revisão humana.
 
-> **Estado:** a fase **F00** do [roadmap](docs/roadmap/README.md) está concluída, com toolchain, lint, testes, CI, Cloudflare e os spikes de CPU/cache e Lighthouse. A F01-T1 também, com a direção visual escolhida, e a F02 avança com o banco D1 (F02-T1), a infra do servidor (F02-T4), as rotas nos 5 idiomas (F02-T2) e o SEO base (F02-T3), ainda com páginas-esqueleto. A F03 começou com o Better Auth (F03-T1) e o RBAC no servidor (F03-T3), ainda sem método de login.
+> **Estado:** a fase **F00** do [roadmap](docs/roadmap/README.md) está concluída, com toolchain, lint, testes, CI, Cloudflare e os spikes de CPU/cache e Lighthouse. A F01-T1 também, com a direção visual escolhida, e a F01-T2, com os tokens do Tailwind 4 e os temas claro e escuro, e a F02 avança com o banco D1 (F02-T1), a infra do servidor (F02-T4), as rotas nos 5 idiomas (F02-T2) e o SEO base (F02-T3), ainda com páginas-esqueleto. A F03 começou com o Better Auth (F03-T1) e o RBAC no servidor (F03-T3), ainda sem método de login.
 
 ## Destaques
 

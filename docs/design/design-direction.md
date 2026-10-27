@@ -98,6 +98,8 @@ Todo par texto/fundo passa pelo script de contraste da F01-T2. O tema padrão (c
 | Forma | Cantos retos, que acompanharam a tipografia A na styleguide; revisável na F01-T2 | 2026-10-25 |
 | Paleta e acento | **B, "Noite e rosa"**: azul-noite profundo, papel quente e um acento rosa; todos os pares passam em AA nos dois temas. Escolhida pelo Claude Code por delegação do owner, com base nas referências (abaixo); revisável pelo owner | 2026-10-25 |
 | Tema padrão | Claro e escuro; o padrão segue `prefers-color-scheme`, com troca manual guardada em `localStorage` (Q-03) | 2026-10-25 |
+| Tokens finais | Em `app/assets/css/main.css` (F01-T2), com os valores da F01-T1. Novos: `success`, `warning` e `danger`, todos em AA nos dois temas; revisáveis pelo owner na `/dev/styleguide` | 2026-10-27 |
+| Troca de tema | Botão de 2 estados ("Tema escuro", `aria-pressed`) no header; a escolha fica em `localStorage` e vence o sistema dali em diante | 2026-10-27 |
 | Referências visuais | [ingrassiadaniel.it](https://ingrassiadaniel.it/), [emotion-agency.com](https://emotion-agency.com/), [junkbranding.com](https://www.junkbranding.com/) (Q-02) | 2026-10-25 |
 
 ### Leitura das referências (F01-T1)

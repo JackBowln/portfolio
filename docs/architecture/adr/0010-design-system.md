@@ -22,7 +22,7 @@
 3. **Temas claro e escuro.**
    - Seguem `prefers-color-scheme` por padrão; o toggle manual fica em `localStorage`, nunca em cookie.
    - Um script inline mínimo no `<head>` aplica `data-theme` antes da pintura e é permitido na CSP por hash ([ADR-0012](0012-seguranca.md)).
-   - O tema padrão aguarda a resposta da Q-03 do PRD.
+   - O padrão segue o sistema (Q-03, respondida em 2026-10-25).
 4. **Fontes.**
    - Licença livre (OFL, Google Fonts, Fontshare, ou outra explicitamente gratuita para web), self-hosted pelo `@nuxt/fonts`, em WOFF2, com subsets `latin` e `latin-ext` (diacríticos de pt, es, de e fr).
    - `font-display: swap` com fallback métrico (`size-adjust`) e **no máximo 2 arquivos com preload**. Fontes variáveis são preferidas.
@@ -33,6 +33,31 @@
    - Ícones são SVG inline versionados, sem fonte de ícones.
 6. **Admin.** Usa os mesmos tokens e componentes mais densos. Uma biblioteca headless para o admin (por exemplo, para comboboxes) só entra com justificativa na tarefa e nunca no bundle público.
 7. **Proibido:** valores mágicos (cores, espaços e tamanhos fora dos tokens); `!important` fora de utilitários de acessibilidade; CSS que esconda conteúdo à espera de JS ([ADR-0011](0011-motion.md)).
+
+### Decisões da F01-T2 (owner, 2026-10-27)
+
+- **Temas com `light-dark()`:**
+  - cada token semântico é declarado uma vez, `light-dark(<claro>, <escuro>)`, sobre a paleta bruta;
+  - o `:root` tem `color-scheme: light dark`, e `[data-theme]` força um dos dois;
+  - não há bloco duplicado entre a media query e o atributo, e sem JS o sistema decide.
+- **Toggle de 2 estados:** `LayoutThemeToggle` é um botão com `aria-pressed` ("Tema escuro").
+  - Grava `localStorage.theme`; não há como voltar a "seguir o sistema" depois de escolher.
+  - Fica invisível até montar, porque sem JS não funcionaria; o `visibility` preserva o espaço e evita CLS.
+  - O script inline (`THEME_INIT_SCRIPT` em `shared/design/theme.ts`) é estático, para o hash da CSP na F03-T4.
+- **Só tokens do projeto:**
+  - `@theme static { --*: initial; … }` apaga os padrões do Tailwind, então só os tokens geram utilitários;
+  - o `static` emite todas as variáveis, para componentes, a styleguide e o JS;
+  - valores arbitrários (`p-[13px]`) ficam proibidos por revisão.
+- **`@source not "../../pages/dev"`:** a styleguide usa CSS escopado e não adiciona utilitários ao CSS público.
+- **Nomes:**
+  - paleta bruta `night` (11 passos, com os valores aprovados na F01-T1), `paper`, `rose`, `green`, `amber` e `red`;
+  - semânticos `bg`, `surface`, `text`, `text-muted`, `border`, `accent` (também cor de link), `accent-contrast`, `focus`, `success`, `warning` e `danger`;
+  - `success`, `warning` e `danger` são novos; o owner pode revisá-los na styleguide;
+  - escala `--text-step--1…7` com `--line-height` e, do passo 3 em diante, `--letter-spacing`;
+  - espaço `--spacing` (4 px), `--spacing-gutter` e `--spacing-section`;
+  - em `:root`: `--dur-*`, `--distance-*`, `--z-*`, os tokens de foco, alvo (`--target-min` 24 px e `--target-comfortable` 44 px) e estado (`--state-hover-mix`, `--state-active-mix`, `--opacity-disabled`).
+- **Movimento reduzido:** as durações acima de `--dur-fast` caem para ela e as distâncias vão a zero.
+- **Fonte única do contraste:** `pnpm check:contrast` e a styleguide leem as cores do próprio `main.css` (`shared/design/css-tokens.ts`). `shared/design/tokens.ts` espelha o motion, os breakpoints e a escala, e um teste compara os dois.
 
 ## Alternativas consideradas
 
@@ -56,7 +81,7 @@
 
 ## Validação
 
-- F01-T2: script de contraste sobre os pares de tokens (falha abaixo de AA).
+- F01-T2: `pnpm check:contrast` com 16 pares × 2 temas, que falha abaixo de AA (falha demonstrada em `tests/unit/check-contrast.test.ts`); espelho TS × CSS em `tests/unit/design-tokens.test.ts`; sem FOUC e sem cookie (`tests/e2e/theme.spec.ts`, `tests/api/theme.spec.ts`); axe nos temas do sistema e forçados.
 - F01-T3: Lighthouse sem avisos de fonte; CLS = 0 no carregamento de fontes.
 
 ## Referências
