@@ -94,7 +94,7 @@ Todo par texto/fundo passa pelo script de contraste da F01-T2. O tema padrão (c
 
 | Item | Escolha | Data |
 |---|---|---|
-| Par tipográfico | **A**: Fraunces (display), Inter (texto e UI) e JetBrains Mono (código e rótulos), escolhido pelo owner. Para caber no preload de 120 KB, a F01-T3 deve carregar a Fraunces só com `opsz` + `wght` (112,8 KB com a Inter) | 2026-10-25 |
+| Par tipográfico | **A**: Fraunces (display), Inter (texto e UI) e JetBrains Mono (código e rótulos), escolhido pelo owner. A Fraunces vai só com `opsz` + `wght`. Na F01-T3 o preload foi trocado por fontes depois do `load` no primeiro acesso, com fallback métrico (ADR-0010, "Decisões da F01-T3") | 2026-10-25, revisto em 2026-10-27 |
 | Forma | Cantos retos, que acompanharam a tipografia A na styleguide; revisável na F01-T2 | 2026-10-25 |
 | Paleta e acento | **B, "Noite e rosa"**: azul-noite profundo, papel quente e um acento rosa; todos os pares passam em AA nos dois temas. Escolhida pelo Claude Code por delegação do owner, com base nas referências (abaixo); revisável pelo owner | 2026-10-25 |
 | Tema padrão | Claro e escuro; o padrão segue `prefers-color-scheme`, com troca manual guardada em `localStorage` (Q-03) | 2026-10-25 |

@@ -52,7 +52,7 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 | JS inicial (gzip, carregado até o `load`) | ≤ 120 KB | ≤ 125 KB | ≤ 125 KB |
 | JS adiado de motion (após o LCP) | 0 | ≤ 60 KB | ≤ 60 KB (estudo de caso) |
 | CSS (gzip) | ≤ 25 KB | ≤ 30 KB | ≤ 30 KB |
-| Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB | idem | idem |
+| Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB no caminho crítico (desde a F01-T3: 0, porque no primeiro acesso as fontes entram depois do `load`) | idem | idem |
 | Imagem LCP | ≤ 120 KB mobile / ≤ 200 KB desktop | idem | idem |
 | HTML (gzip) | ≤ 60 KB | ≤ 40 KB | ≤ 40 KB |
 | Requisições na primeira carga | ≤ 20 | ≤ 25 | ≤ 20 |

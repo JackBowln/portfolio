@@ -164,6 +164,13 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **27/10/2026 — F01-T2.** Instalados `tailwindcss` e `@tailwindcss/vite` 4.3.3 (MIT). Eles trazem o `lightningcss` (MPL-2.0, só no build, como o `axe-core`). Com `@theme`, o Tailwind 4.3 emite só as variáveis usadas por utilitários; `@theme static` emite todas. A varredura automática inclui `app/pages/dev`, por isso existe o `@source not` no `main.css`. O `light-dark()` funciona dentro de `@theme`, e o valor computado de `color-scheme` é o declarado (`light dark`) quando o tema segue o sistema.
 
+**27/10/2026 — F01-T3.** Instalado o `@nuxt/fonts` 1.2.0 (MIT), que trouxe o `fontless` 1.3.4, o `unifont` 1.0.3, o `fontaine` e o `@capsizecss/unpack` (todos MIT). Nenhum JS chega ao cliente. Comportamentos conferidos:
+
+- Com as famílias "manuais" (`src` local), ele gera os fallbacks métricos `"<Família> Fallback: <local>"` e processa as variáveis `--font-*`, inclusive dentro do `@theme` do Tailwind.
+- Em produção, com `features.inlineStyles`, os `@font-face` vão para um `<style>` inline no `<head>`, por um plugin Nitro `render:html`.
+- O preload `true` escolhe uma face por família.
+- O Lighthouse (simulação Lantern) conta no LCP a fonte usada pelo elemento LCP de texto sempre que ela termina antes do LCP observado. Localmente isso sempre acontece, por isso preload ou não preload dá o mesmo LCP; só tirar a fonte do caminho até o `load` resolveu.
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

@@ -59,6 +59,21 @@
 - **Movimento reduzido:** as durações acima de `--dur-fast` caem para ela e as distâncias vão a zero.
 - **Fonte única do contraste:** `pnpm check:contrast` e a styleguide leem as cores do próprio `main.css` (`shared/design/css-tokens.ts`). `shared/design/tokens.ts` espelha o motion, os breakpoints e a escala, e um teste compara os dois.
 
+### Decisões da F01-T3 (owner, 2026-10-27)
+
+- **Arquivos versionados no repositório:** WOFF2 do Fontsource 5.3.0 (OFL-1.1, com o `OFL.txt` ao lado) em `public/fonts/v5.3.0/`, com cache `immutable` pela versão no caminho.
+  - Fraunces `opsz`+`wght` e Inter `wght`, cada uma em normal e itálico; JetBrains Mono `wght` normal. Todas em `latin` e `latin-ext`.
+  - Os provedores remotos do `@nuxt/fonts` estão desligados: nem o build nem o visitante buscam fonte em terceiros.
+  - `local()` também está desligado, para não usar uma cópia instalada sem os nossos eixos.
+  - A lista fica em `shared/design/fonts.ts`, e o `nuxt.config` gera dela as famílias do `@nuxt/fonts`.
+- **Fallback métrico:** o `@nuxt/fonts` gera, por exemplo, `"Inter Fallback: Arial"` com `size-adjust` e `ascent-override`. Em produção ele leva os `@font-face` para um `<style>` no `<head>` (coberto pelo `style-src 'unsafe-inline'` do ADR-0012).
+- **Sem preload; fontes depois do `load` no primeiro acesso.** Isso substitui o preload de Fraunces + Inter previsto na design-direction §9.
+  - Medido no Lighthouse mobile (perf-log): com os 2 preloads, a nota caiu de 99 para 94 e o LCP subiu de 1,81 para 2,86 s; com preload só da Inter, ficou em 96 e 2,41 s; sem preload, em 95 e 2,41 s.
+  - O script inline `FONT_LOADING_SCRIPT` marca `html.fonts-pending`. Enquanto a classe existe, o CSS inline `FONT_PENDING_CSS` faz os tokens `--font-*` apontarem só para os fallbacks.
+  - No `load`, a classe sai: as fontes baixam e entram sem deslocar o layout (CLS 0,000), e `localStorage.fonts` faz os acessos seguintes usarem as fontes desde a primeira pintura.
+  - Sem JS, nada é segurado, e as fontes carregam como qualquer outra.
+  - Custo aceito: no primeiro acesso, a troca de fonte é visível depois do carregamento.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -82,7 +97,7 @@
 ## Validação
 
 - F01-T2: `pnpm check:contrast` com 16 pares × 2 temas, que falha abaixo de AA (falha demonstrada em `tests/unit/check-contrast.test.ts`); espelho TS × CSS em `tests/unit/design-tokens.test.ts`; sem FOUC e sem cookie (`tests/e2e/theme.spec.ts`, `tests/api/theme.spec.ts`); axe nos temas do sistema e forçados.
-- F01-T3: Lighthouse sem avisos de fonte; CLS = 0 no carregamento de fontes.
+- F01-T3: Lighthouse R1/R6 mobile 99 e desktop 100, CLS 0,000 e sem avisos de fonte; `tests/e2e/fonts.spec.ts` (nenhuma requisição externa nos 5 idiomas, faces carregadas cobrindo œ, ß, ñ e latin-ext, nenhuma fonte antes do `load` no primeiro acesso, troca sem deslocamento); `tests/api/fonts.spec.ts`; `tests/unit/fonts.test.ts`.
 
 ## Referências
 

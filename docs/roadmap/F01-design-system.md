@@ -87,7 +87,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F01-T2 | RX-01, RNF-01, RNF-03 | `/frontend-design`, `/performance-audit` |
+| concluída | F01-T2 | RX-01, RNF-01, RNF-03 | `/frontend-design`, `/performance-audit` |
 
 **Objetivo.** Configurar `@nuxt/fonts` com o par escolhido: WOFF2, subsets `latin` e `latin-ext` (este via `unicode-range`), preload de no máximo 2 arquivos e fallback com `size-adjust`.
 
@@ -96,14 +96,25 @@
 **Fora do escopo.** Mudar o par tipográfico (já aprovado na T1).
 
 **Critérios de aceite**
-- [ ] Nenhuma requisição de fonte a terceiros.
-- [ ] Primeira tela com ≤ 2 arquivos e ≤ 120 KB de fonte.
-- [ ] CLS = 0 atribuível a fontes (trace ou Lighthouse); diacríticos de pt, es, de e fr renderizados corretamente, incluindo "œ", "ß" e "ñ".
-- [ ] Os pacotes `@fontsource*` temporários da F01-T1 foram removidos das devDependencies.
+- [x] Nenhuma requisição de fonte a terceiros.
+- [x] Primeira tela com ≤ 2 arquivos e ≤ 120 KB de fonte.
+- [x] CLS = 0 atribuível a fontes (trace ou Lighthouse); diacríticos de pt, es, de e fr renderizados corretamente, incluindo "œ", "ß" e "ñ".
+- [x] Os pacotes `@fontsource*` temporários da F01-T1 foram removidos das devDependencies.
 
 **Testes**
 - `/performance-audit` na home placeholder (relatório anexado).
 - E2E: a página com texto de teste em 5 idiomas não dispara requisições a domínios externos.
+
+**Resultado (27/10/2026).**
+- `@nuxt/fonts` 1.2.0, sem nenhum provedor remoto. WOFF2 do Fontsource 5.3.0 versionados em `public/fonts/v5.3.0/` (636 KB no repositório, com `OFL.txt`), listados em `shared/design/fonts.ts`. Cache `immutable`. Saíram os `@fontsource*`.
+- **Carregamento** (decisão do owner depois de medir, ADR-0010 "Decisões da F01-T3"):
+  - sem preload;
+  - no primeiro acesso, a página pinta com os fallbacks métricos e as fontes entram depois do `load`;
+  - nos acessos seguintes, elas vêm do cache desde a primeira pintura.
+  - Na primeira tela: 0 arquivos de fonte no caminho crítico. Depois do `load`, a home baixa Inter e JetBrains Mono (latin).
+- Lighthouse R1/R6: mobile 99 (LCP 1,81 s), desktop 100, CLS 0,000. As 3 variantes descartadas estão no perf-log.
+- Testes: `tests/unit/fonts.test.ts`, `tests/api/fonts.spec.ts` e `tests/e2e/fonts.spec.ts` (5 idiomas, sem requisição externa, faces carregadas cobrindo œ/ß/ñ e latin-ext, linha do tempo do `load`, troca sem deslocamento).
+- Pendência para a F03-T4: dois scripts inline (tema e fontes) entram no hash da CSP.
 
 ---
 
