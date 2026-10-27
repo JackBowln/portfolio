@@ -2,32 +2,17 @@
 // Dev-only page: `$production.ignore` in nuxt.config keeps it out of production builds, and main.css keeps its markup
 // out of the public CSS. It documents the final tokens of app/assets/css/main.css (F01-T2): colors and contrast are
 // read from that file, the type scale and motion from shared/design/tokens.ts (whose match with the CSS is tested).
-// The @fontsource packages are temporary devDependencies; F01-T3 replaces them with @nuxt/fonts.
-import '@fontsource-variable/fraunces/full.css'
-import '@fontsource-variable/inter/index.css'
-import '@fontsource-variable/inter/wght-italic.css'
-import '@fontsource-variable/jetbrains-mono/index.css'
+// Fonts come from the site itself (@nuxt/fonts, shared/design/fonts.ts), like on every other page.
 import mainCss from '~/assets/css/main.css?raw'
 import { AA_MINIMUM, checkContrast, isInSrgbGamut } from '#shared/design/contrast'
 import type { ContrastUse, Oklch } from '#shared/design/contrast'
 import { themeColors } from '#shared/design/css-tokens'
 import type { ThemeName } from '#shared/design/css-tokens'
+import { FONT_BASE_PATH, FONT_FAMILIES, fontFaces } from '#shared/design/fonts'
 import { DISPLAY_FROM_STEP, DISTANCES, DURATIONS, EASINGS, FLUID_VIEWPORT, TYPE_SCALE } from '#shared/design/tokens'
 
 // Dev tool, not part of the localized site
 definePageMeta({ i18n: false })
-
-interface FontFile {
-  axes: string
-  kb: number
-}
-
-interface FontFact {
-  role: string
-  family: string
-  pkg: string
-  files: readonly FontFile[]
-}
 
 const THEMES = ['light', 'dark'] as const satisfies readonly ThemeName[]
 
@@ -42,26 +27,25 @@ const USE_LABEL: Record<ContrastUse, string> = {
   'ui': 'UI',
 }
 
-// Latin WOFF2 sizes measured in the 5.3.0 packages (2026-10-25); pairing A chosen on 2026-10-25 (design-direction §9)
-const FONTS: readonly FontFact[] = [
-  {
-    role: 'Display',
-    family: 'Fraunces',
-    pkg: '@fontsource-variable/fraunces',
-    files: [
-      { axes: 'opsz, SOFT, WONK e wght (esta página)', kb: 118.2 },
-      { axes: 'opsz e wght (alvo da F01-T3)', kb: 65.7 },
-      { axes: 'wght', kb: 35.8 },
-    ],
-  },
-  { role: 'Texto e UI', family: 'Inter', pkg: '@fontsource-variable/inter', files: [{ axes: 'wght', kb: 47.1 }] },
-  { role: 'Código e rótulos', family: 'JetBrains Mono', pkg: '@fontsource-variable/jetbrains-mono', files: [{ axes: 'wght', kb: 39.5 }] },
-]
+// File sizes (bytes) of the vendored WOFF2 files, measured on 2026-10-27
+const FILE_BYTES: Record<string, number> = {
+  'fraunces-latin-opsz-normal.woff2': 67304,
+  'fraunces-latin-ext-opsz-normal.woff2': 59388,
+  'fraunces-latin-opsz-italic.woff2': 81520,
+  'fraunces-latin-ext-opsz-italic.woff2': 71460,
+  'inter-latin-wght-normal.woff2': 48256,
+  'inter-latin-ext-wght-normal.woff2': 85068,
+  'inter-latin-wght-italic.woff2': 51832,
+  'inter-latin-ext-wght-italic.woff2': 91900,
+  'jetbrains-mono-latin-wght-normal.woff2': 40404,
+  'jetbrains-mono-latin-ext-wght-normal.woff2': 15196,
+}
 
-// performance-budgets §4: at most 2 font files and 120 KB on the first screen
-const FONT_BUDGET_KB = 120
-const FONT_BUDGET_FILES = 2
-const PRELOAD = { label: 'Fraunces (opsz e wght) + Inter', kb: [65.7, 47.1] } as const
+const ROLE: Record<string, string> = {
+  'Fraunces': 'Display',
+  'Inter': 'Texto e UI',
+  'JetBrains Mono': 'Código e rótulos',
+}
 
 const SPACING_STEPS = [1, 2, 3, 4, 6, 8, 12, 16] as const
 
@@ -88,12 +72,8 @@ const HEADING_SPECIMENS = [
   { level: 'H4', step: 1, display: false, text: SAMPLE.opening },
 ] as const
 
-const DISPLAY_AXES = [
-  { label: 'Padrão (opsz automático)', settings: 'normal' },
-  { label: 'SOFT 100', settings: '"SOFT" 100' },
-  { label: 'WONK 1', settings: '"WONK" 1' },
-  { label: 'SOFT 100 + WONK 1', settings: '"SOFT" 100, "WONK" 1' },
-] as const
+// Fraunces ships with its opsz and wght axes; browsers set opsz from the font size (font-optical-sizing: auto)
+const DISPLAY_WEIGHTS = [300, 400, 600, 800] as const
 
 const PANGRAMS = [
   { lang: 'pt-BR', label: 'Português', text: 'À noite, vovô Kowalsky vê o ímã cair no pé do pinguim queixoso e vovó põe açúcar no chá de tâmaras do jabuti feliz.' },
@@ -139,8 +119,17 @@ const SCALE_ROWS = TYPE_SCALE.toReversed().map(step => ({
   display: step.step >= DISPLAY_FROM_STEP,
 }))
 
-const preloadTotal = PRELOAD.kb.reduce((sum, kb) => sum + kb, 0)
-const preloadWithinBudget = PRELOAD.kb.length <= FONT_BUDGET_FILES && preloadTotal <= FONT_BUDGET_KB
+const fileName = (src: string) => src.split('/').at(-1) ?? src
+const fontRows = FONT_FAMILIES.flatMap(family => fontFaces(family).map(face => ({
+  key: face.src,
+  role: ROLE[family.name] ?? family.name,
+  family: family.name,
+  file: fileName(face.src),
+  axes: family.axes === 'opsz' ? 'opsz e wght' : 'wght',
+  kb: (FILE_BYTES[fileName(face.src)] ?? 0) / 1024,
+  firstScreen: face.subset === 'latin' && face.style === 'normal',
+})))
+const firstScreenKb = fontRows.filter(row => row.firstScreen).reduce((sum, row) => sum + row.kb, 0)
 
 // The values shipped in main.css, checked like `pnpm check:contrast` does
 const colors = themeColors(mainCss)
@@ -171,7 +160,7 @@ useHead({ title: 'Styleguide (dev)' })
   <div class="sg">
     <header class="sg-header">
       <p class="sg-eyebrow">
-        F01-T2 · só em desenvolvimento
+        F01-T3 · só em desenvolvimento
       </p>
       <h1 class="sg-title">
         Styleguide
@@ -250,22 +239,22 @@ useHead({ title: 'Styleguide (dev)' })
           </div>
         </div>
         <p class="sg-eyebrow">
-          Eixos variáveis da Fraunces
+          Pesos da Fraunces (opsz automático pelo tamanho)
         </p>
         <ul class="sg-axes">
           <li
-            v-for="axis in DISPLAY_AXES"
-            :key="axis.label"
+            v-for="weight in DISPLAY_WEIGHTS"
+            :key="weight"
             class="sg-scale__row"
           >
             <p class="sg-eyebrow">
-              {{ axis.label }}
+              Peso {{ weight }}
             </p>
             <p
               class="sg-specimen sg-font-display"
-              :style="{ ...stepStyle(5), fontVariationSettings: axis.settings }"
+              :style="{ ...stepStyle(5), fontWeight: weight }"
             >
-              {{ SAMPLE.title }}
+              {{ SAMPLE.title }} <em>{{ SAMPLE.chapter }}</em>
             </p>
           </li>
         </ul>
@@ -603,7 +592,7 @@ useHead({ title: 'Styleguide (dev)' })
           Fontes e orçamento
         </h2>
         <p class="sg-note">
-          Todas sob a SIL Open Font License 1.1; aqui via Fontsource 5.3.0, self-hosted pelo @nuxt/fonts na F01-T3. Tamanhos do subset latin em WOFF2; o latin-ext só é baixado quando a página usa esses caracteres.
+          Todas sob a SIL Open Font License 1.1, do Fontsource 5.3.0, servidas pelo próprio site em <code class="sg-mono">{{ FONT_BASE_PATH }}</code> (@nuxt/fonts gera o @font-face e o fallback métrico). O latin-ext e os itálicos só são baixados quando a página usa esses caracteres ou estilos.
         </p>
         <div
           class="sg-table-wrap"
@@ -621,37 +610,32 @@ useHead({ title: 'Styleguide (dev)' })
                   Família
                 </th>
                 <th scope="col">
-                  Pacote
+                  Arquivo
                 </th>
                 <th scope="col">
-                  Eixos do arquivo
+                  Eixos
                 </th>
                 <th scope="col">
-                  latin (WOFF2)
+                  Tamanho
                 </th>
               </tr>
             </thead>
             <tbody>
-              <template
-                v-for="font in FONTS"
-                :key="font.family"
+              <tr
+                v-for="row in fontRows"
+                :key="row.key"
               >
-                <tr
-                  v-for="file in font.files"
-                  :key="`${font.family}-${file.axes}`"
-                >
-                  <td>{{ font.role }}</td>
-                  <td>{{ font.family }}</td>
-                  <td><code class="sg-mono">{{ font.pkg }}</code></td>
-                  <td>{{ file.axes }}</td>
-                  <td>{{ formatKb(file.kb) }}</td>
-                </tr>
-              </template>
+                <td>{{ row.role }}</td>
+                <td>{{ row.family }}</td>
+                <td><code class="sg-mono">{{ row.file }}</code></td>
+                <td>{{ row.axes }}</td>
+                <td>{{ formatKb(row.kb) }}</td>
+              </tr>
             </tbody>
           </table>
         </div>
         <p class="sg-note">
-          Preload da primeira tela (até {{ FONT_BUDGET_FILES }} arquivos e {{ formatKb(FONT_BUDGET_KB) }}): {{ PRELOAD.label }}, {{ formatKb(preloadTotal) }} · {{ preloadWithinBudget ? '✓ dentro do orçamento' : '✗ acima do orçamento' }}
+          Sem preload (decisão da F01-T3): no primeiro acesso, a página pinta com os fallbacks métricos e as fontes só entram depois do evento <code class="sg-mono">load</code>, sem deslocar o layout; nos acessos seguintes elas vêm do cache desde a primeira pintura. Latin normal das 3 famílias: {{ formatKb(firstScreenKb) }}, fora do caminho do LCP.
         </p>
       </section>
     </main>
