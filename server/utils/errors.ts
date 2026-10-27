@@ -3,6 +3,7 @@ export type AppErrorCode
   = | 'bad_request'
     | 'unauthorized'
     | 'forbidden'
+    | 'session_not_fresh'
     | 'not_found'
     | 'conflict'
     | 'payload_too_large'
@@ -14,6 +15,8 @@ const STATUS: Record<AppErrorCode, number> = {
   bad_request: 400,
   unauthorized: 401,
   forbidden: 403,
+  // Sensitive admin actions need a recent sign-in (ADR-0005 §4); the admin asks the user to authenticate again
+  session_not_fresh: 403,
   not_found: 404,
   conflict: 409,
   payload_too_large: 413,

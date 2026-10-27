@@ -1,8 +1,9 @@
 // Better Auth configuration (ADR-0005). Pure: receives the env and the database, never the h3 event, so it is
-// unit-tested. Login methods arrive in F03-T2 (passkey, GitHub allowlist) and roles in F03-T3 (admin plugin)
+// unit-tested. Login methods arrive in F03-T2 (passkey, GitHub allowlist); roles live in ./access.ts
 import type { BetterAuthOptions } from 'better-auth'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import { logger } from '../../utils/logger.ts'
+import { ADMIN_PLUGIN_PATHS } from './access.ts'
 
 export interface AuthEnv {
   ENVIRONMENT: string
@@ -68,6 +69,8 @@ export function authOptions(env: AuthEnv): Omit<BetterAuthOptions, 'database'> {
     trustedOrigins: [siteUrl],
     // No passwords and no public sign-up (ADR-0005 §2)
     emailAndPassword: { enabled: false },
+    // The admin plugin keeps roles and bans, but its HTTP API stays off (./access.ts)
+    disabledPaths: [...ADMIN_PLUGIN_PATHS],
     session: {
       expiresIn: SESSION_POLICY.expiresIn,
       updateAge: SESSION_POLICY.updateAge,

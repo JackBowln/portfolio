@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { createDb } from '../db/client.ts'
 import { accounts, sessions, users, verifications } from '../db/schema/auth.ts'
+import { adminPlugin } from '../services/auth/access.ts'
 import { authOptions } from '../services/auth/options.ts'
 
 export function authDatabase(env: Env) {
@@ -14,7 +15,7 @@ export function authDatabase(env: Env) {
 }
 
 function buildAuth(env: Env) {
-  return betterAuth({ ...authOptions(env), database: authDatabase(env) })
+  return betterAuth({ ...authOptions(env), database: authDatabase(env), plugins: [adminPlugin()] })
 }
 
 export type Auth = ReturnType<typeof buildAuth>

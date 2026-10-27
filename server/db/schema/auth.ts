@@ -1,6 +1,6 @@
 // Better Auth tables (ADR-0005, data-model §3), plural model names. Property names are Better Auth's field names;
 // tests/unit/auth-schema.test.ts compares this file with getAuthTables() so an upgrade cannot drift silently.
-// The admin plugin fields (role, ban*, impersonatedBy) exist from the start; the plugin itself is enabled in F03-T3.
+// The admin plugin fields (role, ban*, impersonatedBy) exist from the start; the plugin is enabled since F03-T3.
 // The passkeys table arrives with @better-auth/passkey (F03-T2).
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { ROLES } from '../../../shared/types/enums.ts'
