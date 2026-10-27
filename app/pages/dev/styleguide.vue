@@ -92,12 +92,9 @@ export function getHealth(version: string): HealthStatus {
   return { status: 'ok', version }
 }`
 
-const CARD_DATE = '2026-10-25'
-
 const ratioFormat = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const kbFormat = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const leadingFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 })
-const cardDate = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${CARD_DATE}T00:00:00Z`))
 
 // Truncated, so a ratio just under the AA minimum never displays as passing
 const formatRatio = (ratio: number) => `${ratioFormat.format(Math.floor(ratio * 100) / 100)}:1`
@@ -153,6 +150,33 @@ const motionRows = [
   ...Object.entries(DISTANCES).map(([name, px]) => ({ token: `--distance-${name}`, value: `${px} px` })),
 ]
 
+// Component demos (F01-T4)
+const presses = ref(0)
+const demoEmail = ref('')
+const demoMessage = ref('')
+const demoErrors = reactive<{ email?: string | undefined, message?: string | undefined }>({})
+const demoStatus = ref<'info' | 'success' | 'danger'>('info')
+const demoStatusText = ref('[PLACEHOLDER] Preencha e valide o formulário de exemplo.')
+
+function validateDemo() {
+  demoErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(demoEmail.value) ? undefined : '[PLACEHOLDER] Informe um e-mail válido.'
+  demoErrors.message = demoMessage.value.trim() ? undefined : '[PLACEHOLDER] Escreva uma mensagem.'
+  const ok = !demoErrors.email && !demoErrors.message
+  demoStatus.value = ok ? 'success' : 'danger'
+  demoStatusText.value = ok ? '[PLACEHOLDER] Tudo certo (nada foi enviado).' : '[PLACEHOLDER] Corrija os campos marcados.'
+}
+
+const ICON_NAMES = Object.keys(ICONS) as IconName[]
+const BUTTON_VARIANTS = ['primary', 'secondary', 'ghost'] as const
+const STATUS_TONES = ['info', 'success', 'warning', 'danger'] as const
+// The utilities are applied in this page's scoped CSS (main.css does not scan dev pages)
+const GRID_SPANS = [
+  { class: 'sg-span-a', label: 'col-span-4 lg:col-span-8' },
+  { class: 'sg-span-b', label: 'col-span-4 lg:col-span-4' },
+  { class: 'sg-span-c', label: 'col-span-2 md:col-span-4 lg:col-span-3' },
+  { class: 'sg-span-d', label: 'col-span-2 md:col-span-4 lg:col-span-9' },
+] as const
+
 useHead({ title: 'Styleguide (dev)' })
 </script>
 
@@ -160,7 +184,7 @@ useHead({ title: 'Styleguide (dev)' })
   <div class="sg">
     <header class="sg-header">
       <p class="sg-eyebrow">
-        F01-T3 · só em desenvolvimento
+        F01-T4 · só em desenvolvimento
       </p>
       <h1 class="sg-title">
         Styleguide
@@ -170,7 +194,7 @@ useHead({ title: 'Styleguide (dev)' })
       </p>
     </header>
 
-    <main>
+    <main id="main">
       <section
         class="sg-section"
         aria-labelledby="sg-scale"
@@ -273,7 +297,7 @@ useHead({ title: 'Styleguide (dev)' })
         >
           Texto corrido
         </h2>
-        <div class="sg-prose">
+        <UiProse>
           <p
             v-for="paragraph in SAMPLE.paragraphs"
             :key="paragraph"
@@ -281,15 +305,19 @@ useHead({ title: 'Styleguide (dev)' })
             {{ paragraph }}
           </p>
           <p>
-            [PLACEHOLDER] Frase de teste com <a
-              class="sg-link"
-              href="#sg-colors"
-            >um link</a>, um termo em <em>itálico</em>, um <strong>destaque</strong> e código inline como <code class="sg-mono">getHealth()</code>.
+            [PLACEHOLDER] Frase de teste com <a href="#sg-colors">um link</a>, um termo em <em>itálico</em>, um <strong>destaque</strong> e código inline como <code>getHealth()</code>.
           </p>
+          <ul>
+            <li>[PLACEHOLDER] Item de lista</li>
+            <li>[PLACEHOLDER] Outro item</li>
+          </ul>
+          <blockquote>
+            <p>[PLACEHOLDER] Uma citação em destaque.</p>
+          </blockquote>
           <p class="sg-note">
             [PLACEHOLDER] Texto de exemplo: {{ SAMPLE.source }}
           </p>
-        </div>
+        </UiProse>
       </section>
 
       <section
@@ -331,61 +359,190 @@ useHead({ title: 'Styleguide (dev)' })
           id="sg-components"
           class="sg-section__title"
         >
-          Card, botões e links
+          Componentes base
         </h2>
-        <div class="sg-components">
-          <article class="sg-card">
-            <p class="sg-eyebrow">
-              [PLACEHOLDER] Tema
-            </p>
-            <h3 class="sg-card__title">
-              <a href="#sg-text">[PLACEHOLDER] Título de um artigo</a>
-            </h3>
-            <p class="sg-card__meta">
-              <time :datetime="CARD_DATE">{{ cardDate }}</time>
-            </p>
-          </article>
-          <div class="sg-buttons">
-            <button
-              type="button"
-              class="sg-button sg-button--primary"
+        <p class="sg-note">
+          Primitivos de <code class="sg-mono">app/components/ui/</code> (F01-T4). Passe o mouse, use Tab e as setas para ver hover, foco e active; os textos daqui são de demonstração.
+        </p>
+
+        <div class="sg-demo">
+          <h3 class="sg-panel__title">
+            UiButton
+          </h3>
+          <div
+            v-for="variant in BUTTON_VARIANTS"
+            :key="variant"
+            class="sg-row"
+          >
+            <UiButton
+              :variant="variant"
+              data-testid="sg-button"
+              @click="presses++"
             >
-              Primário
-            </button>
-            <button
-              type="button"
-              class="sg-button sg-button--secondary"
+              {{ variant }}
+            </UiButton>
+            <UiButton
+              :variant="variant"
+              size="sm"
+              @click="presses++"
             >
-              Secundário
-            </button>
-            <button
-              type="button"
-              class="sg-button sg-button--primary"
+              {{ variant }} sm
+            </UiButton>
+            <UiButton
+              :variant="variant"
+              @click="presses++"
+            >
+              Com ícone
+              <template #icon>
+                <UiIcon name="arrow-right" />
+              </template>
+            </UiButton>
+            <UiButton
+              :variant="variant"
               disabled
             >
               Desabilitado
-            </button>
+            </UiButton>
           </div>
           <p class="sg-note">
-            Passe o mouse ou use Tab para ver hover e foco.
+            Acionados: <output data-testid="sg-presses">{{ presses }}</output>
           </p>
+        </div>
+
+        <div class="sg-demo">
+          <h3 class="sg-panel__title">
+            UiLink e UiSkipLink
+          </h3>
           <p>
-            <a
-              class="sg-link"
-              href="#sg-colors"
-            >Ir para cores e contraste</a>
+            Texto com <UiLink href="#sg-colors">link inline</UiLink>, e um alvo inseguro que vira texto: <UiLink href="javascript:alert(1)">javascript:alert(1)</UiLink>.
           </p>
-          <ul class="sg-status">
-            <li class="sg-status__item sg-status__item--success">
-              [PLACEHOLDER] Publicado
-            </li>
-            <li class="sg-status__item sg-status__item--warning">
-              [PLACEHOLDER] Tradução desatualizada
-            </li>
-            <li class="sg-status__item sg-status__item--danger">
-              [PLACEHOLDER] Falha ao salvar
+          <div class="sg-row">
+            <UiLink
+              href="#sg-colors"
+              variant="standalone"
+            >
+              Interno
+            </UiLink>
+            <UiLink
+              href="https://github.com"
+              variant="standalone"
+            >
+              Externo
+            </UiLink>
+          </div>
+          <UiSkipLink target="#sg-components">
+            Pular para os componentes (aparece no foco)
+          </UiSkipLink>
+        </div>
+
+        <div class="sg-demo">
+          <h3 class="sg-panel__title">
+            UiTag, UiIcon e UiVisuallyHidden
+          </h3>
+          <div class="sg-row">
+            <UiTag>Nuxt</UiTag>
+            <UiTag tone="accent">
+              Destaque
+            </UiTag>
+          </div>
+          <ul class="sg-row">
+            <li
+              v-for="name in ICON_NAMES"
+              :key="name"
+              class="sg-icon"
+            >
+              <UiIcon :name="name" />
+              <code class="sg-mono">{{ name }}</code>
             </li>
           </ul>
+          <p>
+            <UiIcon
+              name="check"
+              label="Concluído"
+            /> ícone com nome acessível<UiVisuallyHidden> (e este trecho só existe para leitores de tela)</UiVisuallyHidden>.
+          </p>
+        </div>
+
+        <div class="sg-demo">
+          <h3 class="sg-panel__title">
+            UiHeading, UiContainer e UiGrid
+          </h3>
+          <UiHeading
+            :level="3"
+            :size="5"
+          >
+            h3 com tamanho do passo 5
+          </UiHeading>
+          <UiHeading :level="4">
+            h4 no tamanho padrão
+          </UiHeading>
+          <UiContainer
+            size="reading"
+            class="sg-frame"
+          >
+            UiContainer reading (68ch)
+          </UiContainer>
+          <UiGrid class="sg-grid">
+            <div
+              v-for="span in GRID_SPANS"
+              :key="span.class"
+              :class="span.class"
+            >
+              <code class="sg-mono">{{ span.label }}</code>
+            </div>
+          </UiGrid>
+        </div>
+
+        <div class="sg-demo">
+          <h3 class="sg-panel__title">
+            UiField, UiInput, UiTextarea, UiFieldError e UiStatusMessage
+          </h3>
+          <form
+            class="sg-form"
+            novalidate
+            @submit.prevent="validateDemo"
+          >
+            <UiField
+              v-slot="field"
+              label="[PLACEHOLDER] E-mail"
+              description="[PLACEHOLDER] Só para responder à mensagem."
+              :error="demoErrors.email"
+              required
+            >
+              <UiInput
+                v-model="demoEmail"
+                v-bind="field"
+                type="email"
+                name="email"
+                autocomplete="email"
+              />
+            </UiField>
+            <UiField
+              v-slot="field"
+              label="[PLACEHOLDER] Mensagem"
+              :error="demoErrors.message"
+              required
+            >
+              <UiTextarea
+                v-model="demoMessage"
+                v-bind="field"
+                name="message"
+              />
+            </UiField>
+            <UiButton type="submit">
+              Validar
+            </UiButton>
+            <UiStatusMessage :tone="demoStatus">
+              {{ demoStatusText }}
+            </UiStatusMessage>
+          </form>
+          <UiStatusMessage
+            v-for="tone in STATUS_TONES"
+            :key="tone"
+            :tone="tone"
+          >
+            [PLACEHOLDER] Mensagem de status: {{ tone }}
+          </UiStatusMessage>
         </div>
       </section>
 
@@ -643,6 +800,8 @@ useHead({ title: 'Styleguide (dev)' })
 </template>
 
 <style scoped>
+@reference "../../assets/css/main.css";
+
 /* Only tokens from main.css; `--sg-*` are layout sizes of this page alone */
 .sg {
   --sg-gap-xs: calc(var(--spacing) * 1);
@@ -653,7 +812,6 @@ useHead({ title: 'Styleguide (dev)' })
   --sg-gap-2xl: calc(var(--spacing) * 12);
   --sg-panel-min: 22rem;
   --sg-swatch-min: 7.5rem;
-  --sg-card-max: 26rem;
 
   max-inline-size: var(--container-max);
   margin-inline: auto;
@@ -678,7 +836,6 @@ useHead({ title: 'Styleguide (dev)' })
 
 .sg-title,
 .sg-section__title,
-.sg-card__title,
 .sg-font-display {
   font-family: var(--font-display);
   font-weight: var(--font-weight-regular);
@@ -745,34 +902,12 @@ useHead({ title: 'Styleguide (dev)' })
   font-weight: var(--font-weight-strong);
 }
 
-.sg-prose {
-  display: grid;
-  gap: var(--sg-gap-md);
-  max-inline-size: var(--container-reading);
-}
-
-.sg-prose p {
-  margin: 0;
-  text-wrap: pretty;
-}
-
 .sg-note {
   margin: 0;
   max-inline-size: var(--container-reading);
   color: var(--color-text-muted);
   font-size: var(--text-step--1);
   line-height: var(--text-step--1--line-height);
-}
-
-.sg-link {
-  color: var(--color-accent);
-  text-decoration-line: underline;
-  transition: background-color var(--dur-instant) var(--ease-out), color var(--dur-instant) var(--ease-out);
-}
-
-.sg-link:hover {
-  background-color: var(--color-accent);
-  color: var(--color-accent-contrast);
 }
 
 .sg-figure {
@@ -795,118 +930,6 @@ useHead({ title: 'Styleguide (dev)' })
   font-size: var(--text-step--1);
   line-height: var(--text-step-0--line-height);
   tab-size: 2;
-}
-
-.sg-components {
-  display: grid;
-  gap: var(--sg-gap-xl);
-  justify-items: start;
-}
-
-.sg-card {
-  display: grid;
-  gap: calc(var(--spacing) * 3);
-  inline-size: 100%;
-  max-inline-size: var(--sg-card-max);
-  padding: var(--sg-gap-lg);
-  border: var(--border-hairline) solid var(--color-border);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-}
-
-.sg-card__title {
-  margin: 0;
-  font-size: var(--text-step-3);
-  line-height: var(--text-step-3--line-height);
-  letter-spacing: var(--text-step-3--letter-spacing);
-  text-wrap: balance;
-}
-
-.sg-card__title a {
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.sg-card__title a:hover {
-  text-decoration-line: underline;
-}
-
-.sg-card__meta {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-step--1);
-  font-variant-numeric: tabular-nums;
-}
-
-.sg-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sg-gap-md);
-}
-
-.sg-button {
-  min-block-size: var(--target-comfortable);
-  padding-inline: var(--sg-gap-lg);
-  border: var(--border-hairline) solid transparent;
-  border-radius: var(--radius-control);
-  font-family: var(--font-sans);
-  font-size: var(--text-step-0);
-  font-weight: var(--font-weight-strong);
-  line-height: var(--leading-none);
-  cursor: pointer;
-  transition: background-color var(--dur-instant) var(--ease-out);
-}
-
-.sg-button--primary {
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-}
-
-.sg-button--primary:hover:enabled {
-  background: color-mix(in oklch, var(--color-accent), var(--color-text) var(--state-hover-mix));
-}
-
-.sg-button--secondary {
-  border-color: var(--color-text);
-  background: transparent;
-  color: var(--color-text);
-}
-
-.sg-button--secondary:hover:enabled {
-  background: var(--color-surface);
-}
-
-.sg-button:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
-
-.sg-status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sg-gap-md);
-}
-
-.sg-status__item {
-  padding: var(--sg-gap-xs) var(--sg-gap-sm);
-  border: var(--border-hairline) solid currentcolor;
-  border-radius: var(--radius-chip);
-  font-family: var(--font-mono);
-  font-size: var(--text-step--1);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
-
-.sg-status__item--success {
-  color: var(--color-success);
-}
-
-.sg-status__item--warning {
-  color: var(--color-warning);
-}
-
-.sg-status__item--danger {
-  color: var(--color-danger);
 }
 
 .sg-panels {
@@ -1023,5 +1046,66 @@ useHead({ title: 'Styleguide (dev)' })
 .sg-language__text {
   margin: 0;
   max-inline-size: var(--container-reading);
+}
+.sg-demo {
+  display: grid;
+  gap: var(--sg-gap-md);
+  padding-block: var(--sg-gap-lg);
+  border-block-start: var(--border-hairline) solid var(--color-border);
+}
+
+.sg-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sg-gap-md);
+}
+
+.sg-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-gap-sm);
+  font-size: var(--text-step-1);
+}
+
+.sg-icon code {
+  font-size: var(--text-step--1);
+}
+
+.sg-frame,
+.sg-grid > * {
+  padding-block: var(--sg-gap-sm);
+  border: var(--border-hairline) dashed var(--color-border);
+  font-size: var(--text-step--1);
+}
+
+.sg-form {
+  display: grid;
+  gap: var(--sg-gap-lg);
+  justify-items: start;
+  max-inline-size: var(--container-reading);
+}
+
+.sg-form > * {
+  inline-size: 100%;
+}
+
+.sg-form > button {
+  inline-size: auto;
+}
+.sg-span-a {
+  @apply col-span-4 lg:col-span-8;
+}
+
+.sg-span-b {
+  @apply col-span-4 lg:col-span-4;
+}
+
+.sg-span-c {
+  @apply col-span-2 md:col-span-4 lg:col-span-3;
+}
+
+.sg-span-d {
+  @apply col-span-2 md:col-span-4 lg:col-span-9;
 }
 </style>
