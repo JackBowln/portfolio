@@ -4,7 +4,7 @@ import { getTableColumns } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { accounts, sessions, users, verifications } from '../../server/db/schema/auth'
 
-// The admin plugin is listed only to compare its fields; it is enabled in F03-T3
+// The admin plugin is enabled since F03-T3 (server/services/auth/access.ts)
 const tables = getAuthTables({ plugins: [admin()] })
 const drizzleTables = { user: users, session: sessions, account: accounts, verification: verifications }
 

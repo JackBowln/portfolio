@@ -44,7 +44,6 @@ test('session cookies are HttpOnly, SameSite=Lax, 7 days, with a 5 min cache coo
   expect(sessionData).toContain('Max-Age=300')
 
   const session = await (await request.get('/api/auth/get-session')).json()
-  // `role` joins the session payload with the admin plugin (F03-T3); its DB default is covered in tests/workers
-  expect(session.user).toMatchObject({ name: 'TEST_AUTH user', emailVerified: true })
+  expect(session.user).toMatchObject({ name: 'TEST_AUTH user', emailVerified: true, role: 'viewer' })
   expect(session.session.ipAddress).toBeNull()
 })
