@@ -56,3 +56,70 @@ export function contrastRatio(foreground: Oklch, background: Oklch): number {
 export function meetsAA(ratio: number, use: ContrastUse): boolean {
   return ratio >= AA_MINIMUM[use]
 }
+
+export interface ContrastPair {
+  foreground: string
+  background: string
+  use: ContrastUse
+}
+
+/** Every semantic pair the UI draws (design-tokens reference, "Contraste"); checked in both themes */
+export const CONTRAST_PAIRS: readonly ContrastPair[] = [
+  { foreground: 'text', background: 'bg', use: 'text' },
+  { foreground: 'text', background: 'surface', use: 'text' },
+  { foreground: 'text-muted', background: 'bg', use: 'text' },
+  { foreground: 'text-muted', background: 'surface', use: 'text' },
+  // The accent is also the link color
+  { foreground: 'accent', background: 'bg', use: 'text' },
+  { foreground: 'accent', background: 'surface', use: 'text' },
+  { foreground: 'accent-contrast', background: 'accent', use: 'text' },
+  { foreground: 'focus', background: 'bg', use: 'ui' },
+  { foreground: 'focus', background: 'surface', use: 'ui' },
+  { foreground: 'border', background: 'bg', use: 'ui' },
+  { foreground: 'success', background: 'bg', use: 'text' },
+  { foreground: 'success', background: 'surface', use: 'text' },
+  { foreground: 'warning', background: 'bg', use: 'text' },
+  { foreground: 'warning', background: 'surface', use: 'text' },
+  { foreground: 'danger', background: 'bg', use: 'text' },
+  { foreground: 'danger', background: 'surface', use: 'text' },
+]
+
+export interface ContrastResult extends ContrastPair {
+  theme: string
+  ratio: number
+  pass: boolean
+}
+
+export interface ContrastReport {
+  results: ContrastResult[]
+  /** Pairs that name a missing token, and colors outside sRGB (rendered clipped, so the ratio would be a guess) */
+  problems: string[]
+}
+
+/** Checks every pair in every theme; the report fails on any ratio under AA and on any problem */
+export function checkContrast(themes: Record<string, Record<string, Oklch>>, pairs: readonly ContrastPair[] = CONTRAST_PAIRS): ContrastReport {
+  const results: ContrastResult[] = []
+  const problems: string[] = []
+  for (const [theme, colors] of Object.entries(themes)) {
+    for (const [token, color] of Object.entries(colors)) {
+      if (!isInSrgbGamut(color)) {
+        problems.push(`${theme}: ${token} is outside sRGB`)
+      }
+    }
+    for (const pair of pairs) {
+      const foreground = colors[pair.foreground]
+      const background = colors[pair.background]
+      if (!foreground || !background) {
+        problems.push(`${theme}: ${pair.foreground} × ${pair.background} names a missing token`)
+        continue
+      }
+      const ratio = contrastRatio(foreground, background)
+      results.push({ ...pair, theme, ratio, pass: meetsAA(ratio, pair.use) })
+    }
+  }
+  return { results, problems }
+}
+
+export function contrastPasses(report: ContrastReport): boolean {
+  return report.problems.length === 0 && report.results.every(result => result.pass)
+}

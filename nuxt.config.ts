@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
 import { version } from './package.json'
+import { THEME_INIT_SCRIPT } from './shared/design/theme'
 
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
@@ -12,6 +14,16 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
+
+  app: {
+    head: {
+      // Applies the stored theme before the first paint (shared/design/theme.ts)
+      script: [{ innerHTML: THEME_INIT_SCRIPT, tagPosition: 'head' }],
+    },
+  },
+
+  // ADR-0010 §1: Tailwind 4 through its Vite plugin; tokens live in main.css
+  css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
     // Private (server-only); returned by GET /api/health
@@ -43,6 +55,10 @@ export default defineNuxtConfig({
       deployConfig: true,
       nodeCompat: true,
     },
+  },
+
+  vite: {
+    plugins: [tailwindcss()],
   },
 
   typescript: {

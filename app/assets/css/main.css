@@ -1,0 +1,188 @@
+/*
+ * Design tokens (ADR-0010, docs/design/design-direction.md §9): type pairing A, palette B "Noite e rosa", square corners.
+ * `--*: initial` drops Tailwind's defaults, so utilities exist only for the tokens below.
+ * Colors: components use only the semantic tokens; the raw ramps feed them. Each semantic token holds its light and
+ * dark value in light-dark(), and the theme only switches `color-scheme` (system by default, data-theme to force one).
+ * `pnpm check:contrast` reads this file and checks every pair in shared/design/contrast.ts.
+ * `static`: every token is emitted as a variable even when no utility uses it, so components, the styleguide and JS
+ * (GSAP, matchMedia) can read any of them.
+ */
+@import "tailwindcss";
+
+/* The dev-only styleguide uses its own scoped CSS; its markup must not add utilities to the public CSS */
+@source not "../../pages/dev";
+
+@theme static {
+  --*: initial;
+
+  /* Raw palette (OKLCH). Values chosen in F01-T1; the uneven night steps keep them exact */
+  --color-night-50: oklch(0.97 0.008 245);
+  --color-night-100: oklch(0.93 0.012 245);
+  --color-night-200: oklch(0.84 0.018 245);
+  --color-night-300: oklch(0.74 0.025 240);
+  --color-night-400: oklch(0.6 0.025 245);
+  --color-night-500: oklch(0.5 0.035 240);
+  --color-night-600: oklch(0.48 0.03 245);
+  --color-night-700: oklch(0.34 0.035 245);
+  --color-night-800: oklch(0.22 0.035 235);
+  --color-night-900: oklch(0.21 0.03 250);
+  --color-night-950: oklch(0.16 0.03 250);
+  --color-paper-50: oklch(0.97 0.01 75);
+  --color-paper-100: oklch(0.955 0.012 75);
+  --color-paper-200: oklch(0.94 0.012 75);
+  --color-paper-300: oklch(0.915 0.015 75);
+  --color-rose-300: oklch(0.81 0.115 355);
+  --color-rose-600: oklch(0.52 0.17 358);
+  --color-green-300: oklch(0.8 0.13 150);
+  --color-green-700: oklch(0.46 0.11 150);
+  --color-amber-300: oklch(0.84 0.13 80);
+  --color-amber-700: oklch(0.5 0.11 65);
+  --color-red-300: oklch(0.76 0.13 25);
+  --color-red-700: oklch(0.5 0.17 27);
+
+  /* Semantic colors: light-dark(<light>, <dark>) */
+  --color-bg: light-dark(var(--color-paper-100), var(--color-night-950));
+  --color-surface: light-dark(var(--color-paper-300), var(--color-night-800));
+  --color-text: light-dark(var(--color-night-900), var(--color-paper-200));
+  --color-text-muted: light-dark(var(--color-night-600), var(--color-night-300));
+  --color-border: light-dark(var(--color-night-400), var(--color-night-500));
+  --color-accent: light-dark(var(--color-rose-600), var(--color-rose-300));
+  --color-accent-contrast: light-dark(var(--color-paper-50), var(--color-night-950));
+  --color-focus: light-dark(var(--color-rose-600), var(--color-rose-300));
+  --color-success: light-dark(var(--color-green-700), var(--color-green-300));
+  --color-warning: light-dark(var(--color-amber-700), var(--color-amber-300));
+  --color-danger: light-dark(var(--color-red-700), var(--color-red-300));
+
+  /* Type: Fraunces (display), Inter (text and UI), JetBrains Mono (code and labels); self-hosted in F01-T3 */
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --default-font-family: var(--font-sans);
+  --default-mono-font-family: var(--font-mono);
+
+  /* Fluid scale, 360 → 1440 px viewport; from step 3 up it is display type */
+  --text-step--1: clamp(0.8125rem, 0.7917rem + 0.0926vw, 0.875rem);
+  --text-step--1--line-height: 1.5;
+  --text-step-0: clamp(1.0625rem, 1rem + 0.2778vw, 1.25rem);
+  --text-step-0--line-height: 1.65;
+  --text-step-1: clamp(1.25rem, 1.1667rem + 0.3704vw, 1.5rem);
+  --text-step-1--line-height: 1.5;
+  --text-step-2: clamp(1.5rem, 1.3333rem + 0.7407vw, 2rem);
+  --text-step-2--line-height: 1.3;
+  --text-step-3: clamp(1.75rem, 1.4583rem + 1.2963vw, 2.625rem);
+  --text-step-3--line-height: 1.2;
+  --text-step-3--letter-spacing: -0.015em;
+  --text-step-4: clamp(2.125rem, 1.6667rem + 2.037vw, 3.5rem);
+  --text-step-4--line-height: 1.1;
+  --text-step-4--letter-spacing: -0.015em;
+  --text-step-5: clamp(2.5rem, 1.75rem + 3.3333vw, 4.75rem);
+  --text-step-5--line-height: 1.05;
+  --text-step-5--letter-spacing: -0.015em;
+  --text-step-6: clamp(3rem, 1.8333rem + 5.1852vw, 6.5rem);
+  --text-step-6--line-height: 1;
+  --text-step-6--letter-spacing: -0.015em;
+  --text-step-7: clamp(3.5rem, 1.3333rem + 9.6296vw, 10rem);
+  --text-step-7--line-height: 0.95;
+  --text-step-7--letter-spacing: -0.015em;
+  --font-weight-regular: 400;
+  --font-weight-strong: 600;
+  --tracking-label: 0.1em;
+  --leading-none: 1;
+
+  /* Space: 4 px base (p-4 = 1rem) plus fluid section and gutter spacing */
+  --spacing: 0.25rem;
+  --spacing-gutter: clamp(1rem, 4vw, 2.5rem);
+  --spacing-section: clamp(4rem, 2.6667rem + 5.9259vw, 8rem);
+
+  /* Layout */
+  --container-reading: 68ch;
+  --container-max: 1440px;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+
+  /* Shape: square corners (design-direction §9); hairlines carry the structure, shadows only for floating UI */
+  --radius-control: 0;
+  --radius-card: 0;
+  --radius-chip: 0;
+  --radius-full: 9999px;
+  --shadow-raised: 0 0.25rem 1rem oklch(0.16 0.03 250 / 0.12);
+
+  /* Motion (docs/design/motion-principles.md §2), mirrored in shared/design/tokens.ts for GSAP */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tokens with no Tailwind namespace: always emitted, read by components and by JS */
+:root {
+  color-scheme: light dark;
+
+  --dur-instant: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 320ms;
+  --dur-slow: 500ms;
+  --dur-cinematic: 800ms;
+  --distance-sm: 8px;
+  --distance-md: 24px;
+
+  --z-header: 10;
+  --z-overlay: 20;
+  --z-toast: 30;
+
+  --border-hairline: 1px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+  /* WCAG 2.5.8 asks for 24 px; the design target is 44 px (design-direction §7) */
+  --target-min: 1.5rem;
+  --target-comfortable: 2.75rem;
+  --underline-thickness: 0.08em;
+  --underline-offset: 0.18em;
+
+  /* Interaction states: hover and active mix the text color into the surface; disabled fades */
+  --state-hover-mix: 14%;
+  --state-active-mix: 24%;
+  --opacity-disabled: 0.5;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Reduced motion: durations capped at --dur-fast and no travel (motion-principles §2) */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-base: var(--dur-fast);
+    --dur-slow: var(--dur-fast);
+    --dur-cinematic: var(--dur-fast);
+    --distance-sm: 0px;
+    --distance-md: 0px;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-step-0);
+    line-height: var(--text-step-0--line-height);
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: var(--underline-thickness);
+    text-underline-offset: var(--underline-offset);
+  }
+}
