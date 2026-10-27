@@ -6,7 +6,7 @@ const { locales } = useI18n()
 
 <template>
   <nav :aria-label="$t('layout.languageSwitcher.label')">
-    <ul>
+    <ul class="flex flex-wrap gap-x-3">
       <li
         v-for="item in locales"
         :key="item.code"

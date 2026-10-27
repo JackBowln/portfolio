@@ -7,9 +7,9 @@ useHead({ htmlAttrs: { lang: language } })
 <template>
   <NuxtRouteAnnouncer />
   <!-- Minimal shell until the public layout (F01-T5) -->
-  <header>
+  <header class="flex flex-wrap items-center gap-x-6 gap-y-2 px-gutter py-4">
     <nav :aria-label="$t('layout.nav.label')">
-      <ul>
+      <ul class="flex flex-wrap gap-x-4">
         <li>
           <UiLocalizedLink to="/projetos">
             {{ $t('layout.nav.projects') }}
@@ -33,15 +33,16 @@ useHead({ htmlAttrs: { lang: language } })
       </ul>
     </nav>
     <LayoutLanguageSwitcher />
+    <LayoutThemeToggle />
   </header>
   <NuxtPage />
 </template>
 
 <style scoped>
-/* WCAG 2.5.8 minimum target (24 CSS px) for the temporary shell; F01-T4/T5 replace it with the tokenized layout */
+/* WCAG 2.5.8 minimum target for the temporary shell; F01-T4/T5 replace it with the tokenized layout */
 header :deep(a) {
   display: inline-flex;
   align-items: center;
-  min-block-size: 1.5rem;
+  min-block-size: var(--target-min);
 }
 </style>

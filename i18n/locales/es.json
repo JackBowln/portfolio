@@ -9,6 +9,9 @@
     },
     "languageSwitcher": {
       "label": "Idioma"
+    },
+    "themeToggle": {
+      "label": "Tema oscuro"
     }
   },
   "pages": {

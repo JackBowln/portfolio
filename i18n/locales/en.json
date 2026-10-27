@@ -9,6 +9,9 @@
     },
     "languageSwitcher": {
       "label": "Language"
+    },
+    "themeToggle": {
+      "label": "Dark theme"
     }
   },
   "pages": {

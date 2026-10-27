@@ -9,6 +9,9 @@
     },
     "languageSwitcher": {
       "label": "Sprache"
+    },
+    "themeToggle": {
+      "label": "Dunkles Design"
     }
   },
   "pages": {
