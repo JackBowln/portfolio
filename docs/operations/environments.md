@@ -27,7 +27,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `NUXT_PUBLIC_SITE_URL` | var | todos | Mesmo valor da `SITE_URL`, lido pelo app como `runtimeConfig.public.siteUrl` (canonical, hreflang, JSON-LD). Um teste garante a igualdade |
 | `MEDIA_BASE_URL` | var | todos | Base pública da mídia |
 | `TURNSTILE_SITE_KEY` | var pública | todos | Widget do contato |
-| `BETTER_AUTH_SECRET` | segredo | todos | Assinatura de sessões (≥ 32 bytes aleatórios) |
+| `BETTER_AUTH_SECRET` | segredo | preview e produção (local opcional) | Assinatura de sessões (≥ 32 caracteres aleatórios). Sem ele, preview e produção falham fechados; local usa um valor aleatório por isolate (sessões caem quando o isolate reinicia). Local: `.dev.vars`; remoto: `wrangler secret put`, só com pedido do owner |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | segredo | todos | Um OAuth App por ambiente (callback `${SITE_URL}/api/auth/callback/github`) |
 | `OWNER_GITHUB_ID` | segredo | todos | ID numérico do GitHub do owner (allowlist) |
 | `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois |

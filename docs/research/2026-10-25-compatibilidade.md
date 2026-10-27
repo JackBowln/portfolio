@@ -160,6 +160,8 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **26/10/2026 — F02-T3.** Sem dependências novas; o `@nuxtjs/sitemap` (9.1.0) foi avaliado e preterido por um endpoint próprio (ADR-0008). No preset `cloudflare_module`, o Nitro 2.13 lê as variáveis `NUXT_*` do `env` do Worker em runtime (`globalThis.__env__`), então `NUXT_PUBLIC_SITE_URL` no `wrangler.jsonc` sobrescreve o `runtimeConfig.public.siteUrl` sem novo build. Duas instâncias de `wrangler dev` com o mesmo nome de Worker conflitam no socket interno (`Address already in use (socket "direct:1:default")`); a instância "como produção" usa `--name portfolio-prodlike`. O `wrangler dev --var` sobrescreve as vars do `wrangler.json` gerado.
 
+**27/10/2026 — F03-T1.** O `npm view` confirmou `better-auth` 1.7.13 (25/10/2026, MIT), com peers `drizzle-orm ^0.45.2` e `drizzle-kit >=0.31.4` (compatíveis); o zod deduplica em 4.6.7. O `@better-auth/cli` está parado na 1.4.21 e não foi usado. Na 1.7, `internalAdapter.createUser` exige uma fonte de provisionamento (`{ method }`), e existe o gate `user.validateUserInfo`, candidato para a allowlist do GitHub na F03-T2. Com `disableIpTracking`, o Better Auth grava `''` em `ip_address`. Worker total: 1,41 MB (395 kB gzip).
+
 ## 6. Fontes
 
 - Registro npm, consultado em 25/10/2026.

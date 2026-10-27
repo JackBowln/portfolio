@@ -82,9 +82,21 @@
 - **Allowlist mal configurada aceitar terceiros:** teste de integração cobre a rejeição de IDs fora da lista; o `/security-audit` confere.
 - **O bootstrap ficar aberto:** a rota exige ausência de owner **e** o token; teste automatizado garante 404 depois.
 
+### Decisões da F03-T1 (owner, 2026-10-27)
+
+- **IP:** `advanced.ipAddress.disableIpTracking: true`. Mesmo assim o Better Auth grava `''`, então um hook de sessão grava `NULL`. O hash de IP para auditoria e rate limit vem na F03-T4.
+- **Tokens OAuth:** descartados. Hooks `account.create/update.before` zeram `accessToken`, `refreshToken`, `idToken` e as expirações; só o ID numérico da conta importa.
+- **Instância:** `createAuth(env)` em `server/utils/auth.ts`, memorizada por isolate num `WeakMap` indexado pelo `env` do Worker (que carrega o binding do D1), em vez de ser reconstruída a cada request. As opções ficam puras em `server/services/auth/options.ts`.
+- **Schema:** escrito à mão em `server/db/schema/auth.ts` (o `@better-auth/cli` está na 1.4 e traz `prisma`, `pg` e `better-sqlite3`). `tests/unit/auth-schema.test.ts` compara as colunas com o `getAuthTables()` do Better Auth (com o plugin `admin`). Os campos do `admin` (`role`, padrão `viewer`, e `ban*`) já existem; o plugin é ativado na F03-T3. IDs em UUIDv7.
+- **Cookies:** `HttpOnly`, `SameSite=Lax`, `Path=/`; `Secure` + `__Secure-` quando a `SITE_URL` é `https`. `session_token` com 7 dias; `session_data` (cookie cache, estratégia `compact`, assinado) com 5 min.
+- **Secret:** `BETTER_AUTH_SECRET` (≥ 32 caracteres) é obrigatório fora de `ENVIRONMENT=local`, onde a falta gera um secret aleatório por isolate, com aviso no log.
+- **Telemetria** desligada; `emailAndPassword` desligado (`*_DISABLED` nas rotas de senha, testado); `delete-user` fica indisponível (404).
+- **Exceção registrada:** o input de `/api/auth/*` é validado pelos schemas do próprio Better Auth, não pelos nossos helpers `strict`.
+
 ## Validação
 
 - F03-T2: E2E de registro e login por passkey (autenticador virtual) e de login GitHub mockado; tentativa com ID fora da allowlist rejeitada; CPU de login medida (< 5 ms).
+- F03-T1: `tests/unit/auth-{options,schema}.test.ts`, `tests/workers/auth-schema.test.ts` e `tests/api/auth.spec.ts` (sem cadastro, flags do cookie numa sessão criada pela rota de teste `TEST_AUTH`, CSRF de outra origem → 403 conferido no `/security-audit`).
 - F03-T3: matriz papel × rota 100% coberta.
 
 ## Referências

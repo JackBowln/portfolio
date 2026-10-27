@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F02-T1, F02-T4 | RF-02.1, RF-03.3, RNF-07 | `/security-audit`, `/architecture-guardian` |
+| concluída | F02-T1, F02-T4 | RF-02.1, RF-03.3, RNF-07 | `/security-audit`, `/architecture-guardian` |
 
 **Objetivo.** Instalar `better-auth ~1.7` com o adapter Drizzle. Gerar o schema de auth (modelos no plural) e a migração, criar `createAuth(env)` e o handler `server/api/auth/[...all].ts`, e configurar cookies, expiração, `cookieCache`, `trustedOrigins` e `freshAge`.
 
@@ -23,14 +23,20 @@
 **Fora do escopo.** Métodos de login (T2) e papéis (T3).
 
 **Critérios de aceite**
-- [ ] `emailAndPassword` desligado; nenhuma rota de cadastro utilizável (testado).
-- [ ] Cookie de sessão com `__Secure-` (exceto em localhost), `HttpOnly`, `Secure`, `SameSite=Lax`; expiração de 7 dias renovada a cada 24 h; `cookieCache` de 5 min.
-- [ ] Decisões registradas no data-model e no ADR-0005: rastreamento de IP do Better Auth (desligado ou só hash) e tratamento dos tokens OAuth (descartados ou criptografados).
-- [ ] Nenhum segredo em `runtimeConfig.public`.
+- [x] `emailAndPassword` desligado; nenhuma rota de cadastro utilizável (testado).
+- [x] Cookie de sessão com `__Secure-` (exceto em localhost), `HttpOnly`, `Secure`, `SameSite=Lax`; expiração de 7 dias renovada a cada 24 h; `cookieCache` de 5 min.
+- [x] Decisões registradas no data-model e no ADR-0005: rastreamento de IP do Better Auth (desligado ou só hash) e tratamento dos tokens OAuth (descartados ou criptografados).
+- [x] Nenhum segredo em `runtimeConfig.public`.
 
 **Testes**
 - API: tentativa de cadastro → erro; flags do cookie numa sessão criada em teste.
 - Workers: tabelas de auth criadas pela migração.
+
+**Resultado (27/10/2026).**
+- `better-auth` 1.7.13; migração `0001_auth.sql` (aplicada só localmente); decisões no ADR-0005 ("Decisões da F03-T1") e no data-model.
+- Testes: `tests/unit/auth-{options,schema}.test.ts`, `tests/workers/auth-schema.test.ts`, `tests/api/auth.spec.ts`. A sessão de teste vem de `server/api/_test/session.post.ts` (`TEST_AUTH`), que só existe no build de teste.
+- Worker com 395 kB gzip; o bundle público não mudou (o cliente de auth fica em `app/utils/admin/`).
+- Pendências: CPU do login medida na F03-T2 (no preview, com pedido do owner); FKs de `audit_log.actor_user_id`, `redirects.created_by` e `site_settings.updated_by` para `users` ficam para quando houver escrita nessas tabelas (rebuild de tabela no SQLite).
 
 ---
 

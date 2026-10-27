@@ -57,10 +57,10 @@ Os modelos do Better Auth são mapeados para nomes no plural (`modelName`), para
 | Tabela | Colunas principais | Notas |
 |---|---|---|
 | `users` | `id`, `name`, `email` (único), `email_verified`, `image`, `role` (`Role`, padrão `viewer`), `banned`, `ban_reason`, `ban_expires`, `created_at`, `updated_at` | Campos `role`/`ban*` vêm do plugin `admin` |
-| `sessions` | `id`, `user_id` → users, `token` (único), `expires_at`, `ip_address`, `user_agent`, `created_at`, `updated_at` | F03-T1: desligar o rastreamento de IP do Better Auth ou gravar só o hash |
-| `accounts` | `id`, `user_id` → users, `provider_id` (`github`), `account_id` (ID numérico do GitHub), tokens OAuth, `created_at`, `updated_at` | F03-T1: avaliar criptografia ou descarte dos tokens OAuth (não precisamos deles depois do login) |
-| `verifications` | `id`, `identifier`, `value`, `expires_at` | Uso interno do Better Auth |
-| `passkeys` | `id`, `name`, `public_key`, `user_id` → users, `credential_id`, `counter`, `device_type`, `backed_up`, `transports`, `aaguid`, `created_at` | Plugin `@better-auth/passkey` |
+| `sessions` | `id`, `user_id` → users, `token` (único), `expires_at`, `ip_address`, `user_agent`, `impersonated_by`, `created_at`, `updated_at` | `ip_address` é sempre `NULL`: o rastreamento de IP do Better Auth fica desligado e um hook grava `NULL` (decisão da F03-T1). Índice em `user_id` |
+| `accounts` | `id`, `user_id` → users, `provider_id` (`github`), `account_id` (ID numérico do GitHub), colunas de tokens OAuth, `password` (sem uso), `created_at`, `updated_at` | Os tokens OAuth são **descartados** antes de chegar ao banco (hooks de criação e de atualização; decisão da F03-T1). `(provider_id, account_id)` é único |
+| `verifications` | `id`, `identifier`, `value`, `expires_at`, `created_at`, `updated_at` | Uso interno do Better Auth. Índice em `identifier` |
+| `passkeys` | `id`, `name`, `public_key`, `user_id` → users, `credential_id`, `counter`, `device_type`, `backed_up`, `transports`, `aaguid`, `created_at` | Plugin `@better-auth/passkey`; migração na F03-T2 |
 
 ## 4. Conteúdo
 
