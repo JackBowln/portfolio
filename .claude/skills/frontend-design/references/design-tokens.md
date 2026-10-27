@@ -6,7 +6,7 @@ Os valores finais estão em `app/assets/css/main.css` (`@theme static`, desde a 
 
 | Grupo | Prefixo Tailwind 4 (`@theme`) | Exemplos | Regra |
 |---|---|---|---|
-| Cor (semântica) | `--color-*` | `--color-bg`, `--color-surface`, `--color-text`, `--color-text-muted`, `--color-border`, `--color-accent`, `--color-accent-contrast`, `--color-focus`, `--color-success`, `--color-warning`, `--color-danger` | Componentes usam só os **semânticos**; a paleta bruta (`--color-night-50…950`, `--color-paper-*`, `--color-rose-*`, `--color-green/amber/red-*`) só alimenta os semânticos |
+| Cor (semântica) | `--color-*` | `--color-bg`, `--color-surface`, `--color-text`, `--color-text-muted`, `--color-border`, `--color-accent`, `--color-accent-contrast`, `--color-focus`, `--color-success`, `--color-warning`, `--color-danger` | Componentes usam só os **semânticos** (inclui os de estado `accent-hover`, `accent-active` e `surface-active`); a paleta bruta (`--color-night-50…950`, `--color-paper-*`, `--color-rose-*`, `--color-green/amber/red-*`) só alimenta os semânticos |
 | Tema | Semânticos em `light-dark(<claro>, <escuro>)`; `color-scheme` (sistema ou `[data-theme]`) escolhe o lado | — | Nada de `dark:` espalhado. Para fixar um trecho num tema, use `color-scheme` nele |
 | Tipografia | `--font-display`, `--font-sans`, `--font-mono`; `--text-*` (escala) | `--text-step--1` … `--text-step-7` (utilitários `text-step-N`) | Tamanhos com `clamp()`; cada passo tem `--text-step-N--line-height`, e os de display (3+) `--letter-spacing` |
 | Espaço | `--spacing` (base 4 px) + fluidos | `--spacing-section`, `--spacing-gutter` (`py-section`, `px-gutter`) | Seções usam os fluidos; componentes usam a escala base |

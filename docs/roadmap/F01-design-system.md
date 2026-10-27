@@ -122,7 +122,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F01-T2 | RX-01, RNF-10, RNF-11 | `/frontend-design`, `/test-engineer` |
+| concluída | F01-T2 | RX-01, RNF-10, RNF-11 | `/frontend-design`, `/test-engineer` |
 
 **Objetivo.** Criar os primitivos em `app/components/ui/`: Button, Link, Container, Grid, Heading, Prose, Tag, Icon (SVG inline), VisuallyHidden, SkipLink, Field, Input, Textarea, FieldError e StatusMessage.
 
@@ -131,14 +131,22 @@
 **Fora do escopo.** O link localizado (F02-T2 cria o wrapper sobre `NuxtLinkLocale`); componentes de domínio.
 
 **Critérios de aceite**
-- [ ] Todo componente tem os estados hover, `focus-visible`, active e disabled (quando aplicável), alvo ≥ 24×24 px e nome acessível.
-- [ ] Os campos de formulário associam label, descrição e erro (`aria-describedby`); o erro é anunciado por `aria-live`.
-- [ ] Os textos chegam por props ou slots (nenhum texto de interface hardcoded).
-- [ ] Cada componente aparece na styleguide com as variantes.
+- [x] Todo componente tem os estados hover, `focus-visible`, active e disabled (quando aplicável), alvo ≥ 24×24 px e nome acessível.
+- [x] Os campos de formulário associam label, descrição e erro (`aria-describedby`); o erro é anunciado por `aria-live`.
+- [x] Os textos chegam por props ou slots (nenhum texto de interface hardcoded).
+- [x] Cada componente aparece na styleguide com as variantes.
 
 **Testes**
 - Nuxt: render e atributos ARIA por componente; interação por teclado no Button e no Link.
 - a11y: axe na styleguide.
+
+**Resultado (27/10/2026).**
+- 15 primitivos em `app/components/ui/`, `shared/utils/url.ts` (`safeHref`) e `app/utils/icons.ts` (10 ícones do Lucide, ISC). Decisões no ADR-0010 ("Decisões da F01-T4").
+- Tokens de estado `accent-hover`, `accent-active` e `surface-active`; o `check:contrast` passou a conferir 40 pares.
+- A styleguide mostra todos os componentes com as variantes (seção 05), incluindo um formulário de demonstração.
+- Testes: `tests/nuxt/ui/{actions,content,form}.test.ts`, `tests/unit/url.test.ts`, `tests/a11y-dev/components-keyboard.spec.ts`, axe na styleguide.
+- CSS público com 4,73 kB gzip (+1,5 kB); Lighthouse sem mudança.
+- Os componentes ainda não estão nas páginas públicas; isso entra com o layout (F01-T5).
 
 ---
 

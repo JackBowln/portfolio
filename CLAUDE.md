@@ -8,7 +8,7 @@ Portfólio profissional e blog pessoal full-stack com CMS próprio:
 
 **Metas:** Lighthouse 100 nas 4 categorias, WCAG 2.2 AA e custo de ~US$ 0 (plano Free).
 
-**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor), F02-T2 (i18n e rotas nos 5 idiomas) e F02-T3 (SEO base) concluídas: a F02 está completa. F03-T1 (Better Auth), F03-T3 (RBAC), F01-T2 (tokens e temas) e F01-T3 (fontes) concluídas. Próximo passo: **F01-T4** (componentes base), pré-requisito da F03-T2; a F03-T4 já pode começar ([roadmap](docs/roadmap/README.md)).
+**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor), F02-T2 (i18n e rotas nos 5 idiomas) e F02-T3 (SEO base) concluídas: a F02 está completa. F03-T1 (Better Auth), F03-T3 (RBAC), F01-T2 (tokens e temas), F01-T3 (fontes) e F01-T4 (componentes base) concluídas. Próximo passo: **F03-T2** (passkey + GitHub), **F03-T4** (hardening) ou **F01-T5** (layout público) ([roadmap](docs/roadmap/README.md)).
 
 ## Onde está cada coisa
 
