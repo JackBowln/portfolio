@@ -1,4 +1,5 @@
-// Baseline headers for every Worker response (ADR-0012 §5). CSP by hash comes in F11; static assets get _headers there too
+// Baseline headers for every Worker response (ADR-0012 §1); the CSP lives in ./csp.ts. Static assets never reach
+// the Worker: they get nosniff from routeRules, which Nitro writes to _headers
 const BASE_HEADERS = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',

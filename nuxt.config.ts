@@ -49,9 +49,11 @@ export default defineNuxtConfig({
     '/api/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     '/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     // Prerendered i18n messages: the path carries a hash of the locale files, so a change means a new URL
-    '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } },
     // Font files live under a versioned path (shared/design/fonts.ts), so they never change in place
-    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } },
+    // Static assets bypass the Worker's security headers; these land in _headers (ADR-0012 §1)
+    '/_nuxt/**': { headers: { 'x-content-type-options': 'nosniff' } },
   },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
