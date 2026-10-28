@@ -2,7 +2,8 @@
 import type { H3Event } from 'h3'
 import type { z } from 'zod'
 
-const MAX_JSON_BYTES = 1_000_000
+/** ADR-0012 §4; also the early Content-Length check in server/middleware/00.origin-check.ts */
+export const MAX_JSON_BYTES = 1_000_000
 
 type ObjectSchema = z.ZodObject<z.ZodRawShape>
 
