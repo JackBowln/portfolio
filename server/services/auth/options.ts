@@ -3,6 +3,7 @@
 import type { BetterAuthOptions } from 'better-auth'
 import { APIError, createAuthMiddleware, getSessionFromCtx } from 'better-auth/api'
 import { uuidv7 } from '../../../shared/utils/id.ts'
+import { clientIp } from '../../utils/ip-hash.ts'
 import { logger } from '../../utils/logger.ts'
 import type { AuditEvent } from '../audit/audit.service.ts'
 import { ADMIN_PLUGIN_PATHS } from './access.ts'
@@ -31,6 +32,13 @@ const GITHUB = 'github'
 interface HookContext {
   path?: string | undefined
   params?: unknown
+  headers?: Headers | undefined
+  request?: Request | undefined
+}
+
+/** For the audit trail only; the audit service hashes it before storing */
+function requestIp(ctx: HookContext | null | undefined): string | null {
+  return clientIp(ctx?.headers ?? ctx?.request?.headers)
 }
 
 /** Better Auth reports the route pattern (`/callback/:id`), with the provider in the params */
@@ -143,7 +151,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
           bootstrapGranted: await verifyBootstrapGrant(readCookie(ctx.headers?.get('cookie'), BOOTSTRAP_COOKIE), secret, Date.now()),
         })
         if (!decision.allowed) {
-          await ports.audit({ action: 'auth.github_rejected', metadata: { reason: decision.reason } })
+          await ports.audit({ action: 'auth.github_rejected', metadata: { reason: decision.reason }, ip: requestIp(ctx) })
           return { error: 'github_not_allowed' }
         }
         return undefined
@@ -159,7 +167,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
       // https → Secure cookies with the __Secure- prefix; plain http only on localhost
       useSecureCookies: siteUrl.startsWith('https://'),
       defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', path: '/' },
-      // IPs are never stored in clear (ADR-0005, F03-T1); the audit log keeps a hash (F03-T4)
+      // IPs are never stored in clear (ADR-0005, F03-T1); only audit_log keeps them, as an HMAC (ADR-0012 §10)
       ipAddress: { disableIpTracking: true },
       database: { generateId: () => uuidv7() },
     },
@@ -168,9 +176,9 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
         create: {
           // validateUserInfo only lets the bootstrap GitHub sign-up through, so that user is the owner
           before: async (user, ctx) => (isGithubCallback(ctx) ? { data: { ...user, role: 'owner' } } : undefined),
-          after: async (user) => {
+          after: async (user, ctx) => {
             if ((user as { role?: string }).role === 'owner') {
-              await ports.audit({ action: 'auth.bootstrap_completed', actorUserId: user.id, entityType: 'user', entityId: user.id })
+              await ports.audit({ action: 'auth.bootstrap_completed', actorUserId: user.id, entityType: 'user', entityId: user.id, ip: requestIp(ctx) })
             }
           },
         },
@@ -182,7 +190,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
           after: async (session, ctx) => {
             const method = loginMethod(ctx)
             if (method) {
-              await ports.audit({ action: 'auth.login', actorUserId: session.userId, metadata: { method } })
+              await ports.audit({ action: 'auth.login', actorUserId: session.userId, metadata: { method }, ip: requestIp(ctx) })
             }
           },
         },
@@ -190,10 +198,10 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
       },
       account: {
         create: {
-          before: async (account) => {
+          before: async (account, ctx) => {
             // Linking counts too: only the allowlisted GitHub id may join any user
             if (account.providerId === GITHUB && account.accountId !== env.OWNER_GITHUB_ID) {
-              await ports.audit({ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' } })
+              await ports.audit({ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' }, ip: requestIp(ctx) })
               throw new APIError('FORBIDDEN', { code: 'GITHUB_NOT_ALLOWED', message: 'GitHub account not allowed' })
             }
             return { data: withoutOAuthTokens(account) }
@@ -230,7 +238,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
       after: createAuthMiddleware(async (ctx) => {
         const failed = ctx.context.returned instanceof APIError
         if (ctx.path === '/passkey/verify-authentication' && failed) {
-          await ports.audit({ action: 'auth.login_failed', metadata: { method: 'passkey' } })
+          await ports.audit({ action: 'auth.login_failed', metadata: { method: 'passkey' }, ip: requestIp(ctx) })
           return
         }
         if (failed || (ctx.path !== '/passkey/verify-registration' && ctx.path !== '/passkey/delete-passkey')) {
@@ -243,6 +251,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
           actorUserId: actor?.user.id ?? null,
           entityType: 'passkey',
           ...(removed && typeof ctx.body?.id === 'string' ? { entityId: ctx.body.id } : {}),
+          ip: requestIp(ctx),
         })
       }),
     },

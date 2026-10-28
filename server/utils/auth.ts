@@ -28,7 +28,7 @@ export function authPorts(env: Env): AuthPorts {
     ownerExists: () => ownerExists(db),
     countPasskeys: userId => countPasskeys(db, userId),
     hasGithubAccount: userId => hasLinkedAccount(db, userId, 'github'),
-    audit: event => recordAudit(db, event),
+    audit: event => recordAudit(db, event, env.IP_HASH_SALT),
   }
 }
 

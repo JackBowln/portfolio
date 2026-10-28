@@ -12,7 +12,7 @@
     "build": "nuxt build",
     "preview": "wrangler dev --config .output/server/wrangler.json --persist-to .wrangler/state",
     "preview:prod": "wrangler dev --config .output/server/wrangler.json --name portfolio-prodlike --persist-to .wrangler/state-prod --port 8788 --inspector-port 9230 --var ENVIRONMENT:production --var SITE_URL:http://localhost:8788 --var NUXT_PUBLIC_SITE_URL:http://localhost:8788",
-    "preview:test": "wrangler dev --config .output/server/wrangler.json --persist-to .wrangler/state --var SITE_URL:http://localhost:8787 --var NUXT_PUBLIC_SITE_URL:http://localhost:8787 --var OWNER_GITHUB_ID:1001 --var BOOTSTRAP_TOKEN:test-bootstrap-token-0123456789abcdef --var GITHUB_CLIENT_ID:test-client-id --var GITHUB_CLIENT_SECRET:test-client-secret",
+    "preview:test": "wrangler dev --config .output/server/wrangler.json --persist-to .wrangler/state --var SITE_URL:http://localhost:8787 --var NUXT_PUBLIC_SITE_URL:http://localhost:8787 --var OWNER_GITHUB_ID:1001 --var BOOTSTRAP_TOKEN:test-bootstrap-token-0123456789abcdef --var GITHUB_CLIENT_ID:test-client-id --var GITHUB_CLIENT_SECRET:test-client-secret --var IP_HASH_SALT:test-ip-hash-salt-0123456789abcdef",
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

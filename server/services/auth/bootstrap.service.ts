@@ -7,7 +7,7 @@ import { resolveAuthSecret } from './options.ts'
 import type { AuthEnv } from './options.ts'
 import { bootstrapTokenUsable, createBootstrapGrant, tokensMatch } from './policies.ts'
 
-export type BootstrapEnv = AuthEnv & { BOOTSTRAP_TOKEN?: string }
+export type BootstrapEnv = AuthEnv & { BOOTSTRAP_TOKEN?: string, IP_HASH_SALT?: string }
 
 export async function isBootstrapOpen(db: Db, env: BootstrapEnv): Promise<boolean> {
   return bootstrapTokenUsable(env.BOOTSTRAP_TOKEN) && !(await ownerExists(db))
@@ -18,13 +18,13 @@ export type BootstrapStart
     | { status: 'closed' }
     | { status: 'invalid_token' }
 
-export async function startBootstrap(db: Db, env: BootstrapEnv, token: string): Promise<BootstrapStart> {
+export async function startBootstrap(db: Db, env: BootstrapEnv, token: string, ip: string | null): Promise<BootstrapStart> {
   if (!(await isBootstrapOpen(db, env))) {
     return { status: 'closed' }
   }
   const secret = resolveAuthSecret(env)
   if (!(await tokensMatch(token, env.BOOTSTRAP_TOKEN ?? '', secret))) {
-    await recordAudit(db, { action: 'auth.bootstrap_rejected', metadata: { reason: 'invalid_token' } })
+    await recordAudit(db, { action: 'auth.bootstrap_rejected', metadata: { reason: 'invalid_token' }, ip }, env.IP_HASH_SALT)
     return { status: 'invalid_token' }
   }
   return { status: 'granted', grant: await createBootstrapGrant(secret, Date.now()) }
