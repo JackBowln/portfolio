@@ -1,7 +1,7 @@
 // Better Auth tables (ADR-0005, data-model §3), plural model names. Property names are Better Auth's field names;
 // tests/unit/auth-schema.test.ts compares this file with getAuthTables() so an upgrade cannot drift silently.
 // The admin plugin fields (role, ban*, impersonatedBy) exist from the start; the plugin is enabled since F03-T3.
-// The passkeys table arrives with @better-auth/passkey (F03-T2).
+// passkeys follows @better-auth/passkey (F03-T2).
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { ROLES } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
@@ -66,3 +66,21 @@ export const verifications = sqliteTable('verifications', {
   expiresAt: integer({ mode: 'timestamp_ms' }).notNull(),
   ...timestamps,
 }, table => [index('verifications_identifier_idx').on(table.identifier)])
+
+// WebAuthn credentials (@better-auth/passkey). credentialID is unique per authenticator; publicKey is the COSE key
+export const passkeys = sqliteTable('passkeys', {
+  id: text().primaryKey().$defaultFn(() => uuidv7()),
+  name: text(),
+  publicKey: text().notNull(),
+  userId: text().notNull().references(() => users.id, { onDelete: 'cascade' }),
+  credentialID: text().notNull(),
+  counter: integer().notNull(),
+  deviceType: text().notNull(),
+  backedUp: integer({ mode: 'boolean' }).notNull(),
+  transports: text(),
+  aaguid: text(),
+  createdAt: integer({ mode: 'timestamp_ms' }).$defaultFn(now),
+}, table => [
+  index('passkeys_user_id_idx').on(table.userId),
+  uniqueIndex('passkeys_credential_id_unique').on(table.credentialID),
+])
