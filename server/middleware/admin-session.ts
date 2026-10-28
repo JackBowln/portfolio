@@ -1,6 +1,7 @@
 // /api/admin/** needs a session (ADR-0005 §6): 401 without one. Permissions are checked per handler
 // (defineAdminHandler); this only authenticates and leaves the user on event.context.auth.
-// The session comes from the signed cookie cache most of the time, so it rarely costs a D1 read
+// The session comes from the signed cookie cache most of the time, so it rarely costs a D1 read.
+// RL_ADMIN (ADR-0012 §6) counts per session, so it needs the session first
 const ADMIN_API = '/api/admin'
 
 export default defineEventHandler(async (event) => {
@@ -24,4 +25,5 @@ export default defineEventHandler(async (event) => {
     user: { id: user.id, role: user.role ?? '', name: user.name, email: user.email },
     session: { id: session.id, createdAt: new Date(session.createdAt) },
   }
+  await enforceRateLimit(event, useEnv(event).RL_ADMIN, session.id, 'RL_ADMIN')
 })
