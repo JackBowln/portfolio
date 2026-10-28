@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import { version } from './package.json'
 import { FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from './shared/design/fonts'
@@ -59,6 +60,10 @@ export default defineNuxtConfig({
   // ADR-0002 §2: Workers with Static Assets; bindings come from wrangler.jsonc
   nitro: {
     preset: 'cloudflare_module',
+    // A polyfill imported only for its side effect (server/utils/auth.ts); without this Rollup drops it
+    moduleSideEffects: ['reflect-metadata'],
+    // TEST_AUTH: fakes GitHub's OAuth APIs for the Playwright build only (server/_test/github-mock.ts)
+    plugins: process.env.PORTFOLIO_TEST_BUILD === '1' ? [fileURLToPath(new URL('./server/_test/github-mock.ts', import.meta.url))] : [],
     cloudflare: {
       deployConfig: true,
       nodeCompat: true,

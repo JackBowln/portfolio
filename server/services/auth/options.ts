@@ -1,14 +1,60 @@
-// Better Auth configuration (ADR-0005). Pure: receives the env and the database, never the h3 event, so it is
-// unit-tested. Login methods arrive in F03-T2 (passkey, GitHub allowlist); roles live in ./access.ts
+// Better Auth configuration (ADR-0005). Receives the env and the ports it needs (database queries, audit), never the
+// h3 event, so it is unit-tested with fakes. Roles live in ./access.ts; the rules themselves in ./policies.ts
 import type { BetterAuthOptions } from 'better-auth'
+import { APIError, createAuthMiddleware, getSessionFromCtx } from 'better-auth/api'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import { logger } from '../../utils/logger.ts'
+import type { AuditEvent } from '../audit/audit.service.ts'
 import { ADMIN_PLUGIN_PATHS } from './access.ts'
+import { BOOTSTRAP_COOKIE, githubAccessDecision, passkeyRemoval, readCookie, verifyBootstrapGrant } from './policies.ts'
 
 export interface AuthEnv {
   ENVIRONMENT: string
   SITE_URL: string
   BETTER_AUTH_SECRET?: string
+  GITHUB_CLIENT_ID?: string
+  GITHUB_CLIENT_SECRET?: string
+  /** Numeric GitHub user id of the owner: the allowlist (ADR-0005 §2) */
+  OWNER_GITHUB_ID?: string
+}
+
+/** What the policies need from the outside world; server/utils/auth.ts wires them to D1 */
+export interface AuthPorts {
+  ownerExists: () => Promise<boolean>
+  countPasskeys: (userId: string) => Promise<number>
+  hasGithubAccount: (userId: string) => Promise<boolean>
+  audit: (event: AuditEvent) => Promise<void>
+}
+
+const GITHUB = 'github'
+
+interface HookContext {
+  path?: string | undefined
+  params?: unknown
+}
+
+/** Better Auth reports the route pattern (`/callback/:id`), with the provider in the params */
+function isGithubCallback(ctx: HookContext | null | undefined): boolean {
+  return ctx?.path === '/callback/:id' && (ctx.params as { id?: unknown } | undefined)?.id === GITHUB
+}
+
+function loginMethod(ctx: HookContext | null | undefined): string | undefined {
+  if (ctx?.path === '/passkey/verify-authentication') {
+    return 'passkey'
+  }
+  return isGithubCallback(ctx) ? GITHUB : undefined
+}
+
+/** WebAuthn ties passkeys to the environment's host and origin (ADR-0005 §2): each environment has its own */
+export function passkeyOptions(env: Pick<AuthEnv, 'SITE_URL'>) {
+  const siteUrl = new URL(env.SITE_URL)
+  return {
+    rpID: siteUrl.hostname,
+    rpName: 'Portfolio admin',
+    origin: siteUrl.origin,
+    // Discoverable credentials: sign-in needs no username
+    authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+  } as const
 }
 
 export const SESSION_POLICY = {
@@ -59,18 +105,50 @@ export function withoutOAuthTokens<T extends AccountTokens>(account: T): T {
   }
 }
 
-export function authOptions(env: AuthEnv): Omit<BetterAuthOptions, 'database'> {
+export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOptions, 'database'> {
   const siteUrl = env.SITE_URL.replace(/\/$/, '')
+  const secret = resolveAuthSecret(env)
+  const github = env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+    ? { github: { clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET } }
+    : {}
+
   return {
     appName: 'portfolio',
     baseURL: siteUrl,
     basePath: '/api/auth',
-    secret: resolveAuthSecret(env),
+    secret,
     trustedOrigins: [siteUrl],
     // No passwords and no public sign-up (ADR-0005 §2)
     emailAndPassword: { enabled: false },
     // The admin plugin keeps roles and bans, but its HTTP API stays off (./access.ts)
     disabledPaths: [...ADMIN_PLUGIN_PATHS],
+    socialProviders: github,
+    account: {
+      // No implicit linking by e-mail: a GitHub account joins a user only on its own sign-up or an explicit link
+      accountLinking: { enabled: true, disableImplicitLinking: true },
+    },
+    user: {
+      // Runs on GitHub sign-up, sign-in and link. Users are only ever created by GitHub during the owner bootstrap
+      // (ADR-0005 §3); afterwards GitHub only signs in the allowlisted owner. Fails closed
+      validateUserInfo: async ({ source }, ctx) => {
+        if (source.method !== 'oauth' || source.oauth?.providerId !== GITHUB) {
+          return { error: 'signup_disabled' }
+        }
+        const profile = source.oauth.profile as { id?: number | string } | undefined
+        const decision = githubAccessDecision({
+          action: source.action,
+          ownerGithubId: env.OWNER_GITHUB_ID,
+          githubId: profile?.id === undefined ? undefined : String(profile.id),
+          ownerExists: await ports.ownerExists(),
+          bootstrapGranted: await verifyBootstrapGrant(readCookie(ctx.headers?.get('cookie'), BOOTSTRAP_COOKIE), secret, Date.now()),
+        })
+        if (!decision.allowed) {
+          await ports.audit({ action: 'auth.github_rejected', metadata: { reason: decision.reason } })
+          return { error: 'github_not_allowed' }
+        }
+        return undefined
+      },
+    },
     session: {
       expiresIn: SESSION_POLICY.expiresIn,
       updateAge: SESSION_POLICY.updateAge,
@@ -86,15 +164,87 @@ export function authOptions(env: AuthEnv): Omit<BetterAuthOptions, 'database'> {
       database: { generateId: () => uuidv7() },
     },
     databaseHooks: {
+      user: {
+        create: {
+          // validateUserInfo only lets the bootstrap GitHub sign-up through, so that user is the owner
+          before: async (user, ctx) => (isGithubCallback(ctx) ? { data: { ...user, role: 'owner' } } : undefined),
+          after: async (user) => {
+            if ((user as { role?: string }).role === 'owner') {
+              await ports.audit({ action: 'auth.bootstrap_completed', actorUserId: user.id, entityType: 'user', entityId: user.id })
+            }
+          },
+        },
+      },
       // disableIpTracking still writes an empty string; store NULL so "no IP" does not rely on that detail
       session: {
-        create: { before: async session => ({ data: { ...session, ipAddress: null } }) },
+        create: {
+          before: async session => ({ data: { ...session, ipAddress: null } }),
+          after: async (session, ctx) => {
+            const method = loginMethod(ctx)
+            if (method) {
+              await ports.audit({ action: 'auth.login', actorUserId: session.userId, metadata: { method } })
+            }
+          },
+        },
         update: { before: async session => ({ data: { ...session, ipAddress: null } }) },
       },
       account: {
-        create: { before: async account => ({ data: withoutOAuthTokens(account) }) },
+        create: {
+          before: async (account) => {
+            // Linking counts too: only the allowlisted GitHub id may join any user
+            if (account.providerId === GITHUB && account.accountId !== env.OWNER_GITHUB_ID) {
+              await ports.audit({ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' } })
+              throw new APIError('FORBIDDEN', { code: 'GITHUB_NOT_ALLOWED', message: 'GitHub account not allowed' })
+            }
+            return { data: withoutOAuthTokens(account) }
+          },
+        },
         update: { before: async account => ({ data: withoutOAuthTokens(account) }) },
       },
+    },
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== '/passkey/delete-passkey') {
+          return
+        }
+        // Without a session the plugin answers 401 itself
+        const current = await getSessionFromCtx(ctx)
+        if (!current) {
+          return
+        }
+        const userId = current.user.id
+        const verdict = passkeyRemoval({
+          sessionCreatedAt: new Date(current.session.createdAt),
+          nowMs: Date.now(),
+          freshAgeSeconds: SESSION_POLICY.freshAge,
+          passkeyCount: await ports.countPasskeys(userId),
+          hasGithub: await ports.hasGithubAccount(userId),
+        })
+        if (verdict === 'session_not_fresh') {
+          throw new APIError('FORBIDDEN', { code: 'SESSION_NOT_FRESH', message: 'Sign in again to remove a passkey' })
+        }
+        if (verdict === 'last_passkey') {
+          throw new APIError('FORBIDDEN', { code: 'LAST_PASSKEY', message: 'Link GitHub before removing the last passkey' })
+        }
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        const failed = ctx.context.returned instanceof APIError
+        if (ctx.path === '/passkey/verify-authentication' && failed) {
+          await ports.audit({ action: 'auth.login_failed', metadata: { method: 'passkey' } })
+          return
+        }
+        if (failed || (ctx.path !== '/passkey/verify-registration' && ctx.path !== '/passkey/delete-passkey')) {
+          return
+        }
+        const actor = ctx.context.session ?? await getSessionFromCtx(ctx)
+        const removed = ctx.path === '/passkey/delete-passkey'
+        await ports.audit({
+          action: removed ? 'auth.passkey_removed' : 'auth.passkey_added',
+          actorUserId: actor?.user.id ?? null,
+          entityType: 'passkey',
+          ...(removed && typeof ctx.body?.id === 'string' ? { entityId: ctx.body.id } : {}),
+        })
+      }),
     },
     telemetry: { enabled: false },
   }
