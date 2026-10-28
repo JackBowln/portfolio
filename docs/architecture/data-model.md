@@ -60,7 +60,7 @@ Os modelos do Better Auth são mapeados para nomes no plural (`modelName`), para
 | `sessions` | `id`, `user_id` → users, `token` (único), `expires_at`, `ip_address`, `user_agent`, `impersonated_by`, `created_at`, `updated_at` | `ip_address` é sempre `NULL`: o rastreamento de IP do Better Auth fica desligado e um hook grava `NULL` (decisão da F03-T1). Índice em `user_id` |
 | `accounts` | `id`, `user_id` → users, `provider_id` (`github`), `account_id` (ID numérico do GitHub), colunas de tokens OAuth, `password` (sem uso), `created_at`, `updated_at` | Os tokens OAuth são **descartados** antes de chegar ao banco (hooks de criação e de atualização; decisão da F03-T1). `(provider_id, account_id)` é único |
 | `verifications` | `id`, `identifier`, `value`, `expires_at`, `created_at`, `updated_at` | Uso interno do Better Auth. Índice em `identifier` |
-| `passkeys` | `id`, `name`, `public_key`, `user_id` → users, `credential_id`, `counter`, `device_type`, `backed_up`, `transports`, `aaguid`, `created_at` | Plugin `@better-auth/passkey`; migração na F03-T2 |
+| `passkeys` | `id`, `name`, `public_key`, `user_id` → users, `credential_id`, `counter`, `device_type`, `backed_up`, `transports`, `aaguid`, `created_at` | Plugin `@better-auth/passkey`; migração `0002_passkeys` (F03-T2), com `credential_id` único e FK em cascata |
 
 ## 4. Conteúdo
 

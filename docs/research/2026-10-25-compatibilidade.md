@@ -164,6 +164,14 @@ Preços públicos em 06/10/2026: Haiku 5.5 a US$ 0,10/0,50, Sonnet 5.5 a US$ 2/1
 
 **27/10/2026 — F01-T2.** Instalados `tailwindcss` e `@tailwindcss/vite` 4.3.3 (MIT). Eles trazem o `lightningcss` (MPL-2.0, só no build, como o `axe-core`). Com `@theme`, o Tailwind 4.3 emite só as variáveis usadas por utilitários; `@theme static` emite todas. A varredura automática inclui `app/pages/dev`, por isso existe o `@source not` no `main.css`. O `light-dark()` funciona dentro de `@theme`, e o valor computado de `color-scheme` é o declarado (`light dark`) quando o tema segue o sistema.
 
+**28/10/2026 — F03-T2.** `@better-auth/passkey` foi fixado em 1.7.13, porque o `~1.7.13` resolvia a 1.7.14, que pede o `@better-auth/core` 1.7.14. Ele traz o `@simplewebauthn/server` e o `@simplewebauthn/browser` 13.3 e o `@peculiar/*`, todos MIT (o `asn1js` é BSD-3-Clause, o `tslib` 0BSD).
+
+- O `@peculiar/x509` usa o `tsyringe`, que lança erro no carregamento sem `reflect-metadata` (0.2.2, Apache-2.0). Ele foi declarado como dependência direta e marcado em `nitro.moduleSideEffects`.
+- O `user.validateUserInfo` do Better Auth 1.7 roda em cadastro, login e vínculo (`source.action`), não só no cadastro.
+- Os hooks recebem o padrão da rota (`/callback/:id`), com o provedor em `params.id`.
+- O WebAuthn recusa uma segunda credencial do mesmo usuário no mesmo autenticador (`excludeCredentials`).
+- Worker: 1,99 MB (536 kB gzip), contra 1,45 MB antes, abaixo do limite de 3 MB do Free.
+
 **27/10/2026 — F01-T3.** Instalado o `@nuxt/fonts` 1.2.0 (MIT), que trouxe o `fontless` 1.3.4, o `unifont` 1.0.3, o `fontaine` e o `@capsizecss/unpack` (todos MIT). Nenhum JS chega ao cliente. Comportamentos conferidos:
 
 - Com as famílias "manuais" (`src` local), ele gera os fallbacks métricos `"<Família> Fallback: <local>"` e processa as variáveis `--font-*`, inclusive dentro do `@theme` do Tailwind.

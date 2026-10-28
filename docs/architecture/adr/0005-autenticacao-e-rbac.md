@@ -94,6 +94,29 @@
 - **Telemetria** desligada; `emailAndPassword` desligado (`*_DISABLED` nas rotas de senha, testado); `delete-user` fica indisponível (404).
 - **Exceção registrada:** o input de `/api/auth/*` é validado pelos schemas do próprio Better Auth, não pelos nossos helpers `strict`.
 
+### Decisões da F03-T2 (owner, 2026-10-28)
+
+- **Passkey:** `@better-auth/passkey` 1.7.13, na mesma versão do `better-auth`.
+  - `rpID` é o host do `SITE_URL` e a `origin` é a do `SITE_URL`; credenciais *discoverable* (`residentKey: required`).
+  - Tabela `passkeys`, migração `0002_passkeys`.
+  - O plugin exige sessão fresca para registrar. A remoção passa por um hook nosso: sessão fresca, e nunca a última passkey sem GitHub vinculado (`LAST_PASSKEY`).
+- **GitHub (allowlist):** o `user.validateUserInfo` roda em todo cadastro, login e vínculo feitos pelo GitHub, e decide pela ação (`githubAccessDecision`, em `server/services/auth/policies.ts`):
+  - criar usuário só acontece no bootstrap: ID = `OWNER_GITHUB_ID`, nenhum owner e passe de bootstrap válido;
+  - login e vínculo só para o ID da allowlist;
+  - ações desconhecidas são recusadas.
+  - O vínculo implícito por e-mail está desligado (`disableImplicitLinking`). O hook `account.create` também confere a allowlist.
+  - Toda rejeição vai para o audit (`auth.github_rejected`, com o motivo, sem o ID do GitHub).
+- **Bootstrap:** rota anônima `server/api/setup/` (fora de `/api/admin`).
+  - O `GET` responde 404 quando já existe owner ou quando o `BOOTSTRAP_TOKEN` está ausente ou tem menos de 32 caracteres.
+  - O `POST {token}` confere a origem, compara o token em tempo constante (HMAC) e emite um passe assinado de 10 min (cookie `HttpOnly`, `Lax`, path `/api/auth`).
+  - O primeiro usuário criado pelo callback do GitHub vira `owner`.
+- **Auditoria mínima:** `server/services/audit/` grava `auth.login` (com o método), `auth.login_failed`, `auth.github_rejected`, `auth.bootstrap_rejected`, `auth.bootstrap_completed`, `auth.passkey_added` e `auth.passkey_removed`. O `ip_hash` fica `NULL` até a F03-T4.
+- **Worker:** o `@simplewebauthn/server` traz o `tsyringe`, que exige o polyfill `reflect-metadata`. Ele é o primeiro import de `server/utils/auth.ts` e consta em `nitro.moduleSideEffects`, sem o que o Rollup o descartaria.
+- **Testes:**
+  - o build de teste simula o GitHub interceptando o `fetch` do Worker (`server/_test/github-mock.ts`, registrado só com `PORTFOLIO_TEST_BUILD=1`);
+  - o `pnpm preview:test` roda com `SITE_URL` na porta 8787 (a origem real, exigida pelo WebAuthn) e valores falsos de teste;
+  - o projeto Playwright `auth-flow` limpa as tabelas de auth e roda por último.
+
 ### Decisões da F03-T3 (owner, 2026-10-27)
 
 - **Fonte única:** `shared/auth/permissions.ts` traz os statements e, por papel, o escopo de cada ação: `any`, `own` (🟡) ou `own-draft` (🟡 rascunho). São dados puros, sem importar o better-auth. O `server/services/auth/access.ts` monta deles o `createAccessControl` e os papéis do plugin `admin` (`defaultRole: 'viewer'`, `adminRoles: ['owner', 'admin']`).
@@ -110,7 +133,10 @@
 
 ## Validação
 
-- F03-T2: E2E de registro e login por passkey (autenticador virtual) e de login GitHub mockado; tentativa com ID fora da allowlist rejeitada; CPU de login medida (< 5 ms).
+- F03-T2:
+  - `tests/auth-flow/auth-flow.spec.ts` (Chromium, autenticador WebAuthn virtual): bootstrap pela tela → passkey → saída → login por passkey → segunda passkey → remoção; o GitHub simulado cobre ID permitido e negado (sem criar usuário), o owner de novo depois do bootstrap e as falhas auditadas;
+  - `tests/unit/auth-{options,policies,schema}.test.ts` e `tests/workers/auth-schema.test.ts`.
+  - **Pendente:** medir a CPU do login no preview real, com deploy e pedido do owner.
 - F03-T1: `tests/unit/auth-{options,schema}.test.ts`, `tests/workers/auth-schema.test.ts` e `tests/api/auth.spec.ts` (sem cadastro, flags do cookie numa sessão criada pela rota de teste `TEST_AUTH`, CSRF de outra origem → 403 conferido no `/security-audit`).
 - F03-T3:
   - `tests/unit/permissions.test.ts` lê a tabela do security-model §4 e a compara célula por célula com o `permissions.ts` e com os papéis do Better Auth;

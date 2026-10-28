@@ -30,7 +30,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `BETTER_AUTH_SECRET` | segredo | preview e produção (local opcional) | Assinatura de sessões (≥ 32 caracteres aleatórios). Sem ele, preview e produção falham fechados; local usa um valor aleatório por isolate (sessões caem quando o isolate reinicia). Local: `.dev.vars`; remoto: `wrangler secret put`, só com pedido do owner |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | segredo | todos | Um OAuth App por ambiente (callback `${SITE_URL}/api/auth/callback/github`) |
 | `OWNER_GITHUB_ID` | segredo | todos | ID numérico do GitHub do owner (allowlist) |
-| `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois |
+| `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois. Com menos de 32 caracteres o bootstrap não abre. Os testes usam um valor falso (`pnpm preview:test`) |
 | `PREVIEW_TOKEN_SECRET` | segredo | todos | HMAC dos links de preview |
 | `IP_HASH_SALT` | segredo | todos | HMAC de IPs (rotação anual) |
 | `TURNSTILE_SECRET_KEY` | segredo | todos | Validação do Turnstile |

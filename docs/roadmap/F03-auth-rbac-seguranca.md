@@ -44,7 +44,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F03-T1 | RF-03.1, RF-03.2 | `/security-audit`, `/test-engineer` |
+| concluída | F03-T1 | RF-03.1, RF-03.2 | `/security-audit`, `/test-engineer` |
 
 **Objetivo.** Ativar `@better-auth/passkey` e o GitHub OAuth com a allowlist `OWNER_GITHUB_ID`, criar o fluxo `/admin/setup` (exige ausência de owner + `BOOTSTRAP_TOKEN`), a tela de login e a gestão de passkeys (listar, adicionar, remover com sessão fresca).
 
@@ -53,15 +53,29 @@
 **Fora do escopo.** UI de convites para outros usuários (backlog).
 
 **Critérios de aceite**
-- [ ] Registro e login por passkey funcionando (RP ID e origin por ambiente).
-- [ ] Login GitHub de ID fora da allowlist → rejeitado sem criar usuário, com o evento auditado.
-- [ ] `/admin/setup` responde só sem owner **e** com o token correto; depois retorna 404 (testado).
-- [ ] Remover passkey exige sessão fresca; não é possível remover a última passkey sem um GitHub vinculado.
-- [ ] Login, falha de login e passkey adicionada ou removida aparecem no `audit_log`.
+- [x] Registro e login por passkey funcionando (RP ID e origin por ambiente).
+- [x] Login GitHub de ID fora da allowlist → rejeitado sem criar usuário, com o evento auditado.
+- [x] `/admin/setup` responde só sem owner **e** com o token correto; depois retorna 404 (testado).
+- [x] Remover passkey exige sessão fresca; não é possível remover a última passkey sem um GitHub vinculado.
+- [x] Login, falha de login e passkey adicionada ou removida aparecem no `audit_log`.
 
 **Testes**
 - E2E (Chromium): autenticador WebAuthn virtual para registro + login + logout.
 - API: GitHub OAuth mockado com ID permitido e com ID negado; bootstrap nos três estados (sem token, com token, depois do owner).
+
+**Resultado (28/10/2026).**
+- `@better-auth/passkey` 1.7.13 e migração `0002_passkeys` (só local).
+- GitHub com allowlist por ação, bootstrap em `server/api/setup/`, auditoria mínima em `server/services/audit/`.
+- Telas `app/pages/admin/{login,setup,conta/passkeys}.vue`, só em pt-BR, com os componentes da F01-T4. Decisões no ADR-0005 ("Decisões da F03-T2").
+- Testes:
+  - projeto Playwright `auth-flow` (Chromium, autenticador WebAuthn virtual, GitHub simulado no Worker de teste);
+  - `tests/unit/auth-{options,policies,schema}.test.ts` e `tests/workers/auth-schema.test.ts`.
+- Worker com 536 kB gzip (+133 kB, por causa do SimpleWebAuthn e do ASN.1).
+- **Pendências:**
+  - medir a CPU do login no preview real (deploy, `wrangler secret put` e migração remota, só com pedido do owner);
+  - rate limit no `/api/setup` e no `/api/auth/*` (F03-T4);
+  - `ip_hash` no audit (F03-T4);
+  - shell SPA do admin e checagem do manifest (F03-T5).
 
 ---
 
