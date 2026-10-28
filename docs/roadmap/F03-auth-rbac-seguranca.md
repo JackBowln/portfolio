@@ -128,7 +128,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F03-T3, F01-T2 | RNF-07, RNF-12 | `/security-audit` |
+| concluída | F03-T3, F01-T2 | RNF-07, RNF-12 | `/security-audit` |
 
 **Objetivo.** Implementar:
 - a CSP por hash, calculada no hook de renderização a partir dos scripts inline do HTML final;
@@ -143,11 +143,21 @@
 **Fora do escopo.** `RL_PUBLIC` e Turnstile (F08-T3); `frame-src` dos embeds (F05-T5).
 
 **Critérios de aceite**
-- [ ] `script-src` sem `unsafe-inline` e sem `unsafe-eval`; os hashes batem com os scripts inline (tema, `motion-ok` quando existir, config do Nuxt).
-- [ ] **Nenhuma violação de CSP** no console nas páginas públicas e no admin.
-- [ ] POST/PUT/PATCH/DELETE com `Origin` de outro site → 403; `Content-Type` inválido → 415; body acima do limite → 413.
-- [ ] Rate limit retorna 429 com `Retry-After`; o login fica limitado por IP + rota.
-- [ ] O IP nunca é gravado em claro; o `audit_log` registra ator, ação, entidade e hash de IP.
+- [x] `script-src` sem `unsafe-inline` e sem `unsafe-eval`; os hashes batem com os scripts inline (tema, `motion-ok` quando existir, config do Nuxt).
+- [x] **Nenhuma violação de CSP** no console nas páginas públicas e no admin.
+- [x] POST/PUT/PATCH/DELETE com `Origin` de outro site → 403; `Content-Type` inválido → 415; body acima do limite → 413.
+- [x] Rate limit retorna 429 com `Retry-After`; o login fica limitado por IP + rota.
+- [x] O IP nunca é gravado em claro; o `audit_log` registra ator, ação, entidade e hash de IP.
+
+**Resultado (28/10/2026).**
+- **CSP:** `server/utils/csp.ts` (extração dos scripts inline, `sha256`, montagem da política) e `server/plugins/csp.ts` (hook `render:response`, que também cobre o 404 e o 500 do Nuxt). Respostas que não são página levam `default-src 'none'; frame-ancestors 'none'`; os assets estáticos ganham `nosniff` pelo `_headers`.
+- **Mutações:** `server/middleware/00.origin-check.ts` (origem em todo `/api/**`, JSON em `admin`/`public`/`setup`, 413 por `Content-Length`). A checagem de origem própria da `/api/setup` saiu, porque o middleware passou a cobri-la.
+- **Rate limit:** `server/middleware/01.rate-limit.ts` (`RL_AUTH` por IP + rota) e `RL_ADMIN` por sessão em `admin-session.ts`, via `server/utils/rate-limit.ts`.
+- **IP:** `server/utils/ip-hash.ts` (só `CF-Connecting-IP`, HMAC-SHA256 com `IP_HASH_SALT`); o serviço de auditoria grava o hash; `server/utils/audit.ts` (`auditRequest`) serve os handlers do admin.
+- **Tipos:** os segredos de `server/types/env.d.ts` passaram a valer no `Env` global, que é o tipo devolvido pelo `useEnv` (antes eles só aumentavam o `Cloudflare.Env`).
+- **Exceção temporária:** o hash do script que a 404 padrão do Nuxt insere só no cliente (`CLIENT_ONLY_SCRIPT_HASHES`), até o `error.vue` da F01-T5.
+- **Decisões:** ADR-0012, "Decisões da F03-T4".
+- **Testes:** `tests/unit/csp.test.ts`, `tests/unit/ip-hash.test.ts`, `tests/api/hardening.spec.ts`, `tests/e2e/csp.spec.ts` e o HMAC do IP no `auth-flow`.
 
 **Testes**
 - Unit: extração de scripts inline e cálculo dos hashes.

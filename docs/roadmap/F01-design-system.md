@@ -167,6 +167,7 @@
 - [ ] Menu mobile com foco preso, `Esc` fecha, foco devolvido ao botão e `aria-expanded` correto.
 - [ ] O header fixo (se houver) não cobre o foco (`scroll-padding-top`).
 - [ ] 404 e 500 localizados nos 5 idiomas, com link para a home do idioma; status HTTP correto.
+- [ ] O `error.vue` não usa script inline, e o hash da 404 padrão do Nuxt sai de `CLIENT_ONLY_SCRIPT_HASHES` (`server/utils/csp.ts`, F03-T4), com o `tests/e2e/csp.spec.ts` verde.
 - [ ] Responsivo de 360 a 1920 px sem rolagem horizontal; JS do layout dentro do orçamento (`check:budgets`).
 
 **Testes**

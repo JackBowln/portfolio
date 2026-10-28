@@ -32,7 +32,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `OWNER_GITHUB_ID` | segredo | todos | ID numérico do GitHub do owner (allowlist) |
 | `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois. Com menos de 32 caracteres o bootstrap não abre. Os testes usam um valor falso (`pnpm preview:test`) |
 | `PREVIEW_TOKEN_SECRET` | segredo | todos | HMAC dos links de preview |
-| `IP_HASH_SALT` | segredo | todos | HMAC de IPs (rotação anual) |
+| `IP_HASH_SALT` | segredo | todos | Chave do HMAC-SHA256 dos IPs no `audit_log` (rotação anual). Sem ela, o `ip_hash` fica nulo: nunca há hash sem chave nem IP em claro. Os testes usam um valor falso (`pnpm preview:test`) |
 | `TURNSTILE_SECRET_KEY` | segredo | todos | Validação do Turnstile |
 | `CF_API_TOKEN_PURGE` | segredo | só se usar o fallback | Purge por tag via API (ADR-0003) |
 | `ANTHROPIC_API_KEY` | segredo | futuro | Só com ADR e aprovação (ADR-0009) |

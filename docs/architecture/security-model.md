@@ -18,11 +18,11 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 
 | Superfície | Exposição | Controles principais |
 |---|---|---|
-| Páginas públicas (SSR/cache) | Anônima | Sem `v-html`, renderer com allowlist, CSP por hash, sem cookies, headers de segurança |
+| Páginas públicas (SSR/cache) | Anônima | Sem `v-html`, renderer com allowlist, CSP por hash (`server/plugins/csp.ts`), sem cookies, headers de segurança |
 | `/api/public/contact` | Anônima | Turnstile, `RL_PUBLIC`, zod, limite de tamanho, checagem de origem, sem reflexo de entrada |
-| `/api/auth/*` | Anônima | Better Auth (checagem de origem), `RL_AUTH`, allowlist do GitHub, sem cadastro público, auditoria |
-| `/admin/setup` (bootstrap) | Anônima até existir owner | Exige ausência de owner **e** `BOOTSTRAP_TOKEN`; 404 depois |
-| `/api/admin/*` | Autenticada | Sessão obrigatória, `requirePermission`, propriedade, zod, origem + JSON, `RL_ADMIN`, auditoria |
+| `/api/auth/*` | Anônima | Checagem de origem (middleware + Better Auth), `RL_AUTH` por IP + rota nas mutações e no callback OAuth, allowlist do GitHub, sem cadastro público, auditoria com hash de IP |
+| `/admin/setup` (bootstrap) | Anônima até existir owner | Exige ausência de owner **e** `BOOTSTRAP_TOKEN`; 404 depois; origem + JSON + `RL_AUTH` em `POST /api/setup` |
+| `/api/admin/*` | Autenticada | Origem + JSON + 1 MB (antes da sessão), sessão obrigatória, `RL_ADMIN` por sessão, `requirePermission`, propriedade, zod, auditoria (`auditRequest`) |
 | Upload de mídia | Autenticada | Magic bytes, allowlist de MIME, limites, chaves geradas pelo servidor, SVG bloqueado, `nosniff` |
 | Editor e conteúdo (embeds, links, código) | Autenticada → público | Schema estrito, protocolos de URL, allowlist de embeds, HAST com allowlist |
 | `/preview/{token}` | Quem tiver o link | HMAC, expiração ≤ 24 h, `noindex`, `private, no-store` |

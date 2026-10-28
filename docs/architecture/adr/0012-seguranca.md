@@ -64,6 +64,37 @@
     - A página de privacidade descreve o tratamento de dados e o canal para solicitações dos titulares.
 13. **Tokens de preview.** HMAC-SHA256 com `exp` de até 24 h, comparação em tempo constante e `private, no-store` + `noindex`.
 
+### Decisões da F03-T4 (owner, 2026-10-28)
+
+- **CSP das páginas:**
+  - calculada no hook `render:response` do Nitro (`server/plugins/csp.ts`), sobre o corpo final. Os scripts que executam (sem `src`, de tipo vazio, `module`, `importmap` ou JavaScript) recebem `sha256`; blocos de dados (`application/json`, `ld+json`) ficam de fora;
+  - hoje são 4: tema, fontes, `window.__NUXT__.config` e o import map do Vite. Não há atributos `on*`, então não há `'unsafe-hashes'`;
+  - exceção temporária: a página 404 padrão do Nuxt (`error-404.vue`) insere um script só no cliente, que nunca aparece no HTML do servidor. O hash exato dele fica em `CLIENT_ONLY_SCRIPT_HASHES` (`server/utils/csp.ts`), conferido contra o Nuxt instalado por `tests/unit/csp.test.ts`, até o `app/error.vue` próprio da F01-T5 substituir essa página;
+  - a CSP vai junto com o HTML no cache de borda, então hash e corpo não se separam. O custo é uma regex e alguns SHA-256, com memo por isolate;
+  - o 404 e o 500 do Nuxt são renderizados numa sub-requisição sem bindings, cujos headers o handler de erro copia. Ali a origem vem do `runtimeConfig.public.siteUrl`, que tem o mesmo valor;
+  - desligada em `nuxt dev`, por causa do cliente do Vite;
+  - `upgrade-insecure-requests` só quando o `SITE_URL` é https, como o HSTS;
+  - `img-src`/`media-src` levam a origem do `MEDIA_BASE_URL` quando ela difere da do site;
+  - o `frame-src` dos embeds e o Turnstile ficam para a F05-T5 e a F08-T3.
+- **Fora das páginas:** toda resposta do Worker que não é página leva `default-src 'none'; frame-ancestors 'none'`. Os erros JSON do Nitro já vêm com `script-src 'none'; frame-ancestors 'none'`. Os assets estáticos, que não passam pelo Worker, ganham `nosniff` pelas `routeRules`, que o Nitro grava no `_headers`.
+- **Origem (§2), mais amplo que o texto original:**
+  - vale para toda mutação em `/api/**`, inclusive `/api/auth` e `/api/setup`, e não só para `admin` e `public`;
+  - `Origin` igual ao do `SITE_URL` ou, sem `Origin`, `Sec-Fetch-Site: same-origin`; senão 403;
+  - roda antes da sessão (`server/middleware/00.origin-check.ts`), então uma requisição cross-site não chega a ler a sessão.
+- **Tipo e tamanho:**
+  - JSON obrigatório em `/api/admin`, `/api/public` e `/api/setup` quando há corpo, ou seja, sempre que há `Content-Type` ou corpo. `/api/auth` fica com o Better Auth;
+  - `Content-Length` acima de 1 MB → 413 em todo `/api/**`; os nossos handlers também medem os bytes reais (`readValidatedBodyStrict`).
+- **Rate limit (§6):**
+  - `RL_AUTH` com chave `IP + rota` nas mutações de `/api/auth/**`, no `GET /api/auth/callback/*` e no `POST /api/setup`. Leituras como `get-session` ficam livres;
+  - `RL_ADMIN` por sessão, logo depois da autenticação;
+  - 429 com `Retry-After: 60`, o período dos bindings;
+  - binding ausente: não bloqueia e registra `rate_limit.binding_missing`, porque os 3 ambientes declaram os bindings;
+  - o IP usado na chave fica só no contador da Cloudflare.
+- **IP (§10):**
+  - lido só de `CF-Connecting-IP`; `X-Forwarded-For` é ignorado;
+  - gravado como HMAC-SHA256 em hex com `IP_HASH_SALT` (`server/utils/ip-hash.ts`). Sem a chave, `ip_hash` fica nulo: nunca há hash sem chave;
+  - os eventos do Better Auth e do bootstrap passam o IP ao serviço de auditoria; os handlers do admin usam `auditRequest(event, …)`, que preenche o ator e o IP.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -88,7 +119,7 @@
 ## Validação
 
 - F02-T4 (2026-10-26): headers base (§1, sem CSP) em `server/plugins/security-headers.ts`, com HSTS só quando `ENVIRONMENT=production`; validação `strict` (§4) em `server/utils/validation.ts`, que também exige `application/json` e limita o body a 1 MB inclusive sem `Content-Length`; erro 500 genérico e logs JSON com `requestId` (§10). Coberto por `tests/api/server-infra.spec.ts`.
-- F03-T4: testes de headers por tipo de rota; POST cross-origin rejeitado; o rate limit retorna 429; nenhuma violação de CSP nas páginas públicas.
+- F03-T4 (2026-10-28): `tests/unit/csp.test.ts` e `tests/unit/ip-hash.test.ts` (extração, hash conferido com `openssl`, montagem da política, HMAC); `tests/api/hardening.spec.ts` (hashes da CSP conferidos contra os scripts de cada página, CSP fora das páginas, `nosniff` nos assets, 403 cross-site, 415, 413, 429 com `Retry-After` no auth e no admin); `tests/e2e/csp.spec.ts` (nenhuma violação de CSP em 12 rotas públicas e do admin, desktop e mobile); `auth-flow` com o HMAC do IP no `audit_log`.
 - F12-T3: `/security-audit` completo sem achados altos ou críticos.
 
 ## Referências
