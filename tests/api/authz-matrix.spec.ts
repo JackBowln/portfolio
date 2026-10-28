@@ -8,7 +8,7 @@ import type { Resource } from '../../shared/auth/permissions'
 import { ROLES } from '../../shared/types/enums'
 import type { Role } from '../../shared/types/enums'
 
-const ORIGIN = { origin: 'http://localhost:3000' }
+const ORIGIN = { origin: 'http://localhost:8787' }
 // routeRules for /api/admin/** (nuxt.config.ts)
 const PRIVATE = { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' }
 

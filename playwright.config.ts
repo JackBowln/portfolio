@@ -16,7 +16,7 @@ export default defineConfig({
   webServer: [
     {
       // CI builds in an earlier step; locally the suite builds first, with the test-only routes (server/api/_test)
-      command: process.env.CI ? 'pnpm preview' : 'pnpm build && pnpm preview',
+      command: process.env.CI ? 'pnpm preview:test' : 'pnpm build && pnpm preview:test',
       env: { PORTFOLIO_TEST_BUILD: '1' },
       url: `${PREVIEW_URL}/api/health`,
       reuseExistingServer: !process.env.CI,
@@ -36,5 +36,12 @@ export default defineConfig({
     { name: 'e2e', testDir: './tests/e2e', use: { ...devices['Desktop Chrome'] } },
     { name: 'e2e-mobile', testDir: './tests/e2e', use: { ...devices['iPhone 15'] } },
     { name: 'a11y', testDir: './tests/a11y', use: { ...devices['Desktop Chrome'] } },
+    // Owner bootstrap and login (F03-T2): it empties the auth tables first, so it runs alone after everything else
+    {
+      name: 'auth-flow',
+      testDir: './tests/auth-flow',
+      dependencies: ['api', 'api-prod', 'e2e', 'e2e-mobile', 'a11y'],
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
 })

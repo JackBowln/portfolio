@@ -7,7 +7,6 @@ import { createAuthEndpoint } from 'better-auth/api'
 import { setSessionCookie } from 'better-auth/cookies'
 import { z } from 'zod'
 import { ROLES } from '#shared/types/enums'
-import { adminPlugin } from '../../services/auth/access.ts'
 import { authOptions } from '../../services/auth/options.ts'
 
 const querySchema = z.object({
@@ -38,7 +37,14 @@ const testAuthPlugin = {
 export default defineEventHandler((event) => {
   const query = getValidatedQueryStrict(event, querySchema)
   const env = useEnv(event)
-  const auth = betterAuth({ ...authOptions(env), database: authDatabase(env), plugins: [adminPlugin(), testAuthPlugin] })
+  // The real gate only lets GitHub create users; test users come from this plugin instead
+  const { user: { validateUserInfo, ...user } = {}, ...options } = authOptions(env, authPorts(env))
+  const auth = betterAuth({
+    ...options,
+    user,
+    database: authDatabase(env),
+    plugins: [...authPlugins(env), testAuthPlugin],
+  })
   return auth.handler(new Request(`${env.SITE_URL.replace(/\/$/, '')}/api/auth/test-auth/sign-in`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'origin': env.SITE_URL },

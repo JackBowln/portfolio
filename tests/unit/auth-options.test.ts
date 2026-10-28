@@ -1,31 +1,57 @@
 import { describe, expect, it } from 'vitest'
-import { authOptions, resolveAuthSecret, SESSION_POLICY, withoutOAuthTokens } from '../../server/services/auth/options'
+import type { AuditEvent } from '../../server/services/audit/audit.service'
+import { authOptions, passkeyOptions, resolveAuthSecret, SESSION_POLICY, withoutOAuthTokens } from '../../server/services/auth/options'
+import type { AuthPorts } from '../../server/services/auth/options'
+import { BOOTSTRAP_COOKIE, createBootstrapGrant } from '../../server/services/auth/policies'
 
 // Throwaway value generated per run; never a real secret
 const SECRET = crypto.randomUUID() + crypto.randomUUID()
-const env = (overrides = {}) => ({ ENVIRONMENT: 'preview', SITE_URL: 'https://portfolio-preview.example.dev', BETTER_AUTH_SECRET: SECRET, ...overrides })
+const OWNER_ID = '4242'
+const env = (overrides = {}) => ({
+  ENVIRONMENT: 'preview',
+  SITE_URL: 'https://portfolio-preview.example.dev',
+  BETTER_AUTH_SECRET: SECRET,
+  OWNER_GITHUB_ID: OWNER_ID,
+  ...overrides,
+})
+
+function fakePorts(overrides: Partial<AuthPorts> = {}) {
+  const audited: AuditEvent[] = []
+  const ports: AuthPorts = {
+    ownerExists: async () => false,
+    countPasskeys: async () => 1,
+    hasGithubAccount: async () => true,
+    audit: async (event) => {
+      audited.push(event)
+    },
+    ...overrides,
+  }
+  return { ports, audited }
+}
+
+const options = (overrides = {}, ports = fakePorts().ports) => authOptions(env(overrides), ports)
 
 describe('authOptions', () => {
   it('has no password sign-in or sign-up', () => {
-    expect(authOptions(env()).emailAndPassword).toEqual({ enabled: false })
+    expect(options().emailAndPassword).toEqual({ enabled: false })
   })
 
   it('pins base URL and trusted origins to SITE_URL', () => {
-    const options = authOptions(env({ SITE_URL: 'https://x.dev/' }))
+    const result = options({ SITE_URL: 'https://x.dev/' })
 
-    expect(options.baseURL).toBe('https://x.dev')
-    expect(options.basePath).toBe('/api/auth')
-    expect(options.trustedOrigins).toEqual(['https://x.dev'])
+    expect(result.baseURL).toBe('https://x.dev')
+    expect(result.basePath).toBe('/api/auth')
+    expect(result.trustedOrigins).toEqual(['https://x.dev'])
   })
 
   it('uses Secure (__Secure-) cookies on https and plain cookies on localhost', () => {
-    expect(authOptions(env()).advanced?.useSecureCookies).toBe(true)
-    expect(authOptions(env({ ENVIRONMENT: 'local', SITE_URL: 'http://localhost:3000' })).advanced?.useSecureCookies).toBe(false)
-    expect(authOptions(env()).advanced?.defaultCookieAttributes).toEqual({ httpOnly: true, sameSite: 'lax', path: '/' })
+    expect(options().advanced?.useSecureCookies).toBe(true)
+    expect(options({ ENVIRONMENT: 'local', SITE_URL: 'http://localhost:3000' }).advanced?.useSecureCookies).toBe(false)
+    expect(options().advanced?.defaultCookieAttributes).toEqual({ httpOnly: true, sameSite: 'lax', path: '/' })
   })
 
   it('keeps sessions 7 days, renewed daily, with a 5 min cookie cache and 15 min freshness', () => {
-    expect(authOptions(env()).session).toEqual({
+    expect(options().session).toEqual({
       expiresIn: 604_800,
       updateAge: 86_400,
       freshAge: 900,
@@ -35,27 +61,96 @@ describe('authOptions', () => {
   })
 
   it('disables IP tracking and telemetry', () => {
-    const options = authOptions(env())
+    const result = options()
 
-    expect(options.advanced?.ipAddress).toEqual({ disableIpTracking: true })
-    expect(options.telemetry).toEqual({ enabled: false })
+    expect(result.advanced?.ipAddress).toEqual({ disableIpTracking: true })
+    expect(result.telemetry).toEqual({ enabled: false })
   })
 
   it('stores sessions without an IP address', async () => {
-    const before = authOptions(env()).databaseHooks?.session?.create?.before
+    const before = options().databaseHooks?.session?.create?.before
     const result = await before?.({ ipAddress: '', userAgent: 'ua' } as never, null)
 
     expect(result).toEqual({ data: { ipAddress: null, userAgent: 'ua' } })
   })
 
   it('discards OAuth tokens on account create and update', async () => {
-    const hooks = authOptions(env()).databaseHooks?.account
-    const account = { providerId: 'github', accountId: '1', accessToken: 'a', refreshToken: 'r', idToken: 'i' }
+    const hooks = options().databaseHooks?.account
+    const account = { providerId: 'github', accountId: OWNER_ID, accessToken: 'a', refreshToken: 'r', idToken: 'i' }
 
     for (const before of [hooks?.create?.before, hooks?.update?.before]) {
       expect(await before?.(account as never, null)).toEqual({ data: withoutOAuthTokens(account) })
     }
-    expect(withoutOAuthTokens(account)).toMatchObject({ accountId: '1', accessToken: null, refreshToken: null, idToken: null })
+    expect(withoutOAuthTokens(account)).toMatchObject({ accountId: OWNER_ID, accessToken: null, refreshToken: null, idToken: null })
+  })
+
+  it('enables GitHub only when both credentials exist, and never links accounts implicitly', () => {
+    expect(options().socialProviders).toEqual({})
+    expect(options({ GITHUB_CLIENT_ID: 'id', GITHUB_CLIENT_SECRET: 'secret' }).socialProviders).toEqual({ github: { clientId: 'id', clientSecret: 'secret' } })
+    expect(options().account?.accountLinking).toEqual({ enabled: true, disableImplicitLinking: true })
+  })
+})
+
+describe('GitHub gate', () => {
+  async function signUp(githubId: number, { ownerExists = false, grant = true, action = 'create-user' } = {}) {
+    const { ports, audited } = fakePorts({ ownerExists: async () => ownerExists })
+    const validate = authOptions(env(), ports).user?.validateUserInfo
+    const cookie = grant ? `${BOOTSTRAP_COOKIE}=${await createBootstrapGrant(SECRET, Date.now())}` : ''
+    const ctx = { headers: new Headers({ cookie }) }
+    const result = await validate?.({ user: {}, source: { method: 'oauth', action, oauth: { providerId: 'github', profile: { id: githubId } } } } as never, ctx as never)
+    return { result, audited }
+  }
+
+  it('lets only the allowlisted owner sign up, during the bootstrap', async () => {
+    expect((await signUp(Number(OWNER_ID))).result).toBeUndefined()
+  })
+
+  it('signs the owner in afterwards, without a grant, and still turns anyone else away', async () => {
+    expect((await signUp(Number(OWNER_ID), { ownerExists: true, grant: false, action: 'sign-in' })).result).toBeUndefined()
+    expect((await signUp(1, { ownerExists: true, grant: false, action: 'sign-in' })).result).toEqual({ error: 'github_not_allowed' })
+  })
+
+  it('rejects any other case without creating the user, and audits it', async () => {
+    for (const [id, state, reason] of [
+      [1, {}, 'not_allowlisted'],
+      [Number(OWNER_ID), { ownerExists: true }, 'owner_exists'],
+      [Number(OWNER_ID), { grant: false }, 'bootstrap_required'],
+    ] as const) {
+      const { result, audited } = await signUp(id, state)
+      expect(result, reason).toEqual({ error: 'github_not_allowed' })
+      expect(audited, reason).toEqual([{ action: 'auth.github_rejected', metadata: { reason } }])
+    }
+  })
+
+  it('rejects every sign-up that is not GitHub', async () => {
+    const validate = options().user?.validateUserInfo
+    const result = await validate?.({ user: {}, source: { method: 'test-auth', action: 'create-user' } } as never, { headers: new Headers() } as never)
+    expect(result).toEqual({ error: 'signup_disabled' })
+  })
+
+  it('refuses to link a GitHub account outside the allowlist', async () => {
+    const { ports, audited } = fakePorts()
+    const before = authOptions(env(), ports).databaseHooks?.account?.create?.before
+    await expect(before?.({ providerId: 'github', accountId: '1' } as never, null)).rejects.toMatchObject({ statusCode: 403 })
+    expect(audited).toEqual([{ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' } }])
+  })
+
+  it('makes the bootstrap GitHub sign-up the owner, and only that one', async () => {
+    const before = options().databaseHooks?.user?.create?.before
+    expect(await before?.({ name: 'x' } as never, { path: '/callback/:id', params: { id: 'github' } } as never)).toEqual({ data: { name: 'x', role: 'owner' } })
+    expect(await before?.({ name: 'x' } as never, { path: '/callback/:id', params: { id: 'google' } } as never)).toBeUndefined()
+    expect(await before?.({ name: 'x' } as never, { path: '/test-auth/sign-in' } as never)).toBeUndefined()
+  })
+})
+
+describe('passkeyOptions', () => {
+  it('binds passkeys to the environment host and origin', () => {
+    expect(passkeyOptions({ SITE_URL: 'https://portfolio-preview.example.dev/' })).toMatchObject({
+      rpID: 'portfolio-preview.example.dev',
+      origin: 'https://portfolio-preview.example.dev',
+      authenticatorSelection: { residentKey: 'required' },
+    })
+    expect(passkeyOptions({ SITE_URL: 'http://localhost:8787' })).toMatchObject({ rpID: 'localhost', origin: 'http://localhost:8787' })
   })
 })
 

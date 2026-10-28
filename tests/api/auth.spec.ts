@@ -1,7 +1,7 @@
 // F03-T1: Better Auth mounted with no public sign-up; session cookie flags (ADR-0005 §4)
 import { expect, test } from '@playwright/test'
 
-const ORIGIN = { origin: 'http://localhost:3000' }
+const ORIGIN = { origin: 'http://localhost:8787' }
 const credentials = { email: 'someone@example.com', password: 'a-long-password-123', name: 'Someone' }
 
 test('there is no email and password sign-up or sign-in', async ({ request }) => {
