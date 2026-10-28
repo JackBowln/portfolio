@@ -47,5 +47,47 @@
     "siteName": "[PLACEHOLDER]",
     "titleTemplate": "%s — [PLACEHOLDER]",
     "defaultDescription": "[PLACEHOLDER]"
+  },
+  "admin": {
+    "common": {
+      "signOut": "Sair",
+      "unexpectedError": "Algo deu errado. Tente de novo."
+    },
+    "login": {
+      "title": "Entrar no admin",
+      "intro": "Use a passkey deste dispositivo. O GitHub serve para recuperar o acesso.",
+      "passkey": "Entrar com passkey",
+      "github": "Entrar com GitHub",
+      "passkeyFailed": "Não foi possível entrar com a passkey.",
+      "githubFailed": "O GitHub não autorizou o acesso a este admin."
+    },
+    "setup": {
+      "title": "Configuração inicial",
+      "intro": "Crie a conta de owner: informe o token de configuração, entre com o GitHub autorizado e registre uma passkey.",
+      "closed": "Não há configuração pendente.",
+      "tokenLabel": "Token de configuração",
+      "tokenDescription": "O valor de BOOTSTRAP_TOKEN deste ambiente.",
+      "continue": "Continuar com GitHub",
+      "invalidToken": "Token inválido.",
+      "passkeyTitle": "Registre uma passkey",
+      "passkeyIntro": "A passkey passa a ser a forma principal de entrar.",
+      "registerPasskey": "Registrar passkey",
+      "needsSession": "Entre com o GitHub autorizado antes de registrar a passkey."
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "intro": "Dispositivos que podem entrar neste admin.",
+      "empty": "Nenhuma passkey registrada.",
+      "unnamed": "Passkey sem nome",
+      "createdAt": "Criada em {date}",
+      "add": "Adicionar passkey",
+      "remove": "Remover",
+      "removeLabel": "Remover {name}",
+      "added": "Passkey adicionada.",
+      "removed": "Passkey removida.",
+      "notFresh": "Por segurança, entre de novo para continuar.",
+      "lastPasskey": "Vincule o GitHub antes de remover a última passkey.",
+      "signInAgain": "Entrar de novo"
+    }
   }
 }

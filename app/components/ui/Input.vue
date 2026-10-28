@@ -5,7 +5,7 @@ defineOptions({ inheritAttrs: false })
 
 withDefaults(defineProps<{
   id: string
-  type?: 'text' | 'email' | 'url' | 'search' | 'tel'
+  type?: 'text' | 'email' | 'url' | 'search' | 'tel' | 'password'
   describedby?: string | undefined
   invalid?: boolean
   required?: boolean
