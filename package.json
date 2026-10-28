@@ -12,6 +12,7 @@
     "build": "nuxt build",
     "preview": "wrangler dev --config .output/server/wrangler.json --persist-to .wrangler/state",
     "preview:prod": "wrangler dev --config .output/server/wrangler.json --name portfolio-prodlike --persist-to .wrangler/state-prod --port 8788 --inspector-port 9230 --var ENVIRONMENT:production --var SITE_URL:http://localhost:8788 --var NUXT_PUBLIC_SITE_URL:http://localhost:8788",
+    "preview:test": "wrangler dev --config .output/server/wrangler.json --persist-to .wrangler/state --var SITE_URL:http://localhost:8787 --var NUXT_PUBLIC_SITE_URL:http://localhost:8787 --var OWNER_GITHUB_ID:1001 --var BOOTSTRAP_TOKEN:test-bootstrap-token-0123456789abcdef --var GITHUB_CLIENT_ID:test-client-id --var GITHUB_CLIENT_SECRET:test-client-secret",
     "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -21,7 +22,7 @@
     "test:nuxt": "vitest run --project nuxt",
     "test:workers": "vitest run --project workers",
     "test:api": "playwright test --project api --project api-prod",
-    "test:e2e": "playwright test --project e2e --project e2e-mobile",
+    "test:e2e": "playwright test --project e2e --project e2e-mobile --project auth-flow",
     "test:a11y": "playwright test --project a11y && playwright test --config playwright.dev.config.ts",
     "check:budgets": "node scripts/check-budgets.ts",
     "check:contrast": "node scripts/check-contrast.ts",
@@ -33,11 +34,13 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@better-auth/passkey": "1.7.13",
     "@nuxt/fonts": "~1.2.0",
     "@nuxtjs/i18n": "~10.6.0",
     "better-auth": "~1.7.13",
     "drizzle-orm": "~0.45.4",
     "nuxt": "~4.6.2",
+    "reflect-metadata": "~0.2.2",
     "vue": "~3.5.44",
     "vue-router": "~5.4.0",
     "zod": "~4.6.7"
