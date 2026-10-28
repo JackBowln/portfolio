@@ -1,9 +1,12 @@
 // F02-T4: cache, security headers and error handling on the production build (routes under _test exist only with
 // PORTFOLIO_TEST_BUILD=1, set by playwright.config.ts and CI)
 import { expect, test } from '@playwright/test'
+import { SITE_ORIGIN } from '../support/auth'
 
 const PUBLIC_POLICY = 'public, max-age=0, s-maxage=604800'
 const HTML = { 'accept': 'text/html', 'sec-fetch-mode': 'navigate' }
+// Mutations need the site's own Origin (server/middleware/00.origin-check.ts)
+const ORIGIN = { origin: SITE_ORIGIN }
 
 function expectBaseSecurityHeaders(headers: Record<string, string>) {
   expect(headers['x-content-type-options']).toBe('nosniff')
@@ -92,14 +95,14 @@ test.describe('errors and validation', () => {
   })
 
   test('valid bodies pass strict validation', async ({ request }) => {
-    const response = await request.post('/api/_test/echo', { data: { name: 'ok' } })
+    const response = await request.post('/api/_test/echo', { headers: ORIGIN, data: { name: 'ok' } })
 
     expect(response.status()).toBe(200)
     expect(await response.json()).toEqual({ name: 'ok' })
   })
 
   test('unknown keys are rejected with field issues', async ({ request }) => {
-    const response = await request.post('/api/_test/echo', { data: { name: 'ok', role: 'owner' } })
+    const response = await request.post('/api/_test/echo', { headers: ORIGIN, data: { name: 'ok', role: 'owner' } })
 
     expect(response.status()).toBe(400)
     expect((await response.json()).data).toEqual({
@@ -109,21 +112,21 @@ test.describe('errors and validation', () => {
   })
 
   test('invalid values are rejected with the field path', async ({ request }) => {
-    const response = await request.post('/api/_test/echo', { data: { name: '' } })
+    const response = await request.post('/api/_test/echo', { headers: ORIGIN, data: { name: '' } })
 
     expect(response.status()).toBe(400)
     expect((await response.json()).data.issues).toEqual([{ path: 'name', message: expect.any(String) }])
   })
 
   test('non-JSON bodies are refused', async ({ request }) => {
-    const response = await request.post('/api/_test/echo', { form: { name: 'ok' } })
+    const response = await request.post('/api/_test/echo', { headers: ORIGIN, form: { name: 'ok' } })
 
     expect(response.status()).toBe(415)
   })
 
   test('bodies over 1 MB are refused before parsing', async ({ request }) => {
     const response = await request.post('/api/_test/echo', {
-      headers: { 'content-type': 'application/json' },
+      headers: { ...ORIGIN, 'content-type': 'application/json' },
       data: JSON.stringify({ name: 'x'.repeat(1_100_000) }),
     })
 

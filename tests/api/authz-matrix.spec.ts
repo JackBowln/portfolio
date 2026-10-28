@@ -14,7 +14,7 @@ const PRIVATE = { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex
 
 async function signIn(request: APIRequestContext, role: Role, ageSeconds = 0): Promise<string> {
   // TEST_AUTH route: exists only in the test build
-  const response = await request.post(`/api/_test/session?role=${role}&ageSeconds=${ageSeconds}`)
+  const response = await request.post(`/api/_test/session?role=${role}&ageSeconds=${ageSeconds}`, { headers: ORIGIN })
   expect(response.status()).toBe(200)
   return (await response.json()).userId
 }

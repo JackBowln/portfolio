@@ -2,9 +2,10 @@
 // Serial and alone (project auth-flow): it empties the auth tables, so "no owner yet" holds at the start.
 // GitHub is simulated inside the test Worker (server/_test/github-mock.ts): `code=gh-<id>` signs in as that GitHub id.
 // Passkeys use Chromium's virtual WebAuthn authenticator
+import { createHmac } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
-import { BOOTSTRAP_TOKEN, OWNER_GITHUB_ID, SITE_ORIGIN } from '../support/auth'
+import { BOOTSTRAP_TOKEN, IP_HASH_SALT, OWNER_GITHUB_ID, SITE_ORIGIN } from '../support/auth'
 
 test.describe.configure({ mode: 'serial' })
 
@@ -15,7 +16,7 @@ interface AuthState {
   users: number
   owners: number
   passkeys: number
-  audit: { action: string, metadata: string | null }[]
+  audit: { action: string, metadata: string | null, ipHash: string | null }[]
 }
 
 async function authState(request: APIRequestContext): Promise<AuthState> {
@@ -47,7 +48,7 @@ async function fakeGithubAuthorize(page: Page, githubId: string) {
 }
 
 test.beforeAll(async ({ request }) => {
-  expect((await request.post('/api/_test/reset-auth')).status()).toBe(200)
+  expect((await request.post('/api/_test/reset-auth', { headers: ORIGIN })).status()).toBe(200)
 })
 
 test.describe('before the owner exists', () => {
@@ -128,25 +129,33 @@ test.describe('after the owner exists', () => {
     expect((await authState(request)).users).toBe(1)
   })
 
-  test('a failed passkey sign-in is audited', async ({ request }) => {
+  test('a failed passkey sign-in is audited, with the IP only as an HMAC', async ({ request }) => {
+    const ip = '203.0.113.50'
     const response = await request.post('/api/auth/passkey/verify-authentication', {
-      headers: ORIGIN,
+      headers: { ...ORIGIN, 'cf-connecting-ip': ip },
       data: { response: { id: 'unknown', rawId: 'unknown', type: 'public-key', response: { clientDataJSON: 'e30', authenticatorData: 'AA', signature: 'AA' }, clientExtensionResults: {} } },
     })
     expect(response.status()).toBeGreaterThanOrEqual(400)
-    expect(actions(await authState(request))).toContain('auth.login_failed')
+    const { audit } = await authState(request)
+    const failed = audit.filter(entry => entry.action === 'auth.login_failed').at(-1)
+    expect(failed?.ipHash).toBe(createHmac('sha256', IP_HASH_SALT).update(ip).digest('hex'))
+    // Never the IP in clear, anywhere in the trail
+    expect(JSON.stringify(audit)).not.toContain(ip)
+    for (const entry of audit) {
+      expect(entry.ipHash ?? '', entry.action).toMatch(/^([0-9a-f]{64})?$/)
+    }
   })
 
   test('removing a passkey needs a fresh session and never removes the last way in', async ({ playwright, baseURL }) => {
     // TEST_AUTH users: no passkey and no GitHub of their own
     const stale = await playwright.request.newContext({ baseURL })
-    await stale.post('/api/_test/session?role=viewer&ageSeconds=1000')
+    await stale.post('/api/_test/session?role=viewer&ageSeconds=1000', { headers: ORIGIN })
     const staleResponse = await stale.post('/api/auth/passkey/delete-passkey', { headers: ORIGIN, data: { id: 'any' } })
     expect(staleResponse.status()).toBe(403)
     expect(await staleResponse.json()).toMatchObject({ code: 'SESSION_NOT_FRESH' })
 
     const fresh = await playwright.request.newContext({ baseURL })
-    await fresh.post('/api/_test/session?role=viewer')
+    await fresh.post('/api/_test/session?role=viewer', { headers: ORIGIN })
     const lastResponse = await fresh.post('/api/auth/passkey/delete-passkey', { headers: ORIGIN, data: { id: 'any' } })
     expect(lastResponse.status()).toBe(403)
     expect(await lastResponse.json()).toMatchObject({ code: 'LAST_PASSKEY' })

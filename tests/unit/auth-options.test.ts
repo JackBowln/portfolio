@@ -96,7 +96,7 @@ describe('GitHub gate', () => {
     const { ports, audited } = fakePorts({ ownerExists: async () => ownerExists })
     const validate = authOptions(env(), ports).user?.validateUserInfo
     const cookie = grant ? `${BOOTSTRAP_COOKIE}=${await createBootstrapGrant(SECRET, Date.now())}` : ''
-    const ctx = { headers: new Headers({ cookie }) }
+    const ctx = { headers: new Headers({ cookie, 'cf-connecting-ip': '203.0.113.7' }) }
     const result = await validate?.({ user: {}, source: { method: 'oauth', action, oauth: { providerId: 'github', profile: { id: githubId } } } } as never, ctx as never)
     return { result, audited }
   }
@@ -118,7 +118,8 @@ describe('GitHub gate', () => {
     ] as const) {
       const { result, audited } = await signUp(id, state)
       expect(result, reason).toEqual({ error: 'github_not_allowed' })
-      expect(audited, reason).toEqual([{ action: 'auth.github_rejected', metadata: { reason } }])
+      // The raw IP goes to the audit port, which hashes it before storing (audit.service.ts)
+      expect(audited, reason).toEqual([{ action: 'auth.github_rejected', metadata: { reason }, ip: '203.0.113.7' }])
     }
   })
 
@@ -132,7 +133,7 @@ describe('GitHub gate', () => {
     const { ports, audited } = fakePorts()
     const before = authOptions(env(), ports).databaseHooks?.account?.create?.before
     await expect(before?.({ providerId: 'github', accountId: '1' } as never, null)).rejects.toMatchObject({ statusCode: 403 })
-    expect(audited).toEqual([{ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' } }])
+    expect(audited).toEqual([{ action: 'auth.github_rejected', metadata: { reason: 'not_allowlisted' }, ip: null }])
   })
 
   it('makes the bootstrap GitHub sign-up the owner, and only that one', async () => {

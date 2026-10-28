@@ -26,7 +26,7 @@ test('without a session, get-session is null, uncached and sets no cookie', asyn
 
 test('session cookies are HttpOnly, SameSite=Lax, 7 days, with a 5 min cache cookie', async ({ request }) => {
   // TEST_AUTH route: exists only in the test build
-  const response = await request.post('/api/_test/session')
+  const response = await request.post('/api/_test/session', { headers: ORIGIN })
   expect(response.status()).toBe(200)
 
   const cookies = response.headersArray().filter(header => header.name.toLowerCase() === 'set-cookie').map(header => header.value)
