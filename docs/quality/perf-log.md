@@ -53,6 +53,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-29 | F04-T2 (não commitado, base `7911158`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,28 | 125 / 120 / 125 | Codecs só no Worker do admin; +0,04 kB de JS (chaves de i18n do admin) e +0,12 kB de CSS (utilitários da tela de envio) |
 | 2026-10-29 | F04-T3 (não commitado, base `036b5ce`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,31 | 125 / 120 / 125 | Os componentes de mídia só entram nas rotas que os usam (nenhuma pública ainda); +0,03 kB de CSS |
 | 2026-10-29 | F04-T4 (não commitado, base `5803662`) | R1 / R3 / E404 | 114,35 / 114,43 / 113,75 | 6,01 | 125 / 120 / 125 | +0,13 kB de JS (chaves de i18n do admin nas mensagens pt-BR) e +0,7 kB de CSS (utilitários das telas do admin no CSS global). Item de acompanhamento: separar mensagens e CSS do admin do público |
+| 2026-10-29 | F05-T3 (não commitado, base `9621045`) | R1 / R3 / E404 | 114,35 / 114,43 / 113,74 | 6,23 | 125 / 120 / 125 | JS público sem mudança: as chaves `admin.editor.*` vão nas mensagens pt-BR carregadas sob demanda; +0,22 kB de CSS (utilitários do editor no CSS global, o mesmo item de acompanhamento). O `check:budgets` passou a procurar `ProseMirror`, `tiptap` e `codeToHast` no conteúdo dos chunks de cada rota pública: 0 ocorrências |
 
 ## Pipeline de imagem do admin (F04-T2)
 
@@ -63,3 +64,5 @@ Medido em `tests/e2e/media-pipeline.spec.ts` (Chromium do Playwright, Apple Sili
 | 2026-10-29 | F04-T2 (não commitado, base `7911158`) | JPEG 4000×3000 | original limpo + 18 variantes (6 larguras × AVIF/WebP/JPEG) + ThumbHash | 8,2 s (sozinho) · 15,4 s (com a suíte em paralelo) | 0 ms (nenhuma long task) | 440 quadros desenhados durante o processamento |
 
 **Chunks do admin, carregados só no Worker e só quando um envio começa** (gzip -9): Worker 40,3 KB; `avif_enc.wasm` 1.116 KB; `webp_enc_simd.wasm` 125,7 KB (ou `webp_enc.wasm` 113,9 KB sem SIMD); `mozjpeg_enc.wasm` 59,0 KB; `squoosh_resize_bg.wasm` 16,9 KB. Total no primeiro envio: ~1,36 MB, depois em cache `immutable`.
+
+**Chunks do editor (F05-T3), só no admin e sob demanda** (gzip -9, build de teste): editor (Tiptap, ProseMirror, extensões e node views) 152,1 KB; núcleo do Shiki com o engine JavaScript 35,3 KB; cada gramática em um chunk próprio, carregado quando um bloco usa a linguagem (TypeScript 5,6 KB, por exemplo).

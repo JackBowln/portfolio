@@ -82,7 +82,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F05-T2, F04-T4 | RF-04.1, RF-04.2, RF-04.3, RF-04.4, RF-04.5, RF-04.6, RF-04.7, RF-04.8 | `/cms-engineer`, `/frontend-design` |
+| concluída | F05-T2, F04-T4 | RF-04.1, RF-04.2, RF-04.3, RF-04.4, RF-04.5, RF-04.6, RF-04.7, RF-04.8 | `/cms-engineer`, `/frontend-design` |
 
 **Objetivo.** Criar o componente de editor com `@tiptap/vue-3 ~3.32` (só extensões MIT): StarterKit, Link, UniqueID, Placeholder, CharacterCount, DragHandle (com alternativa por teclado) e nós próprios (imagem e galeria pelo seletor de mídia, vídeo, embed, callout, código). O código usa Shiki **no navegador** e grava o HAST no nó. Incluir a normalização ao colar e uma barra de ferramentas acessível.
 
@@ -91,14 +91,21 @@
 **Fora do escopo.** Autosave no servidor e revisões (F06-T2).
 
 **Critérios de aceite**
-- [ ] O JSON emitido pelo editor sempre passa no `document-schema` (teste com documentos gerados).
-- [ ] Colar HTML externo resulta só em nós permitidos.
-- [ ] Atalhos de teclado documentados; todas as ações da barra são operáveis por teclado e têm nome acessível.
-- [ ] Shiki e Tiptap só no bundle do admin (manifest conferido).
+- [x] O JSON emitido pelo editor sempre passa no `document-schema` (teste com documentos gerados).
+- [x] Colar HTML externo resulta só em nós permitidos.
+- [x] Atalhos de teclado documentados; todas as ações da barra são operáveis por teclado e têm nome acessível.
+- [x] Shiki e Tiptap só no bundle do admin (manifest conferido).
 
 **Testes**
 - Nuxt: cada extensão própria serializa no formato do schema.
 - E2E: criar documento com todos os nós → salvar (stub) → o JSON valida.
+
+**Resultado (29/10/2026).**
+- **Editor:** `app/components/admin/editor/**` (Tiptap 3.32, só extensões MIT) com node views de código e mídia, barra de ferramentas e barra contextual por teclado, diálogos de link, galeria, embed e atalhos; Shiki 4.5 no navegador (`app/utils/admin/highlight.ts`). O `MediaPicker` ganhou a prop `kind` para vídeos.
+- **Arrastar:** sem o DragHandle (peers Yjs/Collaboration); `Alt+Shift+↑/↓`, botões e o drag nativo dos blocos atômicos.
+- **Build:** o `check:budgets` também procura marcadores do Tiptap, do ProseMirror e do Shiki no conteúdo dos chunks das rotas públicas (0). Editor: 152 KB gz sob demanda no admin; Shiki: 35 KB + uma gramática por linguagem.
+- **Decisões:** ADR-0006, "Decisões da F05-T3".
+- **Testes:** `tests/nuxt/editor-schema.test.ts` (ida e volta do documento completo, comandos, 200 sequências aleatórias e colagem hostil), `tests/nuxt/highlight.test.ts` (Shiki real nas 18 linguagens), `tests/e2e/editor.spec.ts`, axe em `tests/a11y/admin.spec.ts` e o caso novo de `tests/unit/check-budgets.test.ts`.
 
 ---
 

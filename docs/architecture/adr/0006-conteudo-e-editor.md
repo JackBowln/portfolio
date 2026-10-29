@@ -58,6 +58,18 @@
 - **Segmentos:** um por parágrafo ou heading com texto (conteúdo inline com marks), mais `{id}:caption`, `{id}:alt` e `{id}:title` e campos `field:{nome}`. O hash é o SHA-256 do JSON canônico. Código e IDs de mídia não são segmentos.
 - **Medição:** validar um documento de ~77 KB com todos os tipos de nó leva ~1 ms, e derivar + hashes ~2 ms, no workerd local (o relógio do workerd tem resolução de ms).
 
+## Decisões da F05-T3
+
+- **Código:** `app/components/admin/editor/` (`ContentEditor.vue`, barras, diálogos e node views) e `extensions/` (`schema-extensions.ts` é a lista usada pelo editor e pelos testes headless); `app/utils/admin/highlight.ts` e `code-languages.ts`. A página `app/pages/admin/_test/editor.vue` e o stub `server/api/_test/document.post.ts` existem só no build de teste.
+- **JSON igual ao schema por configuração, não por filtro:** `Link` só com `href` (o `isAllowedUri` usa o `contentHref`), `OrderedList` só com `start`, `Heading` com níveis 2–4, células só com `colspan`/`rowspan` 1 e `colwidth` nulo (o `align` do TableKit 3.32 foi removido), `doc` com `schemaVersion`, regras de conteúdo iguais às do schema (citação, destaque e item de lista só com parágrafos e listas; células só com parágrafos). Underline, o codeBlock do StarterKit e o TrailingNode ficam desligados (abrir um documento não pode mudá-lo).
+- **IDs únicos:** além do UniqueID, um plugin (`unique-id-guard.ts`) regenera repetições depois de cada transação; uma tabela inserida dentro de outra dividia a de fora em duas com o mesmo `id`.
+- **Arrastar sem DragHandle:** o `@tiptap/extension-drag-handle` exige Yjs e Collaboration como peers obrigatórios. Os blocos se movem com `Alt+Shift+↑/↓` e pelos botões da barra (extensão `block-move.ts`), e os blocos atômicos são arrastáveis pelo drag nativo do ProseMirror com o Dropcursor.
+- **Shiki:** `shiki ~4.5` com `shiki/core`, engine JavaScript (sem WASM, que a CSP da página do admin não permite), temas `github-light`/`github-dark` com `defaultColor: false` e uma gramática por linguagem (18, decisão 2 da tarefa). A saída real das 18 linguagens passa na allowlist da F05-T2 sem mudança; o editor grava a forma JSON do HAST (o Shiki deixa `data: undefined` nos elementos).
+- **Blocos atômicos completos:** imagem, galeria (2 a 24 itens, montada num diálogo), vídeo e embed só entram com todos os dados, seguidos de um parágrafo vazio com o cursor. O código grava `code` com HAST simples a cada tecla e troca pelo destaque do Shiki quando o texto não mudou.
+- **Barra de ferramentas:** padrão WAI-ARIA toolbar (uma parada de Tab, setas, Home/End; botões que não se aplicam ficam com `aria-disabled`), `aria-pressed` nos estados, `aria-keyshortcuts` em todo atalho; uma segunda barra "Bloco atual" para o tom do destaque e as linhas e colunas da tabela. `Esc` ou `Alt+F10` levam do texto para a barra; `Ctrl/⌘+/` abre a lista de atalhos.
+- **CSS:** `injectCSS: false`; as regras base do ProseMirror e as cores do Shiki (`light-dark()`) ficam no `<style>` do `ContentEditor`, no chunk do admin.
+- **Dependências:** `@tiptap/{vue-3,core,pm,starter-kit,extensions,extension-unique-id,extension-table,extension-list,extension-blockquote,extension-link} ~3.32.1` e `shiki ~4.5.0`, todas MIT. As três últimas do Tiptap já vinham pelo StarterKit e passaram a ser diretas porque o editor as estende.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
