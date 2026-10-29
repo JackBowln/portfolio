@@ -83,6 +83,18 @@
 - **CSS:** os estilos dos blocos ficam no `<style>` global do `StaticContent` (no CSS da página), porque o chunk do renderer não carrega na primeira visita. O preview do editor passou a usar o `HastNode` público.
 - **Lint:** `vue/no-v-html` como erro em todos os `.vue`.
 
+## Decisões da F05-T5
+
+- **Código:** `shared/content/embeds.ts` (parser de URL, URLs do player e de "assistir", nomes dos provedores), `shared/content/embed-origins.ts` (as duas origens permitidas, num módulo próprio para o script da facade não carregar o schema), `app/components/content/nodes/ContentEmbed.vue` e o clique em `app/utils/content/enhance.ts`.
+- **O schema não mudou:** continua guardando só `provider` + `externalId` com o padrão de cada provedor; a URL colada no editor é só entrada.
+- **Parser:** aceita `youtube.com/watch?v=`, `m.youtube.com`, `youtu.be/`, `/embed/`, `/shorts/`, `/live/`, `youtube-nocookie.com/embed/`, `vimeo.com/{id}`, `vimeo.com/channels/{nome}/{id}` e `player.vimeo.com/video/{id}`; hosts comparados exatamente, só `https:`/`http:`, sem usuário, senha ou porta. Recusa com motivo (`invalid`, `provider`, `video`, `unlisted`), que o editor mostra.
+- **Vimeo não listado fica fora (decisão 2):** o hash do vídeo (`/{id}/{hash}` ou `?h=`) exigiria mudar o schema.
+- **Poster só da biblioteca (decisão 1):** nada é buscado no provedor, nem pelo admin; a CSP do admin não muda.
+- **Facade:** o poster (decorativo) numa caixa 16:9 e um botão "Reproduzir vídeo: {título}", oculto por CSS até o script carregar; a legenda é um link para o vídeo no provedor, que serve de caminho sem JS. No clique, o script confere a origem do player (`isEmbedFrameUrl`), cria o iframe por API do DOM e move o foco para ele; a caixa mantém o tamanho.
+- **Iframe:** `youtube-nocookie.com/embed/{id}?autoplay=1` ou `player.vimeo.com/video/{id}?dnt=1&autoplay=1`; `title` do bloco; `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"`; `allow="autoplay; encrypted-media; picture-in-picture; fullscreen"`; `referrerpolicy="strict-origin-when-cross-origin"` (os players recusam tocar sem referrer; eles recebem só a origem).
+- **CSP:** `frame-src` com as duas origens só nas páginas públicas (ADR-0012).
+- **Correção da F05-T4:** a `<figure>` em grid ganhou `grid-template-columns: minmax(0, 1fr)`; sem isso, uma imagem mantinha a largura intrínseca e rolava a página em 360 px.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |

@@ -146,7 +146,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F05-T4 | RF-04.5, RNF-07, RNF-12 | `/security-audit`, `/frontend-design` |
+| concluída | F05-T4 | RF-04.5, RNF-07, RNF-12 | `/security-audit`, `/frontend-design` |
 
 **Objetivo.** Implementar a allowlist de provedores (`youtube-nocookie`, `vimeo` com `dnt`) e o parser de URL → `{ provider, externalId }` no admin. O poster é enviado ou obtido pelo navegador do admin e guardado como mídia, com título obrigatório. A facade carrega o iframe só no clique (`sandbox`/`allow` mínimos) e a CSP ganha o `frame-src` correspondente.
 
@@ -155,13 +155,23 @@
 **Fora do escopo.** Provedores além da allowlist (cada um novo exige ADR).
 
 **Critérios de aceite**
-- [ ] Nenhuma requisição a domínios de terceiros antes do clique (verificado no E2E).
-- [ ] O iframe tem `title`, `sandbox`/`allow` mínimos e `referrerpolicy`; o botão da facade tem nome acessível.
-- [ ] Proporção reservada (sem CLS); URLs fora da allowlist são rejeitadas no schema.
+- [x] Nenhuma requisição a domínios de terceiros antes do clique (verificado no E2E).
+- [x] O iframe tem `title`, `sandbox`/`allow` mínimos e `referrerpolicy`; o botão da facade tem nome acessível.
+- [x] Proporção reservada (sem CLS); URLs fora da allowlist são rejeitadas no schema.
 
 **Testes**
 - Unit: o parser de URL (casos válidos e inválidos).
 - E2E: sem requisições externas antes do clique; o iframe carrega depois do clique.
+
+**Resultado (29/10/2026).**
+- **Parser e URLs:** `shared/content/embeds.ts` e `shared/content/embed-origins.ts`; o editor recebe a URL do vídeo e mostra o provedor e o id detectados, ou o motivo da recusa (inclusive Vimeo não listado).
+- **Facade:** `app/components/content/nodes/ContentEmbed.vue` e o clique em `app/utils/content/enhance.ts` (o script foi a 0,9 KB gz); poster da biblioteca, caixa 16:9, iframe `nocookie`/`dnt` só no clique, com foco movido para ele.
+- **CSP:** `frame-src` com as duas origens só nas páginas públicas.
+- **Correção da F05-T4:** figuras com imagem rolavam a página em 360 px; agora há um teste de 360 px na página de conteúdo.
+- **Decisões:** ADR-0006, "Decisões da F05-T5"; ADR-0012 §1.
+- **Testes:** `tests/unit/content-embeds.test.ts` (43 casos), casos novos em `tests/unit/csp.test.ts`, `tests/api/hardening.spec.ts`, `tests/nuxt/content-renderer.test.ts` e `tests/e2e/editor.spec.ts`; `tests/e2e/embed.spec.ts`.
+
+**Gate da F05 (29/10/2026):** cumprido por partes. O documento com todos os nós é montado no editor e validado no servidor (`tests/e2e/editor.spec.ts`), o mesmo conjunto de nós é renderizado no público (`tests/e2e/content.spec.ts`), o bundle público não tem Tiptap, ProseMirror nem Shiki (`check:budgets`) e os payloads maliciosos são rejeitados pelo schema e pelo renderer. O fluxo único editor → gravação → página pública depende da gravação e da rota do artigo (F06) e vira um E2E lá.
 
 ---
 

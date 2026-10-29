@@ -76,7 +76,7 @@
   - desligada em `nuxt dev`, por causa do cliente do Vite;
   - `upgrade-insecure-requests` só quando o `SITE_URL` é https, como o HSTS;
   - `img-src`/`media-src` levam a origem do `MEDIA_BASE_URL` quando ela difere da do site;
-  - o `frame-src` dos embeds e o Turnstile ficam para a F05-T5 e a F08-T3.
+  - `frame-src https://www.youtube-nocookie.com https://player.vimeo.com` só nas páginas públicas, para a facade dos embeds (F05-T5); o admin não emoldura nada. O Turnstile fica para a F08-T3.
 - **Fora das páginas:** toda resposta do Worker que não é página leva `default-src 'none'; frame-ancestors 'none'`. Os erros JSON do Nitro já vêm com `script-src 'none'; frame-ancestors 'none'`. Os assets estáticos, que não passam pelo Worker, ganham `nosniff` pelas `routeRules`, que o Nitro grava no `_headers`.
 - **Origem (§2), mais amplo que o texto original:**
   - vale para toda mutação em `/api/**`, inclusive `/api/auth` e `/api/setup`, e não só para `admin` e `public`;
