@@ -5,6 +5,17 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    // `pnpm test:coverage`: the document schema and its HAST allowlist are the XSS boundary (F05-T2)
+    coverage: {
+      provider: 'v8',
+      include: ['shared/content/**'],
+      reporter: ['text', 'json-summary'],
+      reportsDirectory: 'reports/coverage',
+      thresholds: {
+        'shared/content/document-schema.ts': { branches: 90 },
+        'shared/content/hast.ts': { branches: 90 },
+      },
+    },
     projects: [
       {
         test: {
