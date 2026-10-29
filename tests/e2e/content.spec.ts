@@ -3,23 +3,13 @@
 // loads; copy and the gallery work, by keyboard too; without JS the content is whole; after a client-side
 // navigation it renders in the browser; and nothing is requested from another origin
 import { expect, test } from '@playwright/test'
-import type { APIRequestContext, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import { SITE_ORIGIN } from '../support/auth'
 import { CODE } from '../support/documents'
-import { readyImage, readyVideo, uniqueName } from '../support/media-api'
+import { contentFixturePath } from '../support/media-api'
 
 // A string only the renderer's own code holds (a class set in ContentBlocks.ts)
 const RENDERER_MARKER = 'content-callout-label'
-
-async function createMedia(request: APIRequestContext): Promise<string> {
-  expect((await request.post('/api/_test/session?role=owner', { headers: { origin: SITE_ORIGIN } })).status()).toBe(200)
-  const photo = await readyImage(request, uniqueName('foto', 'jpg'))
-  const second = await readyImage(request, uniqueName('segunda', 'jpg'))
-  const third = await readyImage(request, uniqueName('terceira', 'jpg'))
-  const poster = await readyImage(request, uniqueName('capa', 'jpg'))
-  const clip = await readyVideo(request, uniqueName('clipe', 'mp4'), poster)
-  return `/_test/content?${new URLSearchParams({ photo, second, third, clip, poster })}`
-}
 
 /** Bodies of the scripts the page loads (prefetches included), by URL */
 function recordScripts(page: Page): Map<string, Promise<string>> {
@@ -45,7 +35,7 @@ async function loadedRenderer(scripts: Map<string, Promise<string>>): Promise<st
 let path: string
 test.beforeAll(async ({ playwright, baseURL }) => {
   const request = await playwright.request.newContext({ baseURL })
-  path = await createMedia(request)
+  path = await contentFixturePath(request)
   await request.dispose()
 })
 
@@ -77,6 +67,14 @@ test('a first visit keeps the server HTML and downloads no renderer code', async
   for (const selector of ['h2#introducao', 'h3#listas', 'h4#midia', 'ul', 'ol[start="3"]', 'blockquote', '.content-callout', 'hr', '.content-code pre', '.content-figure img', '.content-gallery dialog', 'video', '.content-embed a', '.content-table table']) {
     await expect(page.locator(`.content ${selector}`).first()).toBeAttached()
   }
+})
+
+test('the content fits a 360 px screen with no horizontal scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto(path)
+  await expect(page.getByRole('button', { name: 'Copiar' })).toBeVisible()
+  // Wide code and tables scroll inside their own focusable boxes, never the page
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0)
 })
 
 test('copy puts the code on the clipboard and says so', async ({ page, context, browserName }) => {
@@ -137,7 +135,7 @@ test('without JS the content is whole and the copy button stays hidden', async (
   await context.close()
 })
 
-test('after a client-side navigation the renderer renders in the browser', async ({ page }) => {
+test('after a client-side navigation the renderer renders in the browser', async ({ page, browserName }) => {
   const scripts = recordScripts(page)
   await page.goto(path)
   await expect(page.getByRole('button', { name: 'Copiar' })).toBeVisible()
@@ -148,5 +146,9 @@ test('after a client-side navigation the renderer renders in the browser', async
   await expect(page.getByRole('heading', { name: 'Introdução' })).toBeVisible()
   await expect(page.locator('.content-gallery dialog')).toHaveCount(3)
   await expect(page.getByRole('button', { name: 'Copiar' })).toBeVisible()
-  expect((await loadedRenderer(scripts)).length).toBeGreaterThan(0)
+  // The content can only be here if the renderer ran in the browser. Chromium also shows its chunk loading, which
+  // proves the first-visit check above would see it; WebKit does not always hand Playwright a script's body
+  if (browserName === 'chromium') {
+    expect((await loadedRenderer(scripts)).length).toBeGreaterThan(0)
+  }
 })

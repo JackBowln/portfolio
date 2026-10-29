@@ -52,3 +52,17 @@ export function readyVideo(request: APIRequestContext, originalFilename: string,
     tracks: [],
   })
 }
+
+/** The content test page (F05-T4) with fresh library media for every image, gallery, video and poster slot */
+export async function contentFixturePath(request: APIRequestContext): Promise<string> {
+  expect((await request.post('/api/_test/session?role=owner', { headers: ORIGIN })).status()).toBe(200)
+  const poster = await readyImage(request, uniqueName('capa', 'jpg'))
+  const ids = {
+    photo: await readyImage(request, uniqueName('foto', 'jpg')),
+    second: await readyImage(request, uniqueName('segunda', 'jpg')),
+    third: await readyImage(request, uniqueName('terceira', 'jpg')),
+    clip: await readyVideo(request, uniqueName('clipe', 'mp4'), poster),
+    poster,
+  }
+  return `/_test/content?${new URLSearchParams(ids)}`
+}

@@ -99,9 +99,13 @@ describe('ContentRenderer: every node type', () => {
     expect(figures[0]!.get('figcaption').text()).toBe('Legenda da biblioteca')
     expect(figures[1]!.get('img').attributes('alt')).toBe('Uma foto')
     expect(figures[1]!.get('figcaption').text()).toBe('Do bloco')
-    const embed = figures[2]!.get('a')
-    expect(embed.attributes()).toMatchObject({ href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', rel: 'noopener noreferrer' })
-    expect(embed.text()).toBe('Assistir no YouTube: Palestra sobre acessibilidade')
+    // F05-T5: the facade names the video on its play button and links to the provider; no iframe until a click
+    const embed = figures[2]!
+    expect(embed.get('[data-content-embed]').attributes()).toMatchObject({ 'data-player': 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1', 'data-title': 'Palestra sobre acessibilidade' })
+    expect(embed.get('button[data-content-play]').text()).toBe('Reproduzir vídeo: Palestra sobre acessibilidade')
+    expect(embed.get('img').attributes('alt')).toBe('')
+    expect(embed.get('figcaption a').attributes()).toMatchObject({ href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', rel: 'noopener noreferrer' })
+    expect(embed.get('figcaption a').text()).toBe('Assistir no YouTube: Palestra sobre acessibilidade')
     expect(wrapper.find('iframe').exists()).toBe(false)
   })
 
@@ -165,8 +169,9 @@ describe('ContentRenderer: hostile input without the schema', () => {
   })
 
   it('renders an embed with an id outside the provider pattern as nothing', async () => {
-    const wrapper = await render(doc({ type: 'embed', attrs: { id: 'e', provider: 'youtube', externalId: 'x" onload="alert(1)', title: 't', posterMediaId: MEDIA.poster } }, { type: 'embed', attrs: { id: 'f', provider: 'evil', externalId: 'dQw4w9WgXcQ', title: 't', posterMediaId: MEDIA.poster } }))
+    const wrapper = await render(doc({ type: 'embed', attrs: { id: 'e', provider: 'youtube', externalId: 'x" onload="alert(1)', title: 't', posterMediaId: MEDIA.poster } }, { type: 'embed', attrs: { id: 'f', provider: 'evil', externalId: 'dQw4w9WgXcQ', title: 't', posterMediaId: MEDIA.poster } }, { type: 'embed', attrs: { id: 'g', provider: 'constructor', externalId: 'dQw4w9WgXcQ', title: 't', posterMediaId: MEDIA.poster } }))
     expect(wrapper.find('a').exists()).toBe(false)
+    expect(wrapper.find('[data-content-embed]').exists()).toBe(false)
   })
 
   it('falls back to the plain code when the HAST breaks the allowlist', async () => {

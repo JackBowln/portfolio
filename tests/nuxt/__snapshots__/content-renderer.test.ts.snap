@@ -48,12 +48,15 @@ exports[`ContentRenderer: every node type > renders codeBlock:code-1 1`] = `
 
 exports[`ContentRenderer: every node type > renders embed:emb-1 1`] = `
 "<div class="ui-prose content">
-  <figure class="content-figure content-embed"><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" rel="noopener noreferrer">
+  <figure class="content-figure content-embed">
+    <div class="content-embed-frame" data-content-embed="" data-player="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1" data-title="Palestra sobre acessibilidade">
       <picture>
         <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)">
-        <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
-      </picture><span>Assistir no YouTube: Palestra sobre acessibilidade</span>
-    </a></figure>
+        <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+      </picture><button type="button" class="content-embed-play" data-content-play=""><span class="content-embed-icon" aria-hidden="true"></span><span class="sr-only">Reproduzir vídeo: Palestra sobre acessibilidade</span></button>
+    </div>
+    <figcaption><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" rel="noopener noreferrer">Assistir no YouTube: Palestra sobre acessibilidade</a></figcaption>
+  </figure>
 </div>"
 `;
 

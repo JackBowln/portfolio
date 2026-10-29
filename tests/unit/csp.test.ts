@@ -77,6 +77,14 @@ describe('pageCsp', () => {
     expect(directives).not.toContain('upgrade-insecure-requests')
   })
 
+  // F05-T5: frames only on public pages, and only the two privacy-preserving players
+  it('lets public pages frame the embed players and nothing else', () => {
+    const frameSrc = (policy: string) => policy.split('; ').filter(directive => directive.startsWith('frame-src'))
+    expect(frameSrc(pageCsp({ ...base, embeds: true }))).toEqual(['frame-src https://www.youtube-nocookie.com https://player.vimeo.com'])
+    expect(frameSrc(pageCsp(base))).toEqual([])
+    expect(frameSrc(pageCsp({ ...base, localMedia: true }))).toEqual([])
+  })
+
   it('adds the media origin and the https upgrade when they apply', () => {
     const policy = pageCsp({ ...base, mediaOrigin: 'https://media.example.com', upgradeInsecureRequests: true })
     expect(policy).toContain(`img-src 'self' data: https://media.example.com`)

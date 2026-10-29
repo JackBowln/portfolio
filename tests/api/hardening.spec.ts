@@ -53,6 +53,17 @@ test.describe('content security policy', () => {
     expect(first.headers()['content-security-policy']).toBe(second.headers()['content-security-policy'])
   })
 
+  // F05-T5: the embed facades frame the two privacy-preserving players, only on public pages
+  test('public pages may frame the embed players; the admin frames nothing', async ({ request }) => {
+    for (const path of ['/', '/en/about', '/_test/content']) {
+      const policy = (await request.get(path, { headers: HTML })).headers()['content-security-policy']
+      expect(directive(policy, 'frame-src'), path).toBe('frame-src https://www.youtube-nocookie.com https://player.vimeo.com')
+    }
+    for (const path of ['/admin/login', '/admin/midia']) {
+      expect(directive((await request.get(path, { headers: HTML })).headers()['content-security-policy'], 'frame-src'), path).toBe('')
+    }
+  })
+
   test('JSON responses load nothing and cannot be framed', async ({ request }) => {
     for (const path of ['/api/health', '/api/auth/get-session']) {
       const response = await request.get(path)
