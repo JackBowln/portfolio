@@ -1,0 +1,199 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ContentRenderer: every node type > renders blockquote:q-1 1`] = `
+"<div class="ui-prose content">
+  <blockquote>
+    <p>Uma citação.</p>
+  </blockquote>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders bulletList:ul-1 1`] = `
+"<div class="ui-prose content">
+  <ul>
+    <li>
+      <p>Um</p>
+    </li>
+    <li>
+      <p>Dois</p>
+      <ol start="3">
+        <li>
+          <p>Três</p>
+        </li>
+      </ol>
+    </li>
+  </ul>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders callout:c-1 1`] = `
+"<div class="ui-prose content">
+  <div class="content-callout" data-tone="warning" role="note">
+    <p class="content-callout-label">Atenção</p>
+    <p>Atenção aqui.</p>
+  </div>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders codeBlock:code-1 1`] = `
+"<div class="ui-prose content">
+  <figure class="content-code">
+    <figcaption class="content-code-bar"><span>TypeScript</span><button type="button" class="content-code-copy" data-content-copy="" data-copied="Copiado">Copiar</button><span class="sr-only" role="status" data-content-copy-status=""></span></figcaption>
+    <div class="content-code-body" role="group" tabindex="0" aria-label="Código em TypeScript"><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light: #24292e; --shiki-dark: #e1e4e8; --shiki-light-bg: #fff; --shiki-dark-bg: #24292e;"><code><span class="line"><span style="--shiki-light: #D73A49; --shiki-dark: #F97583;">const</span><span style="--shiki-light: #24292E; --shiki-dark: #E1E4E8; --shiki-light-font-style: italic; --shiki-dark-font-style: italic;"> </span><span style="--shiki-light: #D73A49; --shiki-dark: #F97583;">answer</span><span style="--shiki-light: #24292E; --shiki-dark: #E1E4E8; --shiki-light-font-style: italic; --shiki-dark-font-style: italic;"> </span><span style="--shiki-light: #D73A49; --shiki-dark: #F97583;">=</span><span style="--shiki-light: #24292E; --shiki-dark: #E1E4E8; --shiki-light-font-style: italic; --shiki-dark-font-style: italic;"> </span><span style="--shiki-light: #D73A49; --shiki-dark: #F97583;">42</span></span>
+<span class="line"><span style="--shiki-light: #D73A49; --shiki-dark: #F97583;">console.log(answer)</span></span></code></pre>
+    </div>
+  </figure>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders embed:emb-1 1`] = `
+"<div class="ui-prose content">
+  <figure class="content-figure content-embed"><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" rel="noopener noreferrer">
+      <picture>
+        <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)">
+        <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+      </picture><span>Assistir no YouTube: Palestra sobre acessibilidade</span>
+    </a></figure>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders gallery:gal-1 1`] = `
+"<div class="ui-prose content">
+  <figure class="content-gallery" data-layout="grid">
+    <ul>
+      <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-0" command="show-modal">
+          <picture>
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Segunda" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+          </picture><span class="sr-only">Ampliar imagem 1 de 3</span>
+        </button>
+        <dialog id="v-0-0-0-0" class="content-gallery-dialog" aria-label="Imagem 1 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-0" command="close">Fechar</button>
+          <figure>
+            <picture>
+              <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="100vw">
+              <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="100vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="100vw" width="800" height="600" alt="Segunda" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+            </picture>
+            <!--v-if-->
+          </figure>
+        </dialog>
+      </li>
+      <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-1" command="show-modal">
+          <picture>
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Terceira" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+          </picture><span class="sr-only">Ampliar imagem 2 de 3</span>
+        </button>
+        <dialog id="v-0-0-0-1" class="content-gallery-dialog" aria-label="Imagem 2 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-1" command="close">Fechar</button>
+          <figure>
+            <picture>
+              <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="100vw">
+              <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="100vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="100vw" width="800" height="600" alt="Terceira" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+            </picture>
+            <!--v-if-->
+          </figure>
+        </dialog>
+      </li>
+      <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-2" command="show-modal">
+          <picture>
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+          </picture><span class="sr-only">Ampliar imagem 3 de 3</span>
+        </button>
+        <dialog id="v-0-0-0-2" class="content-gallery-dialog" aria-label="Imagem 3 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-2" command="close">Fechar</button>
+          <figure>
+            <picture>
+              <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="100vw">
+              <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="100vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="100vw" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+            </picture>
+            <figcaption>Legenda da biblioteca</figcaption>
+          </figure>
+        </dialog>
+      </li>
+    </ul>
+  </figure>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders heading:h-intro 1`] = `
+"<div class="ui-prose content">
+  <h2 id="introducao" class="content-heading">Introdução<a href="#introducao" class="content-anchor" aria-label="Link para a seção “Introdução”">#</a></h2>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders heading:h-lists 1`] = `
+"<div class="ui-prose content">
+  <h3 id="listas" class="content-heading">Listas<a href="#listas" class="content-anchor" aria-label="Link para a seção “Listas”">#</a></h3>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders heading:h-media 1`] = `
+"<div class="ui-prose content">
+  <h4 id="midia" class="content-heading">Mídia<a href="#midia" class="content-anchor" aria-label="Link para a seção “Mídia”">#</a></h4>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders horizontalRule:hr-1 1`] = `
+"<div class="ui-prose content">
+  <hr>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders image:img-1 1`] = `
+"<div class="ui-prose content">
+  <figure class="content-figure">
+    <picture>
+      <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)">
+      <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+    </picture>
+    <figcaption>Legenda da foto
+      <!--v-if-->
+    </figcaption>
+  </figure>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders paragraph:p-1 1`] = `
+"<div class="ui-prose content">
+  <p>Texto com <strong>negrito</strong>, <s><em>itálico</em></s>, <code>código</code><br><a href="https://example.com/a?b=1#c" rel="noopener noreferrer">e um link</a><a href="/blog/outro"> interno</a><a href="mailto:ola@example.com"> e e-mail.</a></p>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders paragraph:p-empty 1`] = `
+"<div class="ui-prose content">
+  <p></p>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders table:tbl-1 1`] = `
+"<div class="ui-prose content">
+  <div class="content-table" role="group" tabindex="0" aria-label="Tabela">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">
+            <p>Coluna</p>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <p>Valor</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>"
+`;
+
+exports[`ContentRenderer: every node type > renders video:vid-1 1`] = `
+"<div class="ui-prose content">
+  <figure class="content-figure"><video controls="" preload="none" playsinline="" width="1280" height="720" poster="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" class="block h-auto max-w-full">
+      <source src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/video.mp4" type="video/mp4">
+      <p>Este navegador não reproduz o vídeo. <a href="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/video.mp4">Baixar o vídeo</a></p>
+    </video>
+    <!--v-if-->
+  </figure>
+</div>"
+`;
