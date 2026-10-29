@@ -33,3 +33,9 @@ export type SiteSettingKey = (typeof SITE_SETTING_KEYS)[number]
 
 export const REDIRECT_STATUS_CODES = [301, 302, 308] as const
 export type RedirectStatusCode = (typeof REDIRECT_STATUS_CODES)[number]
+
+export const MEDIA_TRACK_KINDS = ['captions', 'subtitles'] as const
+export type MediaTrackKind = (typeof MEDIA_TRACK_KINDS)[number]
+
+export const MEDIA_USAGE_CONTEXTS = ['body', 'cover', 'og', 'gallery', 'poster', 'settings'] as const
+export type MediaUsageContext = (typeof MEDIA_USAGE_CONTEXTS)[number]
