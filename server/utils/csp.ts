@@ -1,5 +1,7 @@
 // CSP by hash (ADR-0012 §1). Pages are cached at the edge, so a per-request nonce would be frozen in the cache;
 // hashes of the final HTML's inline scripts travel with that same HTML instead. Pure, so it is unit-tested directly
+import { EMBED_FRAME_ORIGINS } from '../../shared/content/embed-origins.ts'
+
 const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi
 const SRC_ATTR = /(?:^|\s)src\s*=/i
 const TYPE_ATTR = /(?:^|\s)type\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i
@@ -49,9 +51,11 @@ export interface PageCspOptions {
   upgradeInsecureRequests: boolean
   /** Admin pages read a chosen video's size and duration from a blob: URL before uploading it (F04-T4) */
   localMedia?: boolean
+  /** Public pages frame the embed players after a click (F05-T5); the admin frames nothing */
+  embeds?: boolean
 }
 
-export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, localMedia = false }: PageCspOptions): string {
+export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, localMedia = false, embeds = false }: PageCspOptions): string {
   const media = mediaOrigin ? ` ${mediaOrigin}` : ''
   const hashes = [...new Set(scriptHashes)].map(hash => ` ${hash}`).join('')
   const directives = [
@@ -63,6 +67,8 @@ export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, lo
     `media-src 'self'${media}${localMedia ? ' blob:' : ''}`,
     `font-src 'self'`,
     `connect-src 'self'`,
+    // Without it, default-src 'self' blocks every frame
+    ...(embeds ? [`frame-src ${EMBED_FRAME_ORIGINS.join(' ')}`] : []),
     `object-src 'none'`,
     `base-uri 'none'`,
     `form-action 'self'`,
