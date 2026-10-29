@@ -3,29 +3,14 @@
 // Fixtures are generated here (a screenshot JPEG plus an EXIF/GPS block), so no binary lives in the repository
 import { createHash, randomBytes } from 'node:crypto'
 import { expect, test } from '@playwright/test'
-import type { Browser, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import { SITE_ORIGIN } from '../support/auth'
-import { hasLocationMetadata, withExif } from '../support/media'
+import { hasLocationMetadata } from '../support/media'
+import { photo } from '../support/photo'
 
 test.skip(({ browserName, isMobile }) => browserName !== 'chromium' || isMobile, 'Pipeline checks run in desktop Chromium')
 
 const sha = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex')
-
-/**
- * A colorful JPEG of the given size, rendered by the browser itself. The random color makes each fixture a new
- * file: the API stores a hash once, and the local database outlives a run
- */
-async function photo(browser: Browser, width: number, height: number): Promise<Buffer> {
-  const page = await browser.newPage({ viewport: { width, height } })
-  const color = `#${randomBytes(3).toString('hex')}`
-  await page.setContent(`<body style="margin:0;background:
-    radial-gradient(circle at 30% 40%, ${color}, transparent 40%),
-    radial-gradient(circle at 70% 60%, #3dd5ff, transparent 45%),
-    linear-gradient(135deg, #1b2a4a, #f2c14e)"></body>`)
-  const jpeg = await page.screenshot({ type: 'jpeg', quality: 90 })
-  await page.close()
-  return withExif(jpeg)
-}
 
 async function signIn(page: Page) {
   // TEST_AUTH route: exists only in the test build

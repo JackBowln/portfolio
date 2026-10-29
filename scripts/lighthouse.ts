@@ -1,4 +1,5 @@
 // pnpm lighthouse [--routes R1,E404] [--runs 3] [--devices mobile,desktop] [--base http://localhost:8788] [--assert]
+// pnpm lighthouse --path '/_test/media?lcp=…' [--id MEDIA] — one page outside the route table (F04-T3)
 // Protocol: docs/quality/performance-budgets.md §2. Serve the production build first (`pnpm build && pnpm preview:prod`):
 // the default base runs with ENVIRONMENT=production, since every other environment sends X-Robots-Tag: noindex.
 // Chrome: CHROME_PATH or Playwright's Chrome for Testing, so local and CI measure with the same browser.
@@ -36,10 +37,12 @@ const { values } = parseArgs({
     devices: { type: 'string', default: 'mobile,desktop' },
     base: { type: 'string', default: 'http://localhost:8788' },
     assert: { type: 'boolean', default: false },
+    path: { type: 'string' },
+    id: { type: 'string', default: 'PAGE' },
   },
 })
 
-const routes = values.routes.split(',')
+const routes = values.path ? [values.id] : values.routes.split(',')
 const devices = values.devices.split(',') as Device[]
 const runs = Number(values.runs)
 const outDir = join('reports', 'lighthouse', new Date().toISOString().slice(0, 10))
@@ -77,7 +80,7 @@ let chromeVersion = ''
 let lighthouseVersion = ''
 
 for (const id of routes) {
-  const route = budgets.routes[id]
+  const route = values.path ? { path: values.path } : budgets.routes[id]
   if (!route) {
     throw new Error(`Unknown route id ${id} (see performance-budgets.json)`)
   }
