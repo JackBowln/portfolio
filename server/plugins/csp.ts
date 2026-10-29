@@ -11,6 +11,7 @@ async function policyForPage(event: H3Event, html: string): Promise<string> {
     scriptHashes: await Promise.all(inlineScripts(html).map(scriptHash)),
     mediaOrigin: mediaOriginFor(siteUrl, env?.MEDIA_BASE_URL),
     upgradeInsecureRequests: siteUrl.startsWith('https://'),
+    localMedia: (event.path.split('?')[0] ?? '').startsWith('/admin'),
   })
 }
 

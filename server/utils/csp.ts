@@ -47,9 +47,11 @@ export interface PageCspOptions {
   mediaOrigin?: string | undefined
   /** Only on https sites: upgrading localhost requests would break local previews */
   upgradeInsecureRequests: boolean
+  /** Admin pages read a chosen video's size and duration from a blob: URL before uploading it (F04-T4) */
+  localMedia?: boolean
 }
 
-export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests }: PageCspOptions): string {
+export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, localMedia = false }: PageCspOptions): string {
   const media = mediaOrigin ? ` ${mediaOrigin}` : ''
   const hashes = [...new Set(scriptHashes)].map(hash => ` ${hash}`).join('')
   const directives = [
@@ -58,7 +60,7 @@ export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests }: 
     // Accepted trade-off: Nuxt and Vue emit inline styles (ADR-0012 §1)
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data:${media}`,
-    `media-src 'self'${media}`,
+    `media-src 'self'${media}${localMedia ? ' blob:' : ''}`,
     `font-src 'self'`,
     `connect-src 'self'`,
     `object-src 'none'`,
