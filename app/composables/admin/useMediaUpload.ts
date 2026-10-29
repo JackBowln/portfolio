@@ -1,7 +1,13 @@
-// Admin-only. Sends a processed image through the F04-T1 API: manifest, one PUT per file (the server names and
-// keys them), then finalize. Abort stops the requests in flight; an unfinished item stays pending for the cleanup
-import type { PipelineResult } from '~/utils/admin/image-pipeline'
+// Admin-only. Sends a media item through the F04-T1 API: manifest, one PUT per file (the server names and keys
+// them), then finalize. Images come from the pipeline, videos straight from the file input. Abort stops the requests
+// in flight; an unfinished item stays pending for the cleanup
+import type { MediaManifest } from '#shared/media/schemas'
 import { adminFetch } from '~/utils/admin/session'
+
+export interface UploadPlan {
+  manifest: MediaManifest
+  files: { name: string, bytes: ArrayBuffer | Blob }[]
+}
 
 interface CreatedMedia {
   id: string
@@ -13,7 +19,7 @@ export function useMediaUpload() {
   const total = ref(0)
   let controller: AbortController | null = null
 
-  async function upload(result: PipelineResult): Promise<string> {
+  async function upload(result: UploadPlan): Promise<string> {
     controller = new AbortController()
     const { signal } = controller
     const created = await adminFetch<CreatedMedia>('/api/admin/media', { method: 'POST', body: result.manifest, signal })

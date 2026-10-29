@@ -64,8 +64,8 @@ function cancel() {
 </script>
 
 <template>
-  <div class="grid gap-4">
-    <div class="grid gap-2">
+  <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 gap-2">
       <label
         for="media-file"
         class="font-strong"
@@ -82,7 +82,7 @@ function cancel() {
         type="file"
         accept="image/jpeg,image/png,image/webp,image/avif"
         aria-describedby="media-file-hint"
-        class="min-h-(--target-comfortable) max-w-full border border-border bg-bg p-2 file:mr-4 file:cursor-pointer file:border-0 file:bg-accent file:px-4 file:py-2 file:font-strong file:text-accent-contrast"
+        class="min-h-(--target-comfortable) w-full border border-border bg-bg p-2 file:mr-4 file:cursor-pointer file:border-0 file:bg-accent file:px-4 file:py-2 file:font-strong file:text-accent-contrast"
         :disabled="busy"
         @change="onChange"
       >

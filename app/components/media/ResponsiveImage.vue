@@ -10,7 +10,9 @@ const props = withDefaults(defineProps<{
   /** How wide the image renders, e.g. "(min-width: 64rem) 50vw, 100vw" */
   sizes: string
   priority?: boolean
-}>(), { priority: false })
+  /** `cover` fills its box (which sets the size) and crops around the focal point */
+  fit?: 'cover' | undefined
+}>(), { priority: false, fit: undefined })
 
 if (import.meta.dev && !props.image.decorative && !props.image.alt) {
   console.warn('[ResponsiveImage] informative image without alt; mark it decorative or add the text in the media library')
@@ -65,7 +67,7 @@ const style = computed(() => ({
       :loading="priority ? 'eager' : 'lazy'"
       :fetchpriority="priority ? 'high' : undefined"
       decoding="async"
-      class="block h-auto max-w-full"
+      :class="fit === 'cover' ? 'block size-full object-cover' : 'block h-auto max-w-full'"
       :style="style"
     >
   </picture>

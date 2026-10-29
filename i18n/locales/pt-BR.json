@@ -169,7 +169,7 @@
     },
     "media": {
       "title": "Mídia",
-      "intro": "Envie imagens: o navegador remove metadados (EXIF/GPS), gera as variantes AVIF, WebP e JPEG e só então envia.",
+      "intro": "Imagens e vídeos do site. O navegador remove metadados (EXIF/GPS) das imagens e gera as variantes AVIF, WebP e JPEG antes de enviar.",
       "choose": "Escolher imagem",
       "chooseHint": "JPEG, PNG, WebP ou AVIF, até 25 MB. O processamento acontece neste dispositivo.",
       "stages": {
@@ -201,7 +201,138 @@
         "pending": "Incompleta",
         "ready": "Pronta"
       },
-      "dimensions": "{width} × {height} px"
+      "dimensions": "{width} × {height} px",
+      "library": {
+        "upload": "Enviar",
+        "uploadImage": "Enviar imagem",
+        "uploadVideo": "Enviar vídeo"
+      },
+      "filters": {
+        "legend": "Filtrar a biblioteca",
+        "search": "Nome do arquivo",
+        "kind": "Tipo",
+        "kindAll": "Todos",
+        "kindImage": "Imagens",
+        "kindVideo": "Vídeos",
+        "from": "Enviadas a partir de",
+        "to": "Enviadas até",
+        "missingAlt": "Só imagens sem texto alternativo",
+        "apply": "Filtrar",
+        "clear": "Limpar filtros"
+      },
+      "grid": {
+        "title": "Biblioteca",
+        "missingAlt": "Sem alt",
+        "decorative": "Decorativa",
+        "video": "Vídeo",
+        "pending": "Incompleta",
+        "loadMore": "Carregar mais",
+        "empty": "Nenhuma mídia com estes filtros."
+      },
+      "detail": {
+        "back": "Voltar para a biblioteca",
+        "kinds": {
+          "image": "Imagem",
+          "video": "Vídeo"
+        },
+        "info": "{kind} · {dimensions} · enviada em {date}",
+        "notFound": "Mídia não encontrada.",
+        "preview": "Prévia",
+        "file": "Arquivo: {name}"
+      },
+      "metadata": {
+        "title": "Textos por idioma",
+        "intro": "O português é a fonte. Nos outros idiomas, um campo vazio usa o texto em português.",
+        "decorative": "Imagem decorativa",
+        "decorativeHint": "Marque só quando a imagem não acrescenta informação. Leitores de tela vão ignorá-la.",
+        "alt": "Texto alternativo (alt)",
+        "altSourceHint": "Descreva o que a imagem mostra. Obrigatório para imagens informativas.",
+        "altHint": "Descreva o que a imagem mostra.",
+        "caption": "Legenda",
+        "credit": "Crédito",
+        "save": "Salvar textos",
+        "saved": "Textos salvos.",
+        "altRequired": "Escreva o texto alternativo em português ou marque a imagem como decorativa.",
+        "missingAltWarning": "Esta imagem ainda não tem texto alternativo em português."
+      },
+      "focal": {
+        "title": "Ponto de foco",
+        "hint": "Define o que continua visível quando a imagem é recortada. Use os controles ou clique na prévia.",
+        "x": "Foco horizontal",
+        "y": "Foco vertical",
+        "value": "{value}%",
+        "previewSquare": "Prévia do recorte quadrado",
+        "previewWide": "Prévia do recorte 16:9",
+        "save": "Salvar foco",
+        "saved": "Ponto de foco salvo."
+      },
+      "usages": {
+        "title": "Onde é usada",
+        "none": "Não é usada em nenhum lugar.",
+        "item": "{entity} {id}",
+        "contexts": {
+          "body": "no corpo",
+          "cover": "como capa",
+          "og": "como imagem de compartilhamento",
+          "gallery": "na galeria",
+          "poster": "como poster",
+          "settings": "nas configurações"
+        },
+        "allLocales": "todos os idiomas"
+      },
+      "delete": {
+        "button": "Excluir mídia",
+        "inUse": "Esta mídia está em uso. Remova os usos acima antes de excluir.",
+        "confirmTitle": "Excluir esta mídia?",
+        "confirmText": "Ela sai da biblioteca na hora; os arquivos são apagados depois de 30 dias.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleted": "Mídia excluída.",
+        "blocked": "A mídia está em uso e não foi excluída."
+      },
+      "video": {
+        "title": "Enviar vídeo",
+        "file": "Arquivo de vídeo",
+        "fileHint": "MP4 (H.264/AAC) ou WebM, até 95 MB. O vídeo não é convertido: envie o arquivo já otimizado.",
+        "poster": "Poster",
+        "posterHint": "Imagem da biblioteca mostrada antes do play. Obrigatório.",
+        "choosePoster": "Escolher poster",
+        "changePoster": "Trocar poster",
+        "noPoster": "Nenhum poster escolhido.",
+        "posterChosen": "Poster escolhido: {name}",
+        "tracks": "Legendas (WebVTT, opcional)",
+        "track": "Legenda em {language}",
+        "send": "Enviar vídeo",
+        "stages": {
+          "reading": "Lendo o vídeo",
+          "hashing": "Calculando o hash"
+        },
+        "errors": {
+          "fileRequired": "Escolha um arquivo de vídeo.",
+          "posterRequired": "Escolha um poster.",
+          "unsupported": "Formato não aceito. Use MP4 ou WebM.",
+          "tooLarge": "Vídeo acima de 95 MB.",
+          "unreadable": "Não foi possível ler as dimensões e a duração deste vídeo.",
+          "trackTooLarge": "Legenda acima de 1 MB.",
+          "trackType": "A legenda precisa ser um arquivo .vtt."
+        },
+        "done": "Vídeo enviado: {name}.",
+        "guide": {
+          "summary": "Guia de otimização de vídeo",
+          "codec": "MP4 com vídeo H.264 e áudio AAC (ou WebM com VP9 e Opus).",
+          "resolution": "Até 1080p; 720p basta para demonstrações de tela.",
+          "bitrate": "Cerca de 5 Mbit/s em 1080p e 2,5 Mbit/s em 720p.",
+          "faststart": "No MP4, ative o “fast start” (moov no início) para começar a tocar antes de baixar tudo.",
+          "size": "Corte o que não precisa: o limite é 95 MB por arquivo."
+        }
+      },
+      "picker": {
+        "title": "Escolher da biblioteca",
+        "search": "Buscar pelo nome do arquivo",
+        "empty": "Nenhuma imagem pronta com esta busca.",
+        "close": "Fechar",
+        "choose": "Escolher {name}"
+      }
     }
   }
 }
