@@ -171,6 +171,8 @@
 - **Decisões:** ADR-0006, "Decisões da F05-T5"; ADR-0012 §1.
 - **Testes:** `tests/unit/content-embeds.test.ts` (43 casos), casos novos em `tests/unit/csp.test.ts`, `tests/api/hardening.spec.ts`, `tests/nuxt/content-renderer.test.ts` e `tests/e2e/editor.spec.ts`; `tests/e2e/embed.spec.ts`.
 
+**Correção pós-T5 (29/10/2026): contraste dos temas do Shiki.** `github-light`/`github-dark` → `github-light-default`/`github-dark-default` (comentários a 3,05:1 no escuro e parâmetros a 3,49:1 no claro); o teste de contraste dos tokens nas 18 linguagens passou a fazer parte de `tests/nuxt/highlight.test.ts`. Detalhes no ADR-0006.
+
 **Gate da F05 (29/10/2026):** cumprido por partes. O documento com todos os nós é montado no editor e validado no servidor (`tests/e2e/editor.spec.ts`), o mesmo conjunto de nós é renderizado no público (`tests/e2e/content.spec.ts`), o bundle público não tem Tiptap, ProseMirror nem Shiki (`check:budgets`) e os payloads maliciosos são rejeitados pelo schema e pelo renderer. O fluxo único editor → gravação → página pública depende da gravação e da rota do artigo (F06) e vira um E2E lá.
 
 ---
