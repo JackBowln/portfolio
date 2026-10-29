@@ -14,6 +14,7 @@ const ROUTES = [
   '/blog/x',
   '/de/blog/x',
   '/does-not-exist',
+  '/de/does-not-exist',
   '/admin/login',
   '/admin/conta/passkeys',
 ]

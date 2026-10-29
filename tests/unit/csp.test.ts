@@ -1,9 +1,6 @@
 // F03-T4: CSP by hash (ADR-0012 §1): which inline scripts count, their hashes and the policy text
-import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CLIENT_ONLY_SCRIPT_HASHES, inlineScripts, mediaOriginFor, NON_PAGE_CSP, pageCsp, scriptHash } from '../../server/utils/csp'
+import { inlineScripts, mediaOriginFor, NON_PAGE_CSP, pageCsp, scriptHash } from '../../server/utils/csp'
 
 describe('inlineScripts', () => {
   it('keeps the scripts the browser runs, in order, and their exact text', () => {
@@ -44,17 +41,6 @@ describe('scriptHash', () => {
     expect(await scriptHash('alert(1)')).toBe(`'sha256-bhHHL3z2vDgxUt0W3dWQOrprscmda2Y5pLsLg4GF+pI='`)
     expect(await scriptHash('alert(1)')).toBe(await scriptHash('alert(1)'))
     expect(await scriptHash('alert("é")')).not.toBe(await scriptHash('alert("e")'))
-  })
-})
-
-describe('CLIENT_ONLY_SCRIPT_HASHES', () => {
-  it('matches the script of the installed Nuxt default 404 page', async () => {
-    const nuxtDir = dirname(createRequire(import.meta.url).resolve('nuxt/package.json'))
-    const component = readFileSync(join(nuxtDir, 'dist/app/components/error-404.vue'), 'utf8')
-    const script = /script: \[\s*\{\s*innerHTML: `([^`]*)`/.exec(component)?.[1]
-
-    expect(script).toBeTruthy()
-    expect(CLIENT_ONLY_SCRIPT_HASHES).toEqual([await scriptHash(script!)])
   })
 })
 

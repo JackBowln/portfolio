@@ -10,6 +10,8 @@ const manifest: Manifest = {
   'components/admin/Editor.vue': { file: 'editor.js', isDynamicEntry: true, imports: ['node_modules/@tiptap/core/index.js'] },
   'node_modules/@tiptap/core/index.js': { file: 'tiptap.js' },
   'pages/leaky.vue': { file: 'leaky.js', isDynamicEntry: true, imports: ['components/admin/Editor.vue'] },
+  'layouts/default.vue': { file: 'default.js', isDynamicEntry: true, imports: ['node_modules/nuxt/dist/app/entry.js', '_menu.js'] },
+  '_menu.js': { file: 'menu.js' },
 }
 
 const sizes: Record<string, number> = {
@@ -21,6 +23,8 @@ const sizes: Record<string, number> = {
   'editor.js': 30_000,
   'tiptap.js': 90_000,
   'leaky.js': 500,
+  'default.js': 3_000,
+  'menu.js': 2_000,
 }
 const gzipBytes = (file: string) => sizes[file] ?? 0
 const forbidden = ['/admin/', '@tiptap/']
@@ -62,5 +66,19 @@ describe('budget computation', () => {
   it('throws when the page chunk is missing', () => {
     expect(() => evaluateRoute('R9', { path: '/x', page: 'pages/missing.vue', js: 1, css: 1 }, manifest, gzipBytes, forbidden))
       .toThrow('page chunk "pages/missing.vue" not found')
+  })
+
+  // F01-T5: the header, footer and menu live in the layout, a dynamic chunk every public page loads first
+  it('adds the layout and its static imports when the route names one', () => {
+    const report = evaluateRoute('R1', { path: '/', page: 'pages/index.vue', layout: 'layouts/default.vue', js: 100, css: 5 }, manifest, gzipBytes, forbidden)
+    expect(report.jsKb).toBe(71)
+    expect(report.files).toEqual(expect.arrayContaining(['default.js', 'menu.js']))
+  })
+
+  it('counts the entry and the layout alone for a route without a page chunk (the error page)', () => {
+    const report = evaluateRoute('E404', { path: '/x', layout: 'layouts/default.vue', js: 100, css: 5 }, manifest, gzipBytes, forbidden)
+    expect(report.jsKb).toBe(70)
+    expect(() => evaluateRoute('E404', { path: '/x', layout: 'layouts/missing.vue', js: 1, css: 1 }, manifest, gzipBytes, forbidden))
+      .toThrow('layout chunk "layouts/missing.vue" not found')
   })
 })
