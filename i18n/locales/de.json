@@ -1,5 +1,6 @@
 {
   "layout": {
+    "skipLink": "Zum Inhalt springen",
     "nav": {
       "label": "Hauptnavigation",
       "projects": "Projekte",
@@ -12,7 +13,29 @@
     },
     "themeToggle": {
       "label": "Dunkles Design"
+    },
+    "menu": {
+      "open": "Menü",
+      "label": "Menü",
+      "close": "Menü schließen"
+    },
+    "footer": {
+      "nav": "Fußzeilennavigation",
+      "privacy": "Datenschutz",
+      "copyright": "© {year} {name}"
     }
+  },
+  "errors": {
+    "code": "Fehler {code}",
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Die Adresse hat sich möglicherweise geändert oder existiert nicht mehr."
+    },
+    "server": {
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Diese Seite konnte nicht geladen werden. Bitte versuche es in ein paar Minuten erneut."
+    },
+    "backHome": "Zurück zur Startseite"
   },
   "pages": {
     "about": {

@@ -181,6 +181,11 @@
 }
 
 @layer base {
+  /* Anchor and skip-link targets keep some air above them; the header is static, so nothing covers them */
+  html {
+    scroll-padding-block-start: calc(var(--spacing) * 4);
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-text);

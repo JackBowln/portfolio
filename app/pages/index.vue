@@ -24,7 +24,7 @@ useHead({
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>[PLACEHOLDER]</h1>
-  </main>
+  </div>
 </template>

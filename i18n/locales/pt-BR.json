@@ -1,5 +1,6 @@
 {
   "layout": {
+    "skipLink": "Pular para o conteúdo",
     "nav": {
       "label": "Navegação principal",
       "projects": "Projetos",
@@ -12,7 +13,29 @@
     },
     "themeToggle": {
       "label": "Tema escuro"
+    },
+    "menu": {
+      "open": "Menu",
+      "label": "Menu",
+      "close": "Fechar menu"
+    },
+    "footer": {
+      "nav": "Navegação do rodapé",
+      "privacy": "Privacidade",
+      "copyright": "© {year} {name}"
     }
+  },
+  "errors": {
+    "code": "Erro {code}",
+    "notFound": {
+      "title": "Página não encontrada",
+      "description": "O endereço pode ter mudado ou não existir mais."
+    },
+    "server": {
+      "title": "Algo deu errado",
+      "description": "Não foi possível carregar esta página. Tente de novo em alguns minutos."
+    },
+    "backHome": "Voltar para a página inicial"
   },
   "pages": {
     "about": {

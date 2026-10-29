@@ -1,5 +1,6 @@
 {
   "layout": {
+    "skipLink": "Skip to content",
     "nav": {
       "label": "Main navigation",
       "projects": "Projects",
@@ -12,7 +13,29 @@
     },
     "themeToggle": {
       "label": "Dark theme"
+    },
+    "menu": {
+      "open": "Menu",
+      "label": "Menu",
+      "close": "Close menu"
+    },
+    "footer": {
+      "nav": "Footer navigation",
+      "privacy": "Privacy",
+      "copyright": "© {year} {name}"
     }
+  },
+  "errors": {
+    "code": "Error {code}",
+    "notFound": {
+      "title": "Page not found",
+      "description": "The address may have changed or no longer exist."
+    },
+    "server": {
+      "title": "Something went wrong",
+      "description": "This page could not be loaded. Please try again in a few minutes."
+    },
+    "backHome": "Back to the home page"
   },
   "pages": {
     "about": {

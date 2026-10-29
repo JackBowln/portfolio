@@ -6,7 +6,7 @@ const { locales } = useI18n()
 
 <template>
   <nav :aria-label="$t('layout.languageSwitcher.label')">
-    <ul class="flex flex-wrap gap-x-3">
+    <ul class="flex flex-wrap gap-x-4 gap-y-2">
       <li
         v-for="item in locales"
         :key="item.code"
@@ -15,6 +15,7 @@ const { locales } = useI18n()
           :locale="item.code"
           :lang="item.language"
           :hreflang="item.language"
+          class="inline-flex min-h-(--target-min) items-center"
         >
           {{ item.name }}
         </SwitchLocalePathLink>

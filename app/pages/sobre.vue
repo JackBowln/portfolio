@@ -15,8 +15,8 @@ usePlaceholderPage('pages.about.title', { indexable: true })
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>{{ $t('pages.about.title') }}</h1>
     <p>[PLACEHOLDER]</p>
-  </main>
+  </div>
 </template>

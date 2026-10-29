@@ -15,8 +15,8 @@ usePlaceholderPage('pages.project.title')
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>{{ $t('pages.project.title') }}</h1>
     <p>[PLACEHOLDER]</p>
-  </main>
+  </div>
 </template>

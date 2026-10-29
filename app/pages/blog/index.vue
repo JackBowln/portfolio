@@ -4,8 +4,8 @@ usePlaceholderPage('pages.blog.title')
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>{{ $t('pages.blog.title') }}</h1>
     <p>[PLACEHOLDER]</p>
-  </main>
+  </div>
 </template>

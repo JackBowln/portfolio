@@ -15,8 +15,8 @@ usePlaceholderPage('pages.privacy.title')
 </script>
 
 <template>
-  <main>
+  <div>
     <h1>{{ $t('pages.privacy.title') }}</h1>
     <p>[PLACEHOLDER]</p>
-  </main>
+  </div>
 </template>

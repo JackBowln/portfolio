@@ -1,5 +1,6 @@
 {
   "layout": {
+    "skipLink": "Aller au contenu",
     "nav": {
       "label": "Navigation principale",
       "projects": "Projets",
@@ -12,7 +13,29 @@
     },
     "themeToggle": {
       "label": "Thème sombre"
+    },
+    "menu": {
+      "open": "Menu",
+      "label": "Menu",
+      "close": "Fermer le menu"
+    },
+    "footer": {
+      "nav": "Navigation du pied de page",
+      "privacy": "Confidentialité",
+      "copyright": "© {year} {name}"
     }
+  },
+  "errors": {
+    "code": "Erreur {code}",
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "L’adresse a peut-être changé ou n’existe plus."
+    },
+    "server": {
+      "title": "Une erreur s’est produite",
+      "description": "Impossible de charger cette page. Réessayez dans quelques minutes."
+    },
+    "backHome": "Retour à l’accueil"
   },
   "pages": {
     "about": {

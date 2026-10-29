@@ -12,7 +12,8 @@ import { FONT_BASE_PATH, FONT_FAMILIES, fontFaces } from '#shared/design/fonts'
 import { DISPLAY_FROM_STEP, DISTANCES, DURATIONS, EASINGS, FLUID_VIEWPORT, TYPE_SCALE } from '#shared/design/tokens'
 
 // Dev tool, not part of the localized site
-definePageMeta({ i18n: false })
+// Its own header and main: outside the public layout (F01-T5)
+definePageMeta({ i18n: false, layout: false })
 
 const THEMES = ['light', 'dark'] as const satisfies readonly ThemeName[]
 
