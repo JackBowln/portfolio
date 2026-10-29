@@ -95,7 +95,7 @@ export function fullDocument(): DocumentJson {
         attrs: { id: 'tbl-1' },
         content: [
           { type: 'tableRow', content: [{ type: 'tableHeader', attrs: { colspan: 1, rowspan: 1, colwidth: null }, content: [{ type: 'paragraph', attrs: { id: 'th-1' }, content: [{ type: 'text', text: 'Coluna' }] }] }] },
-          { type: 'tableRow', content: [{ type: 'tableCell', content: [{ type: 'paragraph', attrs: { id: 'td-1' }, content: [{ type: 'text', text: 'Valor' }] }] }] },
+          { type: 'tableRow', content: [{ type: 'tableCell', attrs: { colspan: 1, rowspan: 1, colwidth: null }, content: [{ type: 'paragraph', attrs: { id: 'td-1' }, content: [{ type: 'text', text: 'Valor' }] }] }] },
         ],
       },
     ],
