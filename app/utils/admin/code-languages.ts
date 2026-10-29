@@ -1,31 +1,10 @@
-// Languages the admin highlighter offers (F05-T3, decision 2), as Shiki ids. Names are the languages' own; `text`
-// is labeled through i18n. Each grammar is a chunk loaded only when a block uses it (useShiki)
-export const CODE_LANGUAGES = {
-  text: null,
-  ts: 'TypeScript',
-  tsx: 'TSX',
-  js: 'JavaScript',
-  jsx: 'JSX',
-  vue: 'Vue',
-  html: 'HTML',
-  css: 'CSS',
-  json: 'JSON',
-  bash: 'Bash',
-  sql: 'SQL',
-  yaml: 'YAML',
-  md: 'Markdown',
-  diff: 'Diff',
-  python: 'Python',
-  go: 'Go',
-  rust: 'Rust',
-  dockerfile: 'Dockerfile',
-} as const
+// Languages the admin highlighter offers: the list is shared with the public renderer. Each grammar is a chunk
+// loaded only when a block uses it (highlight.ts)
+import { isCodeLanguage } from '#shared/content/code-languages'
+import type { CodeLanguage } from '#shared/content/code-languages'
 
-export type CodeLanguage = keyof typeof CODE_LANGUAGES
-
-export function isCodeLanguage(value: string): value is CodeLanguage {
-  return Object.hasOwn(CODE_LANGUAGES, value)
-}
+export { CODE_LANGUAGES, isCodeLanguage } from '#shared/content/code-languages'
+export type { CodeLanguage } from '#shared/content/code-languages'
 
 /** `language-ts` / `lang-ts` classes from pasted HTML, or text */
 export function languageFromClass(className: string | null): CodeLanguage {

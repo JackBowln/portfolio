@@ -41,6 +41,30 @@
     "videoFallback": "Dieser Browser kann das Video nicht abspielen.",
     "videoDownload": "Video herunterladen"
   },
+  "content": {
+    "anchor": "Link zum Abschnitt „{title}“",
+    "table": "Tabelle",
+    "code": {
+      "plain": "Text",
+      "label": "{language}-Code",
+      "copy": "Kopieren",
+      "copied": "Kopiert"
+    },
+    "callout": {
+      "info": "Hinweis",
+      "tip": "Tipp",
+      "warning": "Achtung",
+      "danger": "Gefahr"
+    },
+    "gallery": {
+      "open": "Bild {n} von {total} vergrößern",
+      "dialog": "Bild {n} von {total}",
+      "close": "Schließen"
+    },
+    "embed": {
+      "watch": "Auf {provider} ansehen: {title}"
+    }
+  },
   "pages": {
     "about": {
       "title": "Über mich"

@@ -102,6 +102,20 @@ export default defineNuxtConfig({
     },
   },
 
+  hooks: {
+    // The content renderer never hydrates (StaticContent, F05-T4), so a first visit must not fetch its chunk, not
+    // even as an idle prefetch. Nuxt drops hints for never-hydrated modules only when it renders from the client
+    // manifest, and production renders from precomputed dependencies, so the chunk is unflagged here instead.
+    // A client-side navigation still loads it on demand
+    'build:manifest': (manifest) => {
+      const renderer = manifest['components/content/ContentRenderer.vue']
+      if (renderer) {
+        renderer.prefetch = false
+        renderer.preload = false
+      }
+    },
+  },
+
   // ADR-0002 §6: ESLint flat config with stylistic formatting, no Prettier
   eslint: {
     config: {

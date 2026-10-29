@@ -41,6 +41,30 @@
     "videoFallback": "Este navegador no puede reproducir el vídeo.",
     "videoDownload": "Descargar el vídeo"
   },
+  "content": {
+    "anchor": "Enlace a la sección «{title}»",
+    "table": "Tabla",
+    "code": {
+      "plain": "Texto",
+      "label": "Código en {language}",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "callout": {
+      "info": "Nota",
+      "tip": "Consejo",
+      "warning": "Atención",
+      "danger": "Peligro"
+    },
+    "gallery": {
+      "open": "Ampliar imagen {n} de {total}",
+      "dialog": "Imagen {n} de {total}",
+      "close": "Cerrar"
+    },
+    "embed": {
+      "watch": "Ver en {provider}: {title}"
+    }
+  },
   "pages": {
     "about": {
       "title": "Sobre mí"

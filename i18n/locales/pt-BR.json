@@ -41,6 +41,30 @@
     "videoFallback": "Este navegador não reproduz o vídeo.",
     "videoDownload": "Baixar o vídeo"
   },
+  "content": {
+    "anchor": "Link para a seção “{title}”",
+    "table": "Tabela",
+    "code": {
+      "plain": "Texto",
+      "label": "Código em {language}",
+      "copy": "Copiar",
+      "copied": "Copiado"
+    },
+    "callout": {
+      "info": "Nota",
+      "tip": "Dica",
+      "warning": "Atenção",
+      "danger": "Perigo"
+    },
+    "gallery": {
+      "open": "Ampliar imagem {n} de {total}",
+      "dialog": "Imagem {n} de {total}",
+      "close": "Fechar"
+    },
+    "embed": {
+      "watch": "Assistir no {provider}: {title}"
+    }
+  },
   "pages": {
     "about": {
       "title": "Sobre"

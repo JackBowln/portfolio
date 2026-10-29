@@ -41,6 +41,30 @@
     "videoFallback": "This browser cannot play the video.",
     "videoDownload": "Download the video"
   },
+  "content": {
+    "anchor": "Link to the “{title}” section",
+    "table": "Table",
+    "code": {
+      "plain": "Text",
+      "label": "{language} code",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "callout": {
+      "info": "Note",
+      "tip": "Tip",
+      "warning": "Caution",
+      "danger": "Danger"
+    },
+    "gallery": {
+      "open": "Enlarge image {n} of {total}",
+      "dialog": "Image {n} of {total}",
+      "close": "Close"
+    },
+    "embed": {
+      "watch": "Watch on {provider}: {title}"
+    }
+  },
   "pages": {
     "about": {
       "title": "About"

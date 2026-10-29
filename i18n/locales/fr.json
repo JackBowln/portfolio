@@ -41,6 +41,30 @@
     "videoFallback": "Ce navigateur ne peut pas lire la vidéo.",
     "videoDownload": "Télécharger la vidéo"
   },
+  "content": {
+    "anchor": "Lien vers la section « {title} »",
+    "table": "Tableau",
+    "code": {
+      "plain": "Texte",
+      "label": "Code {language}",
+      "copy": "Copier",
+      "copied": "Copié"
+    },
+    "callout": {
+      "info": "Note",
+      "tip": "Astuce",
+      "warning": "Attention",
+      "danger": "Danger"
+    },
+    "gallery": {
+      "open": "Agrandir l’image {n} sur {total}",
+      "dialog": "Image {n} sur {total}",
+      "close": "Fermer"
+    },
+    "embed": {
+      "watch": "Regarder sur {provider} : {title}"
+    }
+  },
   "pages": {
     "about": {
       "title": "À propos"

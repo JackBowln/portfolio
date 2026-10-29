@@ -9,7 +9,7 @@ import type { HastElement } from '#shared/content/hast'
 import { CODE_LANGUAGES, isCodeLanguage } from '~/utils/admin/code-languages'
 import type { CodeLanguage } from '~/utils/admin/code-languages'
 import { highlightCode } from '~/utils/admin/highlight'
-import HastPreview from './HastPreview'
+import HastNode from '~/components/content/HastNode'
 
 const props = defineProps(nodeViewProps)
 const { t } = useI18n()
@@ -126,7 +126,7 @@ const languages = Object.entries(CODE_LANGUAGES).map(([id, name]) => ({ id, name
       :aria-label="$t('admin.editor.code.preview')"
       role="group"
     >
-      <HastPreview :hast="hast" />
+      <HastNode :hast="hast" />
     </div>
   </NodeViewWrapper>
 </template>
