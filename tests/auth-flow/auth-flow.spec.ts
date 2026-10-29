@@ -99,6 +99,9 @@ test('the owner bootstraps, registers a passkey, signs in with it and manages pa
   await page.getByRole('button', { name: 'Sair' }).click()
   await page.waitForURL(/\/admin\/login/)
   await page.getByRole('button', { name: 'Entrar com passkey' }).click()
+  // After sign-in: the dashboard (F03-T5), then Passkeys from the admin navigation
+  await page.waitForURL(/\/admin$/)
+  await page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Passkeys' }).click()
   await page.waitForURL(/\/admin\/conta\/passkeys/)
 
   // A second device (WebAuthn refuses a second credential for the same user on one authenticator), then remove one

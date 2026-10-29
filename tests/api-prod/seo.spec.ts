@@ -54,8 +54,12 @@ test('production responses are indexable and use HSTS', async ({ request }) => {
     expect(headers['x-robots-tag'], path).toBeUndefined()
     expect(headers['strict-transport-security'], path).toBe('max-age=63072000; includeSubDomains')
   }
-  // The admin stays out of the index in every environment (routeRules)
-  expect((await request.get('/admin')).headers()['x-robots-tag']).toBe('noindex, nofollow')
+  // The admin stays out of the index and out of any shared cache in every environment (routeRules)
+  for (const path of ['/admin', '/admin/login', '/admin/auditoria']) {
+    const headers = (await request.get(path, { headers: { accept: 'text/html' } })).headers()
+    expect(headers['x-robots-tag'], path).toBe('noindex, nofollow')
+    expect(headers['cache-control'], path).toBe('private, no-store')
+  }
 })
 
 test('the sitemap is valid XML with absolute URLs, alternates and x-default', async ({ request, page }) => {

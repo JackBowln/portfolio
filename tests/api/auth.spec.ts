@@ -24,24 +24,22 @@ test('without a session, get-session is null, uncached and sets no cookie', asyn
   expect(response.headers()['set-cookie']).toBeUndefined()
 })
 
-test('session cookies are HttpOnly, SameSite=Lax, 7 days, with a 5 min cache cookie', async ({ request }) => {
+test('the session cookie is HttpOnly, SameSite=Lax, 7 days, with no cached session copy', async ({ request }) => {
   // TEST_AUTH route: exists only in the test build
   const response = await request.post('/api/_test/session', { headers: ORIGIN })
   expect(response.status()).toBe(200)
 
   const cookies = response.headersArray().filter(header => header.name.toLowerCase() === 'set-cookie').map(header => header.value)
   const sessionToken = cookies.find(cookie => cookie.startsWith('better-auth.session_token='))
-  const sessionData = cookies.find(cookie => cookie.startsWith('better-auth.session_data='))
 
-  for (const cookie of [sessionToken, sessionData]) {
-    expect(cookie).toContain('HttpOnly')
-    expect(cookie).toContain('SameSite=Lax')
-    expect(cookie).toContain('Path=/')
-    // http://localhost: no Secure flag or __Secure- prefix (covered for https in tests/unit/auth-options.test.ts)
-    expect(cookie).not.toContain('Secure')
-  }
+  expect(sessionToken).toContain('HttpOnly')
+  expect(sessionToken).toContain('SameSite=Lax')
+  expect(sessionToken).toContain('Path=/')
+  // http://localhost: no Secure flag or __Secure- prefix (covered for https in tests/unit/auth-options.test.ts)
+  expect(sessionToken).not.toContain('Secure')
   expect(sessionToken).toContain('Max-Age=604800')
-  expect(sessionData).toContain('Max-Age=300')
+  // The cookie cache is off (F03-T5): every check reads D1, so a revoked session stops at once
+  expect(cookies.some(cookie => cookie.startsWith('better-auth.session_data='))).toBe(false)
 
   const session = await (await request.get('/api/auth/get-session')).json()
   expect(session.user).toMatchObject({ name: 'TEST_AUTH user', emailVerified: true, role: 'viewer' })

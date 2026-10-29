@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AuditEvent } from '../../server/services/audit/audit.service'
-import { authOptions, passkeyOptions, resolveAuthSecret, SESSION_POLICY, withoutOAuthTokens } from '../../server/services/auth/options'
+import { authOptions, passkeyOptions, resolveAuthSecret, withoutOAuthTokens } from '../../server/services/auth/options'
 import type { AuthPorts } from '../../server/services/auth/options'
 import { BOOTSTRAP_COOKIE, createBootstrapGrant } from '../../server/services/auth/policies'
 
@@ -55,9 +55,9 @@ describe('authOptions', () => {
       expiresIn: 604_800,
       updateAge: 86_400,
       freshAge: 900,
-      cookieCache: { enabled: true, maxAge: 300 },
+      // No signed session copy in a cookie: revocation and role changes apply on the next request (F03-T5)
+      cookieCache: { enabled: false },
     })
-    expect(SESSION_POLICY.cookieCacheMaxAge).toBe(300)
   })
 
   it('disables IP tracking and telemetry', () => {
