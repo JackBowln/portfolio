@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// Admin-only. Picks a ready image from the library (video posters now, the editor in F05-T3). A modal <dialog>
+// Admin-only. Picks a ready image (or, with kind="video", a ready video) from the library: video posters and the
+// editor's media blocks (F05-T3). A modal <dialog>
 // with the mobile menu's focus handling: Esc closes, Tab wraps, focus returns to the opener. Each image is a button
 import ResponsiveImage from '~/components/media/ResponsiveImage.vue'
 import type { MediaListItem } from '~/utils/admin/media'
 import { thumbnailImage } from '~/utils/admin/media'
 import { adminFetch } from '~/utils/admin/session'
 
+const props = withDefaults(defineProps<{ kind?: 'image' | 'video' }>(), { kind: 'image' })
 const emit = defineEmits<{ select: [item: MediaListItem] }>()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
@@ -18,7 +20,7 @@ const titleId = useId()
 let latest = 0
 async function load() {
   const request = ++latest
-  const query = { kind: 'image', status: 'ready', limit: 30, ...(search.value.trim() ? { q: search.value.trim() } : {}) }
+  const query = { kind: props.kind, status: 'ready', limit: 30, ...(search.value.trim() ? { q: search.value.trim() } : {}) }
   const page = await adminFetch<{ items: MediaListItem[] }>('/api/admin/media', { query })
   if (request === latest) {
     items.value = page.items
@@ -90,7 +92,7 @@ defineExpose({ open })
         </UiField>
       </form>
       <p v-if="loaded && items.length === 0">
-        {{ $t('admin.media.picker.empty') }}
+        {{ $t(props.kind === 'video' ? 'admin.media.picker.emptyVideo' : 'admin.media.picker.empty') }}
       </p>
       <ul
         v-else

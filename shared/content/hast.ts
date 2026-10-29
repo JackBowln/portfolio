@@ -168,3 +168,13 @@ export function hastIssues(value: unknown): HastIssue[] {
 export function hastText(node: HastElement | HastText): string {
   return node.type === 'text' ? node.value : node.children.map(hastText).join('')
 }
+
+/** Unhighlighted code in the allowed shape: what a code block holds until Shiki has run */
+export function plainHast(code: string): HastElement {
+  return {
+    type: 'element',
+    tagName: 'pre',
+    properties: {},
+    children: [{ type: 'element', tagName: 'code', properties: {}, children: code === '' ? [] : [{ type: 'text', value: code }] }],
+  }
+}

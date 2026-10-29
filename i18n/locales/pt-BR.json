@@ -331,7 +331,131 @@
         "search": "Buscar pelo nome do arquivo",
         "empty": "Nenhuma imagem pronta com esta busca.",
         "close": "Fechar",
-        "choose": "Escolher {name}"
+        "choose": "Escolher {name}",
+        "emptyVideo": "Nenhum vídeo pronto com esta busca."
+      }
+    },
+    "editor": {
+      "placeholder": "Escreva aqui. Use a barra acima ou os atalhos (Ctrl+/) para formatar e inserir blocos.",
+      "toolbar": "Formatação e blocos",
+      "contextToolbar": "Bloco atual",
+      "stats": "{words} palavras · {characters} caracteres",
+      "cancel": "Cancelar",
+      "close": "Fechar",
+      "removeBlock": "Remover bloco",
+      "actions": {
+        "paragraph": "Parágrafo",
+        "heading2": "Título 2",
+        "heading3": "Título 3",
+        "heading4": "Título 4",
+        "bold": "Negrito",
+        "italic": "Itálico",
+        "strike": "Tachado",
+        "code": "Código no texto",
+        "link": "Link",
+        "bulletList": "Lista",
+        "orderedList": "Lista numerada",
+        "blockquote": "Citação",
+        "callout": "Destaque",
+        "horizontalRule": "Divisor",
+        "codeBlock": "Bloco de código",
+        "image": "Imagem",
+        "gallery": "Galeria",
+        "video": "Vídeo",
+        "embed": "Incorporar",
+        "table": "Tabela",
+        "moveUp": "Mover bloco para cima",
+        "moveDown": "Mover bloco para baixo",
+        "undo": "Desfazer",
+        "redo": "Refazer",
+        "shortcuts": "Atalhos",
+        "tone": {
+          "info": "Informação",
+          "tip": "Dica",
+          "warning": "Atenção",
+          "danger": "Perigo"
+        },
+        "addRow": "Adicionar linha",
+        "deleteRow": "Remover linha",
+        "addColumn": "Adicionar coluna",
+        "deleteColumn": "Remover coluna",
+        "deleteTable": "Remover tabela"
+      },
+      "shortcuts": {
+        "title": "Atalhos do editor",
+        "action": "Ação",
+        "keys": "Teclas",
+        "hardBreak": "Quebra de linha",
+        "indent": "Aumentar recuo da lista",
+        "outdent": "Diminuir recuo da lista",
+        "focusToolbar": "Ir para a barra de ferramentas",
+        "leaveText": "Sair do texto (volta para a barra)"
+      },
+      "blocks": {
+        "image": "Imagem",
+        "gallery": "Galeria",
+        "video": "Vídeo",
+        "embed": "Incorporação"
+      },
+      "link": {
+        "title": "Link",
+        "href": "Endereço",
+        "hint": "https://, http://, mailto: ou um caminho deste site (/blog/…).",
+        "invalid": "Use um endereço https://, http://, mailto: ou um caminho deste site.",
+        "apply": "Aplicar",
+        "remove": "Remover link"
+      },
+      "code": {
+        "language": "Linguagem",
+        "source": "Código",
+        "plain": "Texto simples",
+        "preview": "Pré-visualização do destaque",
+        "failed": "Não foi possível destacar este código. Ele será salvo sem cores."
+      },
+      "media": {
+        "caption": "Legenda (opcional)",
+        "altOverride": "Texto alternativo só neste uso (opcional)",
+        "altOverrideHint": "Deixe vazio para usar o texto alternativo da biblioteca."
+      },
+      "gallery": {
+        "title": "Inserir galeria",
+        "hint": "Escolha de {min} a {max} imagens da biblioteca.",
+        "chosen": "Imagens escolhidas",
+        "count": "Imagens escolhidas: {count} de no mínimo 2",
+        "add": "Adicionar imagem",
+        "remove": "Remover",
+        "removeItem": "Remover {name} (posição {position})",
+        "layout": "Disposição",
+        "layouts": {
+          "grid": "Grade",
+          "stack": "Uma abaixo da outra"
+        },
+        "insert": "Inserir galeria"
+      },
+      "embed": {
+        "title": "Incorporar vídeo",
+        "provider": "Serviço",
+        "providers": {
+          "youtube": "YouTube",
+          "vimeo": "Vimeo"
+        },
+        "externalId": "ID do vídeo",
+        "idHint": {
+          "youtube": "Os 11 caracteres depois de “v=” no endereço do YouTube.",
+          "vimeo": "Os números no fim do endereço do Vimeo."
+        },
+        "invalidId": {
+          "youtube": "Um ID do YouTube tem 11 letras, números, “-” ou “_”.",
+          "vimeo": "Um ID do Vimeo tem só números."
+        },
+        "videoTitle": "Título do vídeo",
+        "videoTitleHint": "Lido por leitores de tela e mostrado antes de carregar o vídeo.",
+        "titleRequired": "Informe o título do vídeo.",
+        "poster": "Imagem de capa",
+        "choosePoster": "Escolher imagem de capa",
+        "changePoster": "Trocar imagem de capa",
+        "posterRequired": "Escolha uma imagem de capa da biblioteca.",
+        "insert": "Incorporar"
       }
     }
   }
