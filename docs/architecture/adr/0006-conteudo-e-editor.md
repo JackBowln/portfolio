@@ -35,7 +35,7 @@
 6. **Revisões e publicação** (tabelas no [data-model](../data-model.md)).
    - A localização é a cópia de trabalho; `*_revisions` são snapshots imutáveis (`autosave`, `manual`, `publish`, `restore`, `ai`).
    - Publicar cria a revisão `publish` e aponta `published_revision_id` para ela; o público lê **só** snapshots publicados.
-   - Restaurar copia o snapshot para a cópia de trabalho e cria uma revisão `restore`. O histórico nunca é apagado, exceto a poda de autosaves (mantém os 20 mais recentes por localização).
+   - Restaurar copia o snapshot para a cópia de trabalho e cria uma revisão `restore`. O histórico nunca é apagado, exceto a poda de autosaves (no máximo os 10 mais recentes por localização, nenhum com mais de 14 dias; [data-model §4.3](../data-model.md#43-article_revisions), alinhado na F05-T1).
    - O diff é calculado no navegador do admin, por bloco (`id`) e por texto.
    - Despublicar zera o ponteiro e mantém o histórico.
    - Mudar o slug de algo publicado cria um redirect 301 ([ADR-0008](0008-i18n-e-seo.md)).

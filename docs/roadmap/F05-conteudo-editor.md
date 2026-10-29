@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F04 (gate) | RF-05.1, RF-09.1, RF-10.2 | `/cms-engineer`, `/architecture-guardian` |
+| concluída | F04 (gate) | RF-05.1, RF-09.1, RF-10.2 | `/cms-engineer`, `/architecture-guardian` |
 
 **Objetivo.** Criar as tabelas de [data-model §4](../architecture/data-model.md#4-conteúdo), com as migrações e índices, e os repositórios genéricos para entidades localizadas:
 - criar e ler a localização;
@@ -27,13 +27,21 @@
 **Fora do escopo.** Regras de publicação (F06-T4) e interface.
 
 **Critérios de aceite**
-- [ ] Índices e unicidades do data-model criados, incluindo os índices parciais de slug.
-- [ ] Snapshot comprimido e descomprimido sem perda; o hash é do JSON canônico; autosave idêntico não gera revisão.
-- [ ] A leitura pública por `(locale, published_slug)` usa 1 query (verificado no teste).
+- [x] Índices e unicidades do data-model criados, incluindo os índices parciais de slug.
+- [x] Snapshot comprimido e descomprimido sem perda; o hash é do JSON canônico; autosave idêntico não gera revisão.
+- [x] A leitura pública por `(locale, published_slug)` usa 1 query (verificado no teste).
 
 **Testes**
 - Workers: unicidade de slug por idioma; leitura pública com 1 query; deduplicação por hash; ida e volta da compressão.
 - Unit: o JSON canônico é estável (a ordem das chaves não muda o hash).
+
+**Resultado (29/10/2026).**
+- **Schema:** `server/db/schema/content.ts` (artigos, projetos e páginas, com grupos de colunas compartilhados) e `server/db/schema/taxonomy.ts`; migração `0004_content` (aplicada só com `--local`). Além dos índices do data-model, há CHECKs de consistência: `source` só em pt-BR, `scheduled` exige data, colunas `published_*` andam junto com o ponteiro da revisão, período `YYYY-MM` e URLs `https:` de projeto.
+- **Compartilhado:** `shared/content/canonical-json.ts` (JSON canônico + SHA-256), `shared/content/snapshot.ts` (formato do snapshot por tipo, gzip nativo) e `shared/content/cursor.ts` (cursor das listas públicas).
+- **Repositórios:** `server/services/content/{content-tables,localized.repo,revisions.repo}.ts`, genéricos para `article`, `project` e `page`.
+- **Medição:** snapshot de 64 KB → 754 B em gzip; `createRevision` (canonicalizar, hash, gzip e gravar) leva 1–3 ms no workerd local.
+- **Decisões:** data-model §4, "Decisões da F05-T1".
+- **Testes:** `tests/unit/canonical-json.test.ts` e `tests/workers/content.test.ts`.
 
 ---
 

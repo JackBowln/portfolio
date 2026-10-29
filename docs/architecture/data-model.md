@@ -172,6 +172,19 @@ O mesmo padrão vale para artigos, projetos e páginas:
 | `tags` | `id`, `kind` (`TagKind`), `url` (site oficial da tecnologia, nulo), `icon_key` (ícone versionado no repositório, nulo), auditoria | |
 | `tag_localizations` | `tag_id`, `locale`, `name`, `slug`, `description`, `translation_state`, `updated_at` | `PK(tag_id, locale)`, `UNIQUE(locale, slug)` |
 
+### 4.8 Decisões da F05-T1
+
+- **Código:** `server/db/schema/content.ts` e `taxonomy.ts`, migração `0004_content`. As três famílias (artigo, projeto, página) compartilham grupos de colunas, e um registro (`server/services/content/content-tables.ts`) permite que os repositórios de localização e de revisão sejam escritos uma vez.
+- **Colunas de projeto:** `project_localizations` tem `published_summary` no lugar de `published_excerpt`; as listas públicas expõem os dois como `lead`. Projetos também têm `word_count`, `reading_time_min` e `toc`, pelo mesmo padrão dos artigos.
+- **Páginas:** `page_localizations` não tem título, slug, palavras nem sumário; só `blocks`, SEO e as colunas de publicação. `published_snapshot` basta para a leitura pública.
+- **Snapshot:** `{ entity, localization }` (`shared/content/snapshot.ts`, zod `strict`). Artigo: capa e temas + título, slug, resumo, corpo e SEO. Projeto: capa, galeria, tecnologias, período e URLs + título, slug, resumo, papel, corpo, destaques e SEO. Página: só `blocks` e SEO. `working_hash` é o hash do snapshot da cópia de trabalho, o mesmo de uma revisão com aquele conteúdo.
+- **Schemas provisórios:** `body` só valida a forma externa do documento (`type: 'doc'`) até a F05-T2; `blocks` aceita qualquer JSON até os schemas por `PageKey` da F08.
+- **Deduplicação:** `autosave` e `manual` idênticos à revisão **mais recente** não geram linha (a função devolve a existente). `publish`, `restore` e `ai` sempre geram, porque registram um evento.
+- **Número da revisão:** calculado no próprio `INSERT` (subconsulta `max + 1`), com `UNIQUE(localization_id, number)` como rede.
+- **FK circular:** `published_revision_id`/`source_revision_id` → revisões e `localization_id` → localizações; o SQLite aceita, e revisões publicadas nunca são podadas.
+- **CHECKs:** `translation_state = 'source'` ⇔ `locale = 'pt-BR'`; `status = 'scheduled'` exige `scheduled_at`; `published_revision_id`, `published_snapshot` e `published_slug` são nulos juntos; período `YYYY-MM` e URLs `https:` em projetos e temas.
+- **Cursor das listas:** `base64url("{published_at}:{id}")` (`shared/content/cursor.ts`), com o `id` como desempate de `published_at` repetido.
+
 ## 5. Mídia
 
 | Tabela | Colunas | Notas |
