@@ -10,6 +10,7 @@ const canReadAudit = computed(() => can(user.value?.role ?? '', { audit: ['read'
 
 const links = computed(() => [
   { to: '/admin', label: 'admin.layout.dashboard' },
+  { to: '/admin/midia', label: 'admin.layout.media' },
   ...(canReadAudit.value ? [{ to: '/admin/auditoria', label: 'admin.layout.audit' }] : []),
   { to: '/admin/conta/passkeys', label: 'admin.layout.passkeys' },
   { to: '/admin/conta/sessoes', label: 'admin.layout.sessions' },

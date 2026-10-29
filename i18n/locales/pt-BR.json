@@ -119,7 +119,8 @@
       "audit": "Auditoria",
       "passkeys": "Passkeys",
       "sessions": "Sessões",
-      "signedInAs": "Conectado como {name}"
+      "signedInAs": "Conectado como {name}",
+      "media": "Mídia"
     },
     "dashboard": {
       "title": "Painel",
@@ -161,6 +162,42 @@
       "what": "Ação",
       "entity": "Item",
       "details": "Detalhes"
+    },
+    "media": {
+      "title": "Mídia",
+      "intro": "Envie imagens: o navegador remove metadados (EXIF/GPS), gera as variantes AVIF, WebP e JPEG e só então envia.",
+      "choose": "Escolher imagem",
+      "chooseHint": "JPEG, PNG, WebP ou AVIF, até 25 MB. O processamento acontece neste dispositivo.",
+      "stages": {
+        "decode": "Lendo a imagem",
+        "original": "Removendo metadados do original",
+        "variants": "Gerando variantes",
+        "placeholder": "Gerando o placeholder",
+        "upload": "Enviando"
+      },
+      "progress": "{stage}: {done} de {total}",
+      "cancel": "Cancelar",
+      "cancelled": "Envio cancelado.",
+      "done": "Imagem enviada: {name}. Processamento em {seconds} s.",
+      "errors": {
+        "unsupported": "Formato não aceito. Use JPEG, PNG, WebP ou AVIF.",
+        "too_large": "Imagem grande demais (até 25 MB e 16.384 px).",
+        "failed": "Não foi possível processar esta imagem.",
+        "upload": "O envio falhou. Tente de novo."
+      },
+      "recent": "Enviadas recentemente",
+      "empty": "Nenhuma mídia ainda.",
+      "columns": {
+        "name": "Arquivo",
+        "status": "Situação",
+        "size": "Dimensões",
+        "date": "Enviada em"
+      },
+      "status": {
+        "pending": "Incompleta",
+        "ready": "Pronta"
+      },
+      "dimensions": "{width} × {height} px"
     }
   }
 }
