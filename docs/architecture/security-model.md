@@ -24,6 +24,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `/admin/setup` (bootstrap) | Anônima até existir owner | Exige ausência de owner **e** `BOOTSTRAP_TOKEN`; 404 depois; origem + JSON + `RL_AUTH` em `POST /api/setup` |
 | `/api/admin/*` | Autenticada | Origem + JSON + 1 MB (antes da sessão), sessão obrigatória, `RL_ADMIN` por sessão, `requirePermission`, propriedade, zod, auditoria (`auditRequest`) |
 | Upload de mídia | Autenticada | Magic bytes, allowlist de MIME, limites, chaves geradas pelo servidor, SVG bloqueado, `nosniff`; desde a F04-T1: marcação (HTML, SVG, XML, PHP) recusada nos primeiros 64 KB, `Content-Length` igual ao declarado no manifesto, só quem criou o item envia arquivos e finaliza, rejeições auditadas |
+| Entrega de mídia (`/media/**` em local e preview; domínio do bucket em produção) | Anônima | Só chaves de arquivos entregues (variantes, vídeo, legendas) passam pelo padrão; `originals/` não tem URL (em produção, regra de WAF); `Content-Type` gravado pelo servidor no upload; `nosniff`, `inline`, CSP `default-src 'none'`; cache `immutable`; sem `Set-Cookie` (F04-T3) |
 | Editor e conteúdo (embeds, links, código) | Autenticada → público | Schema estrito, protocolos de URL, allowlist de embeds, HAST com allowlist |
 | `/preview/{token}` | Quem tiver o link | HMAC, expiração ≤ 24 h, `noindex`, `private, no-store` |
 | Cron e tarefas | Interna | Sem entrada externa; idempotente; poucos itens por execução |

@@ -86,6 +86,20 @@
 | `@jsquash/resize` | 2.1.1 | Worker do admin | 17 KB (WASM) | Apache-2.0 | 2026-01 | idem |
 | `thumbhash` | 0.1.1 | Worker do admin | 3,3 KB | MIT | 2023-03 | idem |
 
+### Decisões da F04-T3 (owner, 2026-10-29)
+
+- **URLs:** URL pública = `MEDIA_BASE_URL` + `/` + chave do R2 (`media/{sha2}/{sha256}/{nome}.{ext}`). Local e preview usam a origem do próprio site, servida por `server/routes/media/[...key].ts`; produção usa o domínio do bucket. `NUXT_PUBLIC_MEDIA_BASE_URL` leva o mesmo valor para os componentes (`useMediaUrl`), e `shared/media/public.ts` (`isPublicMediaKey`) só deixa virar URL a chave de um arquivo entregue.
+- **Rota de entrega:**
+  - a chave chega crua (sem decodificar) e precisa casar com o padrão: variantes, vídeo e legendas; qualquer outra coisa é 404 `no-store`, sem tocar o R2;
+  - o `Content-Type` vem do `httpMetadata` do objeto, gravado pelo servidor no upload a partir do registro, sem leitura no D1 por request;
+  - `Range` de um intervalo só (`server/utils/http-range.ts`), com o tamanho lido por `head()` antes; fora do arquivo, 416. `If-None-Match` → 304;
+  - headers: `public, max-age=31536000, immutable`, `nosniff`, `inline`, `Accept-Ranges`, `ETag` e `Cache-Tag: media-file:{sha256}`.
+- **Produção** (checklist de deploy): uma regra de WAF no domínio de mídia bloqueia `/originals/*` (opção (a)), e o CORS do bucket libera o site para as legendas. Itens `pending` e apagados continuam acessíveis pela chave até o cron da F06; as chaves são hashes impossíveis de adivinhar.
+- **`<ResponsiveImage>`** (`app/components/media/`): `<picture>` com AVIF e WebP, `img` JPEG com `srcset`, `sizes` obrigatório, `width`/`height`, alt do idioma (vazio só com `decorative`, que avisa em desenvolvimento), `lazy` + `async` por padrão, `eager` + `fetchpriority="high"` só com `priority`, foco em `object-position` e placeholder + cor no fundo.
+- **`<MediaVideo>`:** `controls`, `preload="none"`, `playsinline`, sem autoplay, poster JPEG do item ligado, um `<track>` por idioma (em ordem de idioma) e as legendas do idioma atual como `default`.
+- **SSR:** uma página que busca dados em `/api` precisa de `useRequestFetch()`. Um `$fetch` direto roda numa sub-requisição sem os bindings da Cloudflare (o mesmo que a F03-T4 viu na página de erro). Isso vale para as páginas de conteúdo da F05.
+- **Medido:** Lighthouse na página de teste (`/_test/media`, só no build de teste), com imagens reais do pipeline, sem nenhum aviso de imagem ([perf-log](../../quality/perf-log.md)).
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -113,7 +127,7 @@
 
 - F04-T1: testes enviam um polyglot, um SVG renomeado, um arquivo acima do limite e um MIME divergente, e todos são rejeitados. Feito em `tests/api/media.spec.ts` (também tamanho divergente, variante fora do manifesto, legenda com `<script>`, hash repetido, finalize incompleto e RBAC), `tests/unit/magic-bytes.test.ts`, `tests/unit/media-manifest.test.ts` e `tests/workers/media.test.ts`.
 - F04-T2: `tests/unit/media-pipeline.test.ts` (larguras, manifesto, remoção de metadados em JPEG, PNG e WebP) e `tests/e2e/media-pipeline.spec.ts` (nenhum EXIF/GPS sai do navegador, saída idêntica para o mesmo arquivo, 4000×3000 em 8,2 s sem tarefa longa na thread principal, envio e listagem, cancelamento, formato recusado).
-- F04-T3: Lighthouse sem "Properly size images" nem "Serve images in modern formats" nas páginas com mídia.
+- F04-T3: Lighthouse sem "Properly size images" nem "Serve images in modern formats" nas páginas com mídia. Feito na página de teste: `image-delivery-insight`, `unsized-images`, `image-size-responsive`, `image-aspect-ratio` e `lcp-discovery-insight` passam nas 6 execuções (Lighthouse 13 reúne as duas primeiras auditorias em `image-delivery-insight`). Testes: `tests/api/media-delivery.spec.ts`, `tests/e2e/media-delivery.spec.ts`, `tests/nuxt/media.test.ts`, `tests/unit/media-public.test.ts` e `tests/unit/http-range.test.ts`.
 
 ## Referências
 

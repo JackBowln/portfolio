@@ -25,7 +25,8 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `ENVIRONMENT` | var | todos | `local`, `preview`, `production` (`test` nos builds de teste) |
 | `SITE_URL` | var | todos | Origem canônica (sem barra final) |
 | `NUXT_PUBLIC_SITE_URL` | var | todos | Mesmo valor da `SITE_URL`, lido pelo app como `runtimeConfig.public.siteUrl` (canonical, hreflang, JSON-LD). Um teste garante a igualdade |
-| `MEDIA_BASE_URL` | var | todos | Base pública da mídia |
+| `MEDIA_BASE_URL` | var | todos | Base pública da mídia, sem barra final: URL = base + `/` + chave do R2 (`media/…`). Local e preview: a origem do próprio site (rota `/media/**`); produção: o domínio do bucket |
+| `NUXT_PUBLIC_MEDIA_BASE_URL` | var | todos | Mesmo valor da `MEDIA_BASE_URL`, lido pelos componentes como `runtimeConfig.public.mediaBaseUrl`. Um teste garante a igualdade (F04-T3) |
 | `TURNSTILE_SITE_KEY` | var pública | todos | Widget do contato |
 | `BETTER_AUTH_SECRET` | segredo | preview e produção (local opcional) | Assinatura de sessões (≥ 32 caracteres aleatórios). Sem ele, preview e produção falham fechados; local usa um valor aleatório por isolate (sessões caem quando o isolate reinicia). Local: `.dev.vars`; remoto: `wrangler secret put`, só com pedido do owner |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | segredo | todos | Um OAuth App por ambiente (callback `${SITE_URL}/api/auth/callback/github`) |

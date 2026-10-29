@@ -30,6 +30,8 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 413 ms | 0 ms | 0 | — |
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | mobile | 100 (±2) | 100 | 100 | 100 | 1362 ms | 0 ms | 0 | LCP = FCP; abaixo da meta de 1,8 s pela primeira vez |
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 480 ms | 0 ms | 0 | Relatórios em `reports/lighthouse/2026-10-29` |
+| 2026-10-29 | F04-T3 (não commitado, base `036b5ce`) | `pnpm lighthouse --path` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:test` (build de teste) | `/_test/media` | mobile | 97 (±8) | 100 | 100 | 66 | 2294 ms | 3 ms | 0 | Página de teste com 1 imagem LCP (`priority`, 2000×1200) e 2 lazy abaixo da dobra, imagens reais do pipeline. Todas as auditorias de imagem passam (`image-delivery-insight`, `unsized-images`, `image-size-responsive`, `image-aspect-ratio`, `lcp-discovery-insight`). Detalhamento observado: TTFB 20–59 ms, atraso 7–19 ms, carregamento 37–45 ms, renderização 7–34 ms; o bloqueio é o `entry.css` (156–308 ms). SEO 66 só por `is-crawlable` (a página é `noindex` de propósito) |
+| 2026-10-29 | F04-T3 (não commitado, base `036b5ce`) | `pnpm lighthouse --path` / 13.5.0 | Chrome 156.0.0.0 | idem | `/_test/media` | desktop | 100 | 100 | 100 | 66 | 392 ms | 0 ms | 0 | O elemento LCP é o nome no header: o Chrome não conta imagens de baixa entropia (a fixture é um degradê) como candidatas. Relatórios em `reports/lighthouse/2026-10-29/MEDIA-*` |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -49,6 +51,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-27 | F01-T4 (não commitado, base `b7fd12c`) | R1 / R3 / R6 | 105,83 / 105,78 / 105,78 | 4,73 | 125 / 120 / 125 | Utilitários dos componentes base e estilos do `UiProse` no CSS global (+1,5 kB); Lighthouse R1/R6 sem mudança (mobile 99, LCP 1,81 s; desktop 100; CLS 0) |
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | R1 / R3 / R6 / E404 | 114,18 / 114,26 / 114,12 / 113,58 | 5,16 | 125 / 120 / 125 / 125 | O `check:budgets` passou a contar o chunk do layout (`layout` em cada rota), que toda página carrega antes de pintar e que ficava de fora desde a F03-T5; o E404 mede o `app/error.vue`, que vai no entry |
 | 2026-10-29 | F04-T2 (não commitado, base `7911158`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,28 | 125 / 120 / 125 | Codecs só no Worker do admin; +0,04 kB de JS (chaves de i18n do admin) e +0,12 kB de CSS (utilitários da tela de envio) |
+| 2026-10-29 | F04-T3 (não commitado, base `036b5ce`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,31 | 125 / 120 / 125 | Os componentes de mídia só entram nas rotas que os usam (nenhuma pública ainda); +0,03 kB de CSS |
 
 ## Pipeline de imagem do admin (F04-T2)
 

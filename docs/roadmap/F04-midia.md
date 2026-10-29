@@ -88,7 +88,7 @@ com progresso e cancelamento na interface.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F04-T1 | RF-06.2, RNF-01, RNF-03 | `/frontend-design`, `/performance-audit` |
+| concluída | F04-T1 | RF-06.2, RNF-01, RNF-03 | `/frontend-design`, `/performance-audit` |
 
 **Objetivo.** Criar a rota de mídia para local e preview (streaming do R2 com headers imutáveis) e o suporte a `MEDIA_BASE_URL`. Criar `<ResponsiveImage>` (`picture`, `srcset`/`sizes`, `width`/`height`, `alt` do idioma, placeholder, ponto de foco, prioridade do LCP) e `<MediaVideo>` (poster, `track` por idioma, `preload="none"`, controles).
 
@@ -97,15 +97,23 @@ com progresso e cancelamento na interface.
 **Fora do escopo.** Galeria ampliável (F05-T4).
 
 **Critérios de aceite**
-- [ ] Headers da mídia: `public, max-age=31536000, immutable`, `nosniff`, `Content-Type` vindo do registro, `Content-Disposition: inline`.
-- [ ] Sem CLS (dimensões sempre presentes); `fetchpriority="high"` só quando `priority` for passado.
-- [ ] Lighthouse numa página de teste sem "Properly size images", "Serve images in modern formats" nem "Image elements do not have explicit width and height".
-- [ ] Vídeo sem autoplay, com legendas selecionáveis.
+- [x] Headers da mídia: `public, max-age=31536000, immutable`, `nosniff`, `Content-Type` vindo do registro, `Content-Disposition: inline`.
+- [x] Sem CLS (dimensões sempre presentes); `fetchpriority="high"` só quando `priority` for passado.
+- [x] Lighthouse numa página de teste sem "Properly size images", "Serve images in modern formats" nem "Image elements do not have explicit width and height".
+- [x] Vídeo sem autoplay, com legendas selecionáveis.
 
 **Testes**
 - Nuxt: o markup gerado (sources, srcset, sizes, alt e atributos de prioridade).
 - API: os headers da rota de mídia.
 - `/performance-audit` na página de teste.
+
+**Resultado (29/10/2026).**
+- **Entrega:** `server/routes/media/[...key].ts` (só arquivos entregues, `Range`, 304, headers imutáveis) e `server/utils/http-range.ts`. `MEDIA_BASE_URL` e `NUXT_PUBLIC_MEDIA_BASE_URL` em cada ambiente; em local e preview, a origem do próprio site.
+- **Componentes:** `app/components/media/ResponsiveImage.vue` e `MediaVideo.vue`, `app/composables/useMediaUrl.ts` e o formato público em `shared/media/public.ts`.
+- **Medido:** Lighthouse na página de teste (`/_test/media`, só no build de teste) com imagens reais, sem aviso de imagem; mobile 97 (±8), desktop 100, CLS 0 ([perf-log](../quality/perf-log.md)). `pnpm lighthouse` ganhou `--path`.
+- **Produção:** regra de WAF para `/originals/*` e CORS das legendas no checklist de deploy (`release-check`).
+- **Decisões:** ADR-0007, "Decisões da F04-T3".
+- **Testes:** `tests/api/media-delivery.spec.ts`, `tests/e2e/media-delivery.spec.ts`, `tests/nuxt/media.test.ts`, `tests/unit/media-public.test.ts`, `tests/unit/http-range.test.ts` e o teste do `wrangler.jsonc`.
 
 ---
 

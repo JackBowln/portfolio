@@ -45,6 +45,8 @@
 ## 8. Somente para produção
 - [ ] Domínio na Cloudflare, com DNS e TLS ativos (ação do owner).
 - [ ] Domínio de mídia ligado ao bucket, com Cache Rules.
+- [ ] Regra de WAF no domínio de mídia bloqueando `/originals/*` (os originais nunca são públicos; ADR-0007, F04-T3), conferida com um `curl` que recebe 403.
+- [ ] CORS do bucket de mídia com `Access-Control-Allow-Origin` = `SITE_URL` (GET/HEAD), para as legendas `<track>` vindas de outra origem.
 - [ ] Owner criado em produção, passkey registrada e `BOOTSTRAP_TOKEN` removido.
 - [ ] Search Console: envio do sitemap planejado (ação do owner).
 - [ ] Checklist de 30 dias criado (CWV de campo, custos, backups, dependências).
