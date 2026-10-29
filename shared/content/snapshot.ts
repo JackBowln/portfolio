@@ -4,16 +4,17 @@
 import { z } from 'zod'
 import { TRANSLATION_STATES } from '../types/enums.ts'
 import { canonicalJson } from './canonical-json.ts'
+import { documentSchema } from './document-schema.ts'
+import type { DocumentJson } from './document-schema.ts'
 
 export const CONTENT_TYPES = ['article', 'project', 'page'] as const
 export type ContentType = (typeof CONTENT_TYPES)[number]
 /** Content with a slug of its own; pages take their path from the i18n routes */
 export type SluggedContentType = Exclude<ContentType, 'page'>
 
-// Provisional: only the outer shape. F05-T2 replaces it with shared/content/document-schema.ts, F08 the page blocks
-// with one schema per PageKey. No rows exist before then, so tightening is safe
-export const documentJson = z.object({ type: z.literal('doc'), content: z.array(z.json()) }).catchall(z.json())
-export type DocumentJson = z.infer<typeof documentJson>
+// The body is the shared document schema (F05-T2). Page blocks stay any JSON until the schemas per PageKey (F08)
+export const documentJson = documentSchema
+export type { DocumentJson }
 export const pageBlocksJson = z.record(z.string(), z.json())
 
 export const tocEntries = z.array(z.object({ id: z.string(), level: z.union([z.literal(2), z.literal(3)]), text: z.string() }).strict())
