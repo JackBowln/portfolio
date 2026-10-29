@@ -20,7 +20,7 @@ const db = createDb(env.DB)
 const [user] = await db.insert(users).values({ name: 'Content tester', email: `content-${uuidv7()}@example.test` }).returning()
 const authorId = user!.id
 const unique = () => uuidv7().slice(-12)
-const doc = (text: string): DocumentJson => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] })
+const doc = (text: string): DocumentJson => ({ type: 'doc', content: [{ type: 'paragraph', attrs: { id: 'p1' }, content: [{ type: 'text', text }] }] })
 const NO_ENTITY = { coverMediaId: null, tagIds: [] }
 
 async function article() {
@@ -127,9 +127,15 @@ describe('constraints', () => {
     await rejects(createRevision(db, 'article', { localizationId: uuidv7(), entityId: id, locale: 'pt-BR', kind: 'manual', snapshot: snapshotOf('article', NO_ENTITY, { title: 'T', slug: 't', body: doc('x') }) }), /FOREIGN KEY constraint failed/)
   })
 
-  it('refuses a body that is not a document', async () => {
+  it('refuses a body that is not a valid document (F05-T2 schema)', async () => {
     const { id } = await article()
-    await rejects(createLocalization(db, 'article', { articleId: id, locale: 'pt-BR', title: 'T', slug: `s-${unique()}`, body: { type: 'html' } as never, translationState: 'source' }, NO_ENTITY), /Invalid input/)
+    const values = { articleId: id, locale: 'pt-BR' as const, title: 'T', slug: `s-${unique()}`, translationState: 'source' as const }
+    await rejects(createLocalization(db, 'article', { ...values, body: { type: 'html' } as never }, NO_ENTITY), /Invalid input/)
+    const hostile = { type: 'doc', content: [{ type: 'paragraph', attrs: { id: 'p1' }, content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] }] }
+    await rejects(createLocalization(db, 'article', { ...values, body: hostile as never }, NO_ENTITY), /link must be https:/)
+    // The column itself validates, whatever wrote the value
+    const row = await localization(id, 'pt-BR')
+    await rejects(db.update(articleLocalizations).set({ body: hostile as never }).where(eq(articleLocalizations.id, row.id)), /link must be https:/)
   })
 })
 
