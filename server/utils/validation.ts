@@ -19,9 +19,7 @@ function parseStrict<T extends ObjectSchema>(schema: T, input: unknown): z.outpu
   return result.data as z.output<T>
 }
 
-// JSON only: a cross-site HTML form cannot send application/json without a CORS preflight.
-// The size is checked on the raw bytes too, since chunked requests carry no Content-Length
-export async function readValidatedBodyStrict<T extends ObjectSchema>(event: H3Event, schema: T): Promise<z.output<T>> {
+async function readJsonBody(event: H3Event): Promise<unknown> {
   const contentType = getRequestHeader(event, 'content-type') ?? ''
   if (!/^application\/json(;|$)/i.test(contentType)) {
     throw createAppError('unsupported_media_type')
@@ -33,7 +31,22 @@ export async function readValidatedBodyStrict<T extends ObjectSchema>(event: H3E
   if ((raw?.byteLength ?? 0) > MAX_JSON_BYTES) {
     throw createAppError('payload_too_large')
   }
-  return parseStrict(schema, await readBody(event))
+  return readBody(event)
+}
+
+// JSON only: a cross-site HTML form cannot send application/json without a CORS preflight.
+// The size is checked on the raw bytes too, since chunked requests carry no Content-Length
+export async function readValidatedBodyStrict<T extends ObjectSchema>(event: H3Event, schema: T): Promise<z.output<T>> {
+  return parseStrict(schema, await readJsonBody(event))
+}
+
+/** For unions (discriminated by a `kind`), whose members must each be `.strict()` already */
+export async function readValidatedUnionBody<T extends z.ZodDiscriminatedUnion>(event: H3Event, schema: T): Promise<z.output<T>> {
+  const result = schema.safeParse(await readJsonBody(event))
+  if (!result.success) {
+    throw createAppError('bad_request', 'Invalid input', toIssues(result.error))
+  }
+  return result.data
 }
 
 export function getValidatedQueryStrict<T extends ObjectSchema>(event: H3Event, schema: T): z.output<T> {

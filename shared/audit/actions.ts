@@ -8,6 +8,11 @@ export const AUDIT_ACTIONS = [
   'auth.passkey_added',
   'auth.passkey_removed',
   'auth.session_revoked',
+  'media.created',
+  'media.finalized',
+  'media.updated',
+  'media.deleted',
+  'media.upload_rejected',
 ] as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number]

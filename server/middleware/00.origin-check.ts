@@ -1,10 +1,13 @@
 // CSRF and input envelope for every state-changing API call (ADR-0012 §2, §4). Runs before the session middleware,
 // so a cross-site request is refused without touching D1. Better Auth checks origins too; this is the outer layer
 import type { H3Event } from 'h3'
+import { MAX_UPLOAD_BYTES } from '#shared/media/schemas'
 
 const MUTATIONS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
-// Better Auth parses its own bodies; these routes take JSON only (uploads get their own exception in F04)
+// Better Auth parses its own bodies; these routes take JSON only, except the media file upload (F04-T1)
 const JSON_ONLY = ['/api/admin', '/api/public', '/api/setup']
+// Binary body, typed and sized per file by its handler against the manifest
+const MEDIA_UPLOAD = /^\/api\/admin\/media\/[^/]+\/variants\/[^/]+$/
 
 function under(path: string, prefix: string): boolean {
   return path === prefix || path.startsWith(`${prefix}/`)
@@ -30,8 +33,12 @@ export default defineEventHandler((event) => {
   }
 
   const contentLength = Number(getRequestHeader(event, 'content-length') ?? 0)
-  if (contentLength > MAX_JSON_BYTES) {
+  const isUpload = event.method === 'PUT' && MEDIA_UPLOAD.test(path)
+  if (contentLength > (isUpload ? MAX_UPLOAD_BYTES : MAX_JSON_BYTES)) {
     throw createAppError('payload_too_large')
+  }
+  if (isUpload) {
+    return
   }
 
   // A bodiless DELETE needs no type; anything carrying a body (an HTML form always does) must be JSON
