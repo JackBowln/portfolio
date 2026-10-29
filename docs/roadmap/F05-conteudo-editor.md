@@ -113,7 +113,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F05-T2, F04-T3 | RF-04.1, RF-04.4, RX-04, RNF-03 | `/frontend-design`, `/performance-audit`, `/security-audit` |
+| concluída | F05-T2, F04-T3 | RF-04.1, RF-04.4, RX-04, RNF-03 | `/frontend-design`, `/performance-audit`, `/security-audit` |
 
 **Objetivo.** Criar o `ContentRenderer` (nó → componente), o renderer recursivo de HAST com allowlist e os componentes de figura, galeria (ampliação como ilha sob demanda), callout, tabela e código (botão copiar como ilha mínima). O conteúdo estático não hidrata.
 
@@ -122,15 +122,23 @@
 **Fora do escopo.** Embeds com facade (T5).
 
 **Critérios de aceite**
-- [ ] Nenhum `v-html` no projeto (regra de lint ou `grep` no CI).
-- [ ] Bundle público sem `@tiptap` e sem `shiki` (checagem automática no build).
-- [ ] Página de teste com documento completo: o JS do conteúdo se limita às ilhas; orçamento do artigo respeitado (≤ 100 KB gz).
-- [ ] Headings com âncora e foco visível; código com o nome da linguagem anunciado.
+- [x] Nenhum `v-html` no projeto (regra de lint ou `grep` no CI).
+- [x] Bundle público sem `@tiptap` e sem `shiki` (checagem automática no build).
+- [x] Página de teste com documento completo: o JS do conteúdo se limita às ilhas; orçamento do artigo respeitado (≤ 120 KB gz, o limite do R3 desde a revisão da F02-T2; o texto original dizia 100 KB).
+- [x] Headings com âncora e foco visível; código com o nome da linguagem anunciado.
 
 **Testes**
 - Nuxt: snapshot por tipo de nó; payload hostil injetado direto no renderer → texto escapado.
 - Checagem de build: dependências proibidas no bundle público.
 - `/performance-audit` na página de teste.
+
+**Resultado (29/10/2026).**
+- **Renderer:** `app/components/content/` (`StaticContent`, `ContentRenderer`, `ContentBlocks`, `HastNode` e `nodes/`), carregado com `hydrate-never`: na primeira visita o chunk do renderer (3,3 KB gz) não é baixado nem anunciado em `prefetch` (hook `build:manifest`). As interações vêm de `app/utils/content/enhance.ts` (0,6 KB gz): copiar código e o fallback da galeria, que abre em `<dialog>` com invoker commands (funciona sem JS no Chromium).
+- **Segurança:** o renderer reaplica as regras do schema (links, HAST, níveis, tons, ids de embed); `vue/no-v-html` é erro no lint.
+- **Compartilhado e servidor:** `shared/content/anchors.ts` (âncoras dos títulos), `shared/content/code-languages.ts` (nomes das linguagens, agora também do público) e `server/services/content/document-media.ts` (mídia do documento em um batch do D1, mais um para posters).
+- **Medição:** página de teste (`/_test/content`, layout `reading`, imagens reais do pipeline) com Lighthouse 96 mobile e 100 desktop em Performance, 100 em A11y e BP; +0,46 kB de JS inicial e +1,08 kB de CSS sobre o R3 no mesmo build. Detalhes no perf-log.
+- **Decisões:** ADR-0006, "Decisões da F05-T4".
+- **Testes:** `tests/nuxt/content-renderer.test.ts` (snapshot por nó e entrada hostil), `tests/unit/content-anchors.test.ts`, `tests/workers/document-media.test.ts`, `tests/e2e/content.spec.ts` e `tests/a11y/content.spec.ts`.
 
 ---
 

@@ -70,6 +70,19 @@
 - **CSS:** `injectCSS: false`; as regras base do ProseMirror e as cores do Shiki (`light-dark()`) ficam no `<style>` do `ContentEditor`, no chunk do admin.
 - **Dependências:** `@tiptap/{vue-3,core,pm,starter-kit,extensions,extension-unique-id,extension-table,extension-list,extension-blockquote,extension-link} ~3.32.1` e `shiki ~4.5.0`, todas MIT. As três últimas do Tiptap já vinham pelo StarterKit e passaram a ser diretas porque o editor as estende.
 
+## Decisões da F05-T4
+
+- **Código:** `app/components/content/` — `StaticContent.vue` (onde uma página põe um documento), `ContentRenderer.vue`, `ContentBlocks.ts` (blocos, marks e tabela como render functions), `HastNode.ts` e `nodes/` (código, figura, galeria, vídeo e o link de embed); `app/utils/content/enhance.ts`; `shared/content/anchors.ts` e `code-languages.ts`; `server/services/content/document-media.ts`. A página `app/pages/_test/content.vue` e o endpoint `server/api/_test/content.get.ts` existem só no build de teste.
+- **Sem hidratação (decisão 1):** o `StaticContent` usa `<LazyContentRenderer hydrate-never>`. Na primeira visita o navegador mantém o HTML do servidor e não baixa o chunk do renderer (3,3 KB gz); depois de uma navegação no cliente, o chunk carrega e renderiza. A macro `defineLazyHydrationComponent('never', …)` renderizou vazio no SSR do Nuxt 4.6.2 e não é usada. Em produção, o Nuxt renderiza com dependências pré-computadas e não remove o `prefetch` dos módulos `hydrate-never` (a exclusão só olha o manifest do cliente); o hook `build:manifest` do `nuxt.config.ts` desmarca `prefetch` e `preload` do chunk do renderer.
+- **Interações sem Vue:** um componente que nunca hidrata não pode conter componentes interativos. Copiar o código e o fallback da galeria vêm de um script de 0,6 KB gz (`enhance.ts`), importado depois do mount e delegado na raiz do conteúdo; o botão de copiar fica oculto por CSS até o script carregar (sem controle morto sem JS). A galeria abre cada imagem num `<dialog>` modal com invoker commands (`command="show-modal"`), que funcionam sem JS; o script cobre os navegadores sem esse suporte.
+- **O renderer não confia no schema:** nó, mark, nível, tom ou `start` desconhecidos viram nada ou o valor padrão; `href` passa de novo pelo `contentHref` (e o `rel` vem do `linkRel`); o HAST é conferido pelo `hastIssues` (se falhar, cai para o código puro) e o `HastNode` aplica a allowlist nó a nó (classes da lista, `style` só com variáveis do Shiki, sem `tabindex`); o embed só vira link com um id que o padrão do provedor aceita. Todo texto é filho de string do Vue, portanto escapado.
+- **Âncoras (decisão 2):** slug ASCII do texto do título, sem repetições na página e fora dos ids do frame (`main`, `site-menu`), em `shared/content/anchors.ts` para o sumário da F06 usar o mesmo. O link `#` fica dentro do título, com nome acessível "Link para a seção “…”".
+- **Acessibilidade:** o código é uma `<figure>` com a linguagem na legenda e um grupo focável com o nome "Código em {linguagem}" (o bloco rola); a tabela rola num grupo focável com cabeçalhos `scope`; o destaque mostra o tom em palavra, não só em cor.
+- **Mídia em lote (decisão 3):** `resolveDocumentMedia(db, doc, locale)` lê os itens do documento num único `db.batch` (em grupos de 90 ids, abaixo do limite de 100 parâmetros do D1) e os posters dos vídeos em mais um. Itens ausentes, pendentes ou apagados ficam de fora, e o renderer pula os blocos deles.
+- **Embed (decisão 4):** até a facade da F05-T5, o bloco é o poster e um link "Assistir no {provedor}", sem iframe e sem requisição a terceiros.
+- **CSS:** os estilos dos blocos ficam no `<style>` global do `StaticContent` (no CSS da página), porque o chunk do renderer não carrega na primeira visita. O preview do editor passou a usar o `HastNode` público.
+- **Lint:** `vue/no-v-html` como erro em todos os `.vue`.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
