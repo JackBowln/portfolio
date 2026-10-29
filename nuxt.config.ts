@@ -5,6 +5,9 @@ import { version } from './package.json'
 import { FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from './shared/design/fonts'
 import { THEME_INIT_SCRIPT } from './shared/design/theme'
 
+// Policy of every Web Worker script under /_nuxt/ (ADR-0012, F04-T2)
+const WORKER_CSP = `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'`
+
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxtjs/i18n', '@nuxt/fonts'],
 
@@ -53,8 +56,10 @@ export default defineNuxtConfig({
     '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } },
     // Font files live under a versioned path (shared/design/fonts.ts), so they never change in place
     '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } },
-    // Static assets bypass the Worker's security headers; these land in _headers (ADR-0012 §1)
-    '/_nuxt/**': { headers: { 'x-content-type-options': 'nosniff' } },
+    // Static assets bypass the Worker's security headers; these land in _headers (ADR-0012 §1). A CSP on a script
+    // response only takes effect when it runs as a Web Worker: the admin image pipeline (F04-T2) may compile its
+    // WASM codecs and fetch them from this site, and nothing else; pages keep their own hash-based policy
+    '/_nuxt/**': { headers: { 'x-content-type-options': 'nosniff', 'content-security-policy': WORKER_CSP } },
   },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
@@ -75,6 +80,10 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // F04-T2: the admin image pipeline runs as an ES module worker; the codecs find their .wasm through
+    // import.meta.url, which the dev pre-bundler would break
+    worker: { format: 'es' },
+    optimizeDeps: { exclude: ['@jsquash/avif', '@jsquash/jpeg', '@jsquash/resize', '@jsquash/webp'] },
   },
 
   typescript: {
