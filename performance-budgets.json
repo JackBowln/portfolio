@@ -80,6 +80,11 @@
     "@shikijs/",
     "@jsquash/"
   ],
+  "forbiddenContentInPublicRoutes": [
+    "ProseMirror",
+    "tiptap",
+    "codeToHast"
+  ],
   "lighthouse": {
     "minScores": {
       "mobile": {

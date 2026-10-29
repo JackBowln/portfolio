@@ -54,12 +54,22 @@ export function staticClosure(manifest: Manifest, roots: string[]): Set<string> 
   return seen
 }
 
+/**
+ * Strings that survive minification inside a library's code (F05-T3): a shared vendor chunk is keyed by a hash,
+ * not by the module it holds, so the manifest keys alone cannot see Tiptap or Shiki in a public route
+ */
+export interface ContentCheck {
+  read: (file: string) => string
+  markers: string[]
+}
+
 export function evaluateRoute(
   id: string,
   budget: RouteBudget,
   manifest: Manifest,
   gzipBytes: (file: string) => number,
   forbiddenPatterns: string[],
+  content?: ContentCheck,
 ): RouteReport {
   const entry = Object.keys(manifest).find(key => manifest[key]?.isEntry)
   if (!entry) {
@@ -85,7 +95,10 @@ export function evaluateRoute(
 
   const jsKb = toKb(jsFiles)
   const cssKb = toKb(cssFiles)
-  const forbidden = [...keys].filter(key => forbiddenPatterns.some(pattern => key.includes(pattern)))
+  const forbidden = [
+    ...[...keys].filter(key => forbiddenPatterns.some(pattern => key.includes(pattern))),
+    ...(content ? jsFiles.flatMap(file => content.markers.filter(marker => content.read(file).includes(marker)).map(marker => `${file} (${marker})`)) : []),
+  ]
 
   return {
     id,

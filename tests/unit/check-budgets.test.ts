@@ -63,6 +63,19 @@ describe('budget computation', () => {
     expect(report.ok).toBe(false)
   })
 
+  it('fails when a public route ships a vendor chunk whose code holds an editor marker (F05-T3)', () => {
+    // editor.js holds the markers but is only a dynamic import of the entry, never loaded by the route
+    const files: Record<string, string> = { 'entry.js': 'x', 'index.js': 'y', 'editor.js': 'class y{} "ProseMirror"' }
+    const content = { read: (file: string) => files[file] ?? '', markers: ['ProseMirror', 'codeToHast'] }
+    const clean = evaluateRoute('R1', { path: '/', page: 'pages/index.vue', js: 1000, css: 100 }, manifest, gzipBytes, forbidden, content)
+    expect(clean.forbidden).toEqual([])
+
+    files['entry.js'] = 'const a="ProseMirror";b.codeToHast()'
+    const leaky = evaluateRoute('R1', { path: '/', page: 'pages/index.vue', js: 1000, css: 100 }, manifest, gzipBytes, forbidden, content)
+    expect(leaky.forbidden).toEqual(['entry.js (ProseMirror)', 'entry.js (codeToHast)'])
+    expect(leaky.ok).toBe(false)
+  })
+
   it('throws when the page chunk is missing', () => {
     expect(() => evaluateRoute('R9', { path: '/x', page: 'pages/missing.vue', js: 1, css: 1 }, manifest, gzipBytes, forbidden))
       .toThrow('page chunk "pages/missing.vue" not found')

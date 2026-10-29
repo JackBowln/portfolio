@@ -11,6 +11,7 @@ import type { Manifest, RouteBudget } from './budgets/compute.ts'
 interface BudgetsFile {
   routes: Record<string, RouteBudget>
   forbiddenInPublicRoutes: string[]
+  forbiddenContentInPublicRoutes: string[]
 }
 
 const { values } = parseArgs({
@@ -24,9 +25,10 @@ const { values } = parseArgs({
 const budgets = JSON.parse(readFileSync(values.budgets, 'utf8')) as BudgetsFile
 const manifest = (await import(pathToFileURL(resolve(values.manifest)).href)).default as Manifest
 const gzipBytes = (file: string) => gzipSync(readFileSync(resolve(values.assets, file)), { level: 9 }).length
+const content = { read: (file: string) => readFileSync(resolve(values.assets, file), 'utf8'), markers: budgets.forbiddenContentInPublicRoutes }
 
 const reports = Object.entries(budgets.routes).map(([id, budget]) =>
-  evaluateRoute(id, budget, manifest, gzipBytes, budgets.forbiddenInPublicRoutes))
+  evaluateRoute(id, budget, manifest, gzipBytes, budgets.forbiddenInPublicRoutes, content))
 
 const kb = (value: number) => value.toFixed(2).padStart(7)
 console.log(`Budgets: ${values.budgets}\n`)
