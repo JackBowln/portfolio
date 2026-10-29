@@ -11,3 +11,10 @@ export function zodJson<T extends z.ZodType>(schema: T) {
     fromDriver: value => decodeJson(schema, value),
   })
 }
+
+/** BLOB as Uint8Array; D1 returns it as an ArrayBuffer or a number array depending on the API */
+export const bytes = customType<{ data: Uint8Array, driverData: ArrayBuffer | Uint8Array | number[] }>({
+  dataType: () => 'blob',
+  toDriver: value => value,
+  fromDriver: value => (value instanceof Uint8Array ? value : new Uint8Array(value)),
+})
