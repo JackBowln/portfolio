@@ -170,7 +170,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F03-T2, F03-T3 | RF-02.1, RF-02.2, RF-02.3, RF-02.4, RF-03.5 | `/frontend-design`, `/security-audit` |
+| concluída | F03-T2, F03-T3 | RF-02.1, RF-02.2, RF-02.3, RF-02.4, RF-03.5 | `/frontend-design`, `/security-audit` |
 
 **Objetivo.** Configurar `routeRules['/admin/**'] = { ssr: false }`, o layout do admin, o middleware de rota (só UX), o dashboard (contadores como placeholder), a lista e revogação de sessões e a visualização do `audit_log` (filtros por período, ator e ação).
 
@@ -179,10 +179,19 @@
 **Fora do escopo.** Telas de conteúdo (F06+).
 
 **Critérios de aceite**
-- [ ] `/admin/**` responde com `private, no-store` e `X-Robots-Tag: noindex, nofollow`, e o HTML não contém dados.
-- [ ] **Nenhum chunk do admin** é referenciado pelas páginas públicas (checagem do manifest no `check:budgets`, ou teste próprio).
-- [ ] Revogar uma sessão encerra o acesso dela na requisição seguinte (o `cookieCache` respeita a revogação dentro de 5 min, ou a revogação força a invalidação; o comportamento fica documentado).
-- [ ] axe no admin sem violações sérias ou críticas; navegação por teclado.
+- [x] `/admin/**` responde com `private, no-store` e `X-Robots-Tag: noindex, nofollow`, e o HTML não contém dados.
+- [x] **Nenhum chunk do admin** é referenciado pelas páginas públicas (checagem do manifest no `check:budgets`, ou teste próprio).
+- [x] Revogar uma sessão encerra o acesso dela na requisição seguinte (o `cookieCache` respeita a revogação dentro de 5 min, ou a revogação força a invalidação; o comportamento fica documentado).
+- [x] axe no admin sem violações sérias ou críticas; navegação por teclado.
+
+**Resultado (29/10/2026).**
+- **SPA:** `ssr: false` em `/admin/**`; layout `admin` (`app/layouts/admin/index.vue`) e middleware nomeado `admin` (`app/middleware/admin/index.ts`), ambos dentro de pastas `admin/` por causa da regra de fronteira. O header público provisório se mudou do `app.vue` para `app/layouts/default.vue`.
+- **Telas:** painel (`[PLACEHOLDER]` até a F06+), sessões, auditoria; passkeys no layout admin; login e setup sem layout; depois do login, `/admin`.
+- **APIs:** `GET/DELETE /api/admin/sessions` (só as próprias, sem token) e `GET /api/admin/audit` (`audit:read`, filtros e cursor, sem `ip_hash`).
+- **Revogação:** o cookie cache do Better Auth foi desligado, então a sessão revogada recebe 401 na requisição seguinte. Os endpoints de sessão do Better Auth que expõem tokens foram desligados.
+- **RBAC:** recurso `session: ['read', 'revoke']`, com escopo `own` para todos os papéis (security-model §4).
+- **Bundle:** `check:budgets` também proíbe `better-auth` e `@simplewebauthn/` nas rotas públicas.
+- **Decisões:** ADR-0005, "Decisões da F03-T5".
 
 **Testes**
 - E2E: login → dashboard → revogar outra sessão → a sessão revogada perde o acesso.

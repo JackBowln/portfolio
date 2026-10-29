@@ -26,7 +26,7 @@
 4. **Sessão.**
    - Sessões no D1, em cookies `__Secure-`, `HttpOnly`, `Secure`, `SameSite=Lax`, com `path=/`.
    - Expiração em 7 dias, renovada a cada 24 h de uso.
-   - `session.cookieCache` de 5 min evita uma leitura do D1 por request do admin.
+   - Sem `session.cookieCache` (desligado na F03-T5): cada checagem de sessão lê o D1, para que revogação e troca de papel valham na requisição seguinte.
    - Ações sensíveis exigem sessão "fresca" (≤ 15 min): mudar papéis, apagar conteúdo publicado, alterar orçamento de IA, remover passkey.
 5. **RBAC.**
    - As permissões ficam em `shared/auth/permissions.ts` como statements `recurso: ações[]`:
@@ -89,7 +89,7 @@
 - **Tokens OAuth:** descartados. Hooks `account.create/update.before` zeram `accessToken`, `refreshToken`, `idToken` e as expirações; só o ID numérico da conta importa.
 - **Instância:** `createAuth(env)` em `server/utils/auth.ts`, memorizada por isolate num `WeakMap` indexado pelo `env` do Worker (que carrega o binding do D1), em vez de ser reconstruída a cada request. As opções ficam puras em `server/services/auth/options.ts`.
 - **Schema:** escrito à mão em `server/db/schema/auth.ts` (o `@better-auth/cli` está na 1.4 e traz `prisma`, `pg` e `better-sqlite3`). `tests/unit/auth-schema.test.ts` compara as colunas com o `getAuthTables()` do Better Auth (com o plugin `admin`). Os campos do `admin` (`role`, padrão `viewer`, e `ban*`) já existem; o plugin foi ativado na F03-T3. IDs em UUIDv7.
-- **Cookies:** `HttpOnly`, `SameSite=Lax`, `Path=/`; `Secure` + `__Secure-` quando a `SITE_URL` é `https`. `session_token` com 7 dias; `session_data` (cookie cache, estratégia `compact`, assinado) com 5 min.
+- **Cookies:** `HttpOnly`, `SameSite=Lax`, `Path=/`; `Secure` + `__Secure-` quando a `SITE_URL` é `https`. `session_token` com 7 dias. O `session_data` (cookie cache de 5 min) existiu até a F03-T5, que o desligou.
 - **Secret:** `BETTER_AUTH_SECRET` (≥ 32 caracteres) é obrigatório fora de `ENVIRONMENT=local`, onde a falta gera um secret aleatório por isolate, com aviso no log.
 - **Telemetria** desligada; `emailAndPassword` desligado (`*_DISABLED` nas rotas de senha, testado); `delete-user` fica indisponível (404).
 - **Exceção registrada:** o input de `/api/auth/*` é validado pelos schemas do próprio Better Auth, não pelos nossos helpers `strict`.
@@ -129,10 +129,37 @@
   - `defineAdminHandler` refaz o 401 (defesa em profundidade), checa a permissão (403) e expõe `permission` e `fresh` no handler.
   - `requirePermission(event, permission)` serve para permissões decididas no handler; `assertOwnership(event, permission, item)` serve para os escopos `own` e `own-draft`.
   - Papel desconhecido ou vazio não recebe nada; a resolução só considera chaves próprias (sem `__proto__`, `constructor` etc.).
-- **Atraso do cookie cache:** o papel lido vem do `session_data` assinado, então uma mudança de papel ou uma revogação leva até 5 min para valer. A F03-T5 decide se essas ações também invalidam o cache.
+- **Atraso do cookie cache:** o papel lido vem do `session_data` assinado, então uma mudança de papel ou uma revogação leva até 5 min para valer. A F03-T5 decide se essas ações também invalidam o cache. _Resolvido na F03-T5: o cache foi desligado._
+
+### Decisões da F03-T5 (owner, 2026-10-29)
+
+- **Revogação imediata:**
+  - `session.cookieCache` desligado: o `admin-session`, o `get-session` e os endpoints de passkey leem a sessão no D1 a cada requisição;
+  - uma sessão revogada recebe 401 já na requisição seguinte, e uma troca de papel vale na hora;
+  - o custo é 1 leitura indexada no D1 por chamada do admin ou do `/api/auth`. As páginas públicas não leem sessão.
+- **Sessões próprias (RF-03.5):**
+  - `GET /api/admin/sessions` e `DELETE /api/admin/sessions/:id`, nunca com o token;
+  - a sessão atual não é revogada por ali (400): para isso existe o "sair";
+  - uma sessão de outro usuário responde 404, para que ids não possam ser sondados;
+  - a revogação vai para o audit (`auth.session_revoked`);
+  - `/list-sessions`, `/revoke-session`, `/revoke-sessions` e `/revoke-other-sessions` do Better Auth ficam em `disabledPaths`, porque devolvem ou recebem tokens no JavaScript.
+- **Permissão `session: ['read', 'revoke']`:** escopo `own` para todos os papéis, owner incluído. As sessões de outros usuários continuam em `user:revoke-session`, numa tarefa futura.
+- **SPA:**
+  - `routeRules['/admin/**'].ssr = false`; o HTML é uma casca vazia (`<div id="__nuxt"></div>`), `private, no-store` + `noindex`;
+  - o layout `admin` (`app/layouts/admin/index.vue`) e o middleware nomeado `admin` (`app/middleware/admin/index.ts`) ficam em pastas `admin/`, o que mantém a regra de fronteira do lint e o `check:budgets`;
+  - o middleware é só experiência de uso: quem decide é o servidor, que responde 401;
+  - `adminFetch` leva ao login quando recebe 401;
+  - login e setup não usam layout.
+- **Auditoria (RF-02.4):** `GET /api/admin/audit` exige `audit:read`. Filtros (todos `strict`):
+  - `from`/`to` em dias UTC inclusivos;
+  - `actor` e `action` (lista de `shared/audit/actions.ts`);
+  - cursor pelo id (UUIDv7, ordenado por tempo) e `limit` ≤ 100.
+
+  A resposta nunca traz o `ip_hash`.
 
 ## Validação
 
+- F03-T5: `tests/api/admin-shell.spec.ts` (sessões próprias sem token, revogação → 401 na requisição seguinte, sessão atual 400, sessão alheia 404, endpoints de sessão do Better Auth desligados, `audit:read` por papel, filtros, cursor e campos rejeitados, casca da SPA sem dados); `tests/e2e/admin-shell.spec.ts` (login → painel → sessões → revogar → o outro navegador vai para o login; teclado); `tests/a11y/admin.spec.ts` (axe nas 4 telas, temas claro e escuro).
 - F03-T2:
   - `tests/auth-flow/auth-flow.spec.ts` (Chromium, autenticador WebAuthn virtual): bootstrap pela tela → passkey → saída → login por passkey → segunda passkey → remoção; o GitHub simulado cobre ID permitido e negado (sem criar usuário), o owner de novo depois do bootstrap e as falhas auditadas;
   - `tests/unit/auth-{options,policies,schema}.test.ts` e `tests/workers/auth-schema.test.ts`.

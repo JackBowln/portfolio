@@ -62,10 +62,12 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `settings:update` | ✅ | ✅ | — | — | — | — |
 | `user:invite`, `:update-role`, `:revoke-session` | ✅ | ✅ (exceto owner) | — | — | — | — |
 | `audit:read` | ✅ | ✅ | — | — | — | — |
+| `session:read`, `:revoke` | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 |
 
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
+- **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
 - **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).
 
 ## 5. Controles por camada (checklist resumido)
