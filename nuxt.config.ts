@@ -42,6 +42,8 @@ export default defineNuxtConfig({
       // Canonical, hreflang and JSON-LD base. Set per environment by NUXT_PUBLIC_SITE_URL in wrangler.jsonc, read at
       // runtime from the Worker env; must equal SITE_URL (tests/unit/wrangler-config.test.ts)
       siteUrl: 'http://localhost:3000',
+      // Base of public media URLs (base + "/" + R2 key); NUXT_PUBLIC_MEDIA_BASE_URL must equal MEDIA_BASE_URL
+      mediaBaseUrl: 'http://localhost:3000',
     },
   },
 

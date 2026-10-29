@@ -15,7 +15,9 @@
     "SITE_URL": "http://localhost:3000",
     // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
     "NUXT_PUBLIC_SITE_URL": "http://localhost:3000",
-    "MEDIA_BASE_URL": "http://localhost:3000/media",
+    // Public media URL = MEDIA_BASE_URL + "/" + R2 key (media/…): the site itself here, via server/routes/media
+    "MEDIA_BASE_URL": "http://localhost:3000",
+    "NUXT_PUBLIC_MEDIA_BASE_URL": "http://localhost:3000",
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "portfolio-local", "database_id": "portfolio-local", "migrations_dir": "server/db/migrations" },
@@ -43,7 +45,8 @@
         "SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
         // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
         "NUXT_PUBLIC_SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
-        "MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev/media",
+        "MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev",
+        "NUXT_PUBLIC_MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev",
       },
       "d1_databases": [
         { "binding": "DB", "database_name": "portfolio-preview", "database_id": "6e4be818-aeba-4fe7-8e55-c07b6f880332", "migrations_dir": "server/db/migrations" },
@@ -70,7 +73,9 @@
         "SITE_URL": "https://DOMAIN",
         // Same value as SITE_URL, exposed to the app as runtimeConfig.public.siteUrl
         "NUXT_PUBLIC_SITE_URL": "https://DOMAIN",
+        // Bucket on its own domain (ADR-0007 §5); a WAF rule there blocks /originals/* (F04-T3, deploy checklist)
         "MEDIA_BASE_URL": "https://media.DOMAIN",
+        "NUXT_PUBLIC_MEDIA_BASE_URL": "https://media.DOMAIN",
       },
       "d1_databases": [
         // [PLACEHOLDER] created only at launch (F12): wrangler d1 create portfolio-production

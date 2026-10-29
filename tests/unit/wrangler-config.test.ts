@@ -11,4 +11,15 @@ describe('wrangler.jsonc', () => {
     expect(siteUrls).toHaveLength(3)
     expect(publicUrls).toEqual(siteUrls)
   })
+
+  // F04-T3: components build media URLs on the client from the public copy
+  it('sets NUXT_PUBLIC_MEDIA_BASE_URL equal to MEDIA_BASE_URL in every environment, without a trailing slash', () => {
+    const config = readFileSync('wrangler.jsonc', 'utf8')
+    const mediaUrls = [...config.matchAll(/"MEDIA_BASE_URL": "([^"]*)"/g)].map(match => match[1])
+    const publicUrls = [...config.matchAll(/"NUXT_PUBLIC_MEDIA_BASE_URL": "([^"]*)"/g)].map(match => match[1])
+
+    expect(mediaUrls).toHaveLength(3)
+    expect(publicUrls).toEqual(mediaUrls)
+    expect(mediaUrls.every(url => !url!.endsWith('/'))).toBe(true)
+  })
 })
