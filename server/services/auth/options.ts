@@ -9,6 +9,9 @@ import type { AuditEvent } from '../audit/audit.service.ts'
 import { ADMIN_PLUGIN_PATHS } from './access.ts'
 import { BOOTSTRAP_COOKIE, githubAccessDecision, passkeyRemoval, readCookie, verifyBootstrapGrant } from './policies.ts'
 
+// They return session tokens to JavaScript; the admin lists and revokes sessions through /api/admin/sessions instead
+const SESSION_LIST_PATHS = ['/list-sessions', '/revoke-session', '/revoke-sessions', '/revoke-other-sessions'] as const
+
 export interface AuthEnv {
   ENVIRONMENT: string
   SITE_URL: string
@@ -71,8 +74,6 @@ export const SESSION_POLICY = {
   updateAge: 24 * 60 * 60,
   // Sensitive actions (roles, deleting published content, AI budget, removing a passkey) need a session this fresh
   freshAge: 15 * 60,
-  // Signed session copy in a cookie, so most admin requests skip the D1 read; revocation takes up to this long
-  cookieCacheMaxAge: 5 * 60,
 } as const
 
 const MIN_SECRET_LENGTH = 32
@@ -129,7 +130,7 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
     // No passwords and no public sign-up (ADR-0005 §2)
     emailAndPassword: { enabled: false },
     // The admin plugin keeps roles and bans, but its HTTP API stays off (./access.ts)
-    disabledPaths: [...ADMIN_PLUGIN_PATHS],
+    disabledPaths: [...ADMIN_PLUGIN_PATHS, ...SESSION_LIST_PATHS],
     socialProviders: github,
     account: {
       // No implicit linking by e-mail: a GitHub account joins a user only on its own sign-up or an explicit link
@@ -161,7 +162,8 @@ export function authOptions(env: AuthEnv, ports: AuthPorts): Omit<BetterAuthOpti
       expiresIn: SESSION_POLICY.expiresIn,
       updateAge: SESSION_POLICY.updateAge,
       freshAge: SESSION_POLICY.freshAge,
-      cookieCache: { enabled: true, maxAge: SESSION_POLICY.cookieCacheMaxAge },
+      // Every check reads D1, so a revoked session or a changed role stops working on the very next request (F03-T5)
+      cookieCache: { enabled: false },
     },
     advanced: {
       // https → Secure cookies with the __Secure- prefix; plain http only on localhost

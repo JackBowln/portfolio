@@ -15,6 +15,8 @@ export const STATEMENTS = {
   settings: ['read', 'update'],
   user: ['invite', 'update-role', 'revoke-session'],
   audit: ['read'],
+  // The user's own sessions (RF-03.5); other users' sessions are user:revoke-session
+  session: ['read', 'revoke'],
 } as const
 
 export type Resource = keyof typeof STATEMENTS
@@ -32,7 +34,12 @@ function grant<R extends Resource>(resource: R, scope: Scope, actions: readonly 
 }
 
 const contentRead = { article: grant('article', 'any', ['read']), project: grant('project', 'any', ['read']), page: grant('page', 'any', ['read']) }
-const everything = Object.fromEntries(RESOURCES.map(resource => [resource, grant(resource, 'any')])) as Grants
+// Every role manages only its own sessions, owner included
+const ownSessions = { session: grant('session', 'own') }
+const everything = {
+  ...Object.fromEntries(RESOURCES.map(resource => [resource, grant(resource, 'any')])),
+  ...ownSessions,
+} as Grants
 
 function authorContent<R extends 'article' | 'project' | 'page'>(resource: R) {
   return {
@@ -53,15 +60,17 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
     media: grant('media', 'any'),
     translation: grant('translation', 'any'),
     settings: grant('settings', 'any', ['read']),
+    ...ownSessions,
   },
   author: {
     article: authorContent('article'),
     project: authorContent('project'),
     page: authorContent('page'),
     media: { ...grant('media', 'any', ['create', 'read', 'update']), ...grant('media', 'own', ['delete']) },
+    ...ownSessions,
   },
-  translator: { ...contentRead, media: grant('media', 'any', ['read']), translation: grant('translation', 'any') },
-  viewer: { ...contentRead, media: grant('media', 'any', ['read']), settings: grant('settings', 'any', ['read']) },
+  translator: { ...contentRead, media: grant('media', 'any', ['read']), translation: grant('translation', 'any'), ...ownSessions },
+  viewer: { ...contentRead, media: grant('media', 'any', ['read']), settings: grant('settings', 'any', ['read']), ...ownSessions },
 }
 
 function entries(permission: Permission): [Resource, readonly string[]][] {

@@ -1,6 +1,6 @@
 // /api/admin/** needs a session (ADR-0005 §6): 401 without one. Permissions are checked per handler
 // (defineAdminHandler); this only authenticates and leaves the user on event.context.auth.
-// The session comes from the signed cookie cache most of the time, so it rarely costs a D1 read.
+// Each call reads the session from D1 (no cookie cache, F03-T5), so a revoked session fails here at once.
 // RL_ADMIN (ADR-0012 §6) counts per session, so it needs the session first
 const ADMIN_API = '/api/admin'
 
