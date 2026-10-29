@@ -13,8 +13,11 @@ export type Manifest = Record<string, ManifestChunk>
 
 export interface RouteBudget {
   path: string
-  /** Manifest key of the route's page component, matched exactly or as a path suffix */
-  page: string
+  /** Manifest key of the route's page component, matched exactly or as a path suffix; absent when the route
+   * renders a component bundled in the entry (app/error.vue) */
+  page?: string
+  /** Manifest key of the layout the route renders in: a dynamic chunk, but loaded before the first paint */
+  layout?: string
   /** Limits in kB (1000 bytes) gzip */
   js: number
   css: number
@@ -59,12 +62,22 @@ export function evaluateRoute(
   forbiddenPatterns: string[],
 ): RouteReport {
   const entry = Object.keys(manifest).find(key => manifest[key]?.isEntry)
-  const page = findChunkKey(manifest, budget.page)
-  if (!entry || !page) {
-    throw new Error(`Route ${id}: ${entry ? `page chunk "${budget.page}" not found` : 'no entry chunk'} in the manifest`)
+  if (!entry) {
+    throw new Error(`Route ${id}: no entry chunk in the manifest`)
+  }
+  const roots = [entry]
+  for (const [kind, name] of [['page', budget.page], ['layout', budget.layout]] as const) {
+    if (name === undefined) {
+      continue
+    }
+    const key = findChunkKey(manifest, name)
+    if (!key) {
+      throw new Error(`Route ${id}: ${kind} chunk "${name}" not found in the manifest`)
+    }
+    roots.push(key)
   }
 
-  const keys = staticClosure(manifest, [entry, page])
+  const keys = staticClosure(manifest, roots)
   const chunks = [...keys].map(key => manifest[key]).filter(chunk => chunk !== undefined)
   const jsFiles = [...new Set(chunks.map(chunk => chunk.file).filter(file => file.endsWith('.js')))]
   const cssFiles = [...new Set(chunks.flatMap(chunk => chunk.css ?? []))]
