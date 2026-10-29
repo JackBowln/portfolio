@@ -27,7 +27,7 @@ export function shikiPre(code: string): HastElement {
       children: tokens.map((token, position) => ({
         type: 'element',
         tagName: 'span',
-        properties: { style: position % 2 === 0 ? '--shiki-light:#D73A49;--shiki-dark:#F97583' : '--shiki-light:#24292E;--shiki-dark:#E1E4E8;--shiki-light-font-style:italic;--shiki-dark-font-style:italic' },
+        properties: { style: position % 2 === 0 ? '--shiki-light:#CF222E;--shiki-dark:#FF7B72' : '--shiki-light:#1F2328;--shiki-dark:#E6EDF3;--shiki-light-font-style:italic;--shiki-dark-font-style:italic' },
         children: [{ type: 'text', value: token }],
       })),
     })
@@ -35,7 +35,7 @@ export function shikiPre(code: string): HastElement {
   return {
     type: 'element',
     tagName: 'pre',
-    properties: { class: 'shiki shiki-themes github-light github-dark', style: '--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e', tabindex: '0' },
+    properties: { class: 'shiki shiki-themes github-light-default github-dark-default', style: '--shiki-light:#1f2328;--shiki-dark:#e6edf3;--shiki-light-bg:#ffffff;--shiki-dark-bg:#0d1117', tabindex: '0' },
     children: [{ type: 'element', tagName: 'code', properties: {}, children }],
   }
 }
