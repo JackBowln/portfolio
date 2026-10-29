@@ -62,6 +62,7 @@
       "close": "Cerrar"
     },
     "embed": {
+      "play": "Reproducir vídeo: {title}",
       "watch": "Ver en {provider}: {title}"
     }
   },

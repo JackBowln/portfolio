@@ -1,8 +1,9 @@
 <script setup lang="ts">
-// An embed block until the facade of F05-T5: the poster and a link to the video on its provider. Nothing is
-// requested from the provider; the link is built from an id the provider's pattern accepts, or not at all
-import { EMBED_ID_PATTERNS, EMBED_PROVIDERS } from '#shared/content/document-schema'
-import type { EmbedProvider } from '#shared/content/document-schema'
+// An embed block as a facade (F05-T5): the poster in a 16:9 box and a play button; nothing is requested from the
+// provider until the reader clicks, and then the enhancement script swaps in the privacy-preserving player
+// (utils/content/enhance.ts). Without JS the button stays hidden and the caption links to the video on its site.
+// URLs are built from an id the provider's pattern accepts, or the block renders nothing
+import { EMBED_PROVIDER_NAMES, embedPlayerUrl, embedWatchUrl, isEmbedId } from '#shared/content/embeds'
 import ResponsiveImage from '~/components/media/ResponsiveImage.vue'
 import { useContentContext } from '../context'
 
@@ -10,23 +11,19 @@ const props = defineProps<{ node: Record<string, unknown> }>()
 const { media } = useContentContext()
 const { t } = useI18n()
 
-const WATCH_URL: Record<EmbedProvider, (id: string) => string> = {
-  youtube: id => `https://www.youtube.com/watch?v=${id}`,
-  vimeo: id => `https://vimeo.com/${id}`,
-}
-const PROVIDER_NAMES: Record<EmbedProvider, string> = { youtube: 'YouTube', vimeo: 'Vimeo' }
-
 const embed = computed(() => {
-  const provider = props.node.provider as EmbedProvider
+  const provider = String(props.node.provider ?? '')
   const externalId = String(props.node.externalId ?? '')
-  if (!EMBED_PROVIDERS.includes(provider) || !EMBED_ID_PATTERNS[provider].test(externalId)) {
+  if (!isEmbedId(provider, externalId)) {
     return null
   }
   const poster = media[String(props.node.posterMediaId)]
   return {
-    href: WATCH_URL[provider](externalId),
-    provider: PROVIDER_NAMES[provider],
+    player: embedPlayerUrl(provider, externalId)!,
+    watch: embedWatchUrl(provider, externalId)!,
+    provider: EMBED_PROVIDER_NAMES[provider],
     title: typeof props.node.title === 'string' ? props.node.title : '',
+    // The play button names the video, so the poster is decorative
     poster: poster?.kind === 'image' ? { ...poster.image, alt: '', decorative: true } : null,
   }
 })
@@ -37,16 +34,35 @@ const embed = computed(() => {
     v-if="embed"
     class="content-figure content-embed"
   >
-    <a
-      :href="embed.href"
-      rel="noopener noreferrer"
+    <div
+      class="content-embed-frame"
+      data-content-embed
+      :data-player="embed.player"
+      :data-title="embed.title"
     >
       <ResponsiveImage
         v-if="embed.poster"
         :image="embed.poster"
         sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"
+        fit="cover"
       />
-      <span>{{ t('content.embed.watch', { provider: embed.provider, title: embed.title }) }}</span>
-    </a>
+      <button
+        type="button"
+        class="content-embed-play"
+        data-content-play
+      >
+        <span
+          class="content-embed-icon"
+          aria-hidden="true"
+        />
+        <span class="sr-only">{{ t('content.embed.play', { title: embed.title }) }}</span>
+      </button>
+    </div>
+    <figcaption>
+      <a
+        :href="embed.watch"
+        rel="noopener noreferrer"
+      >{{ t('content.embed.watch', { provider: embed.provider, title: embed.title }) }}</a>
+    </figcaption>
   </figure>
 </template>

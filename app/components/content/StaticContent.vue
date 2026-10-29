@@ -47,6 +47,8 @@ onBeforeUnmount(() => cleanup?.())
 
 .content :where(figure) {
   display: grid;
+  /* minmax(0, …): a grid item would otherwise keep its image's intrinsic width and overflow narrow screens */
+  grid-template-columns: minmax(0, 1fr);
   gap: calc(var(--spacing) * 2);
 }
 
@@ -231,8 +233,61 @@ onBeforeUnmount(() => cleanup?.())
   border: var(--border-hairline) solid var(--color-border);
 }
 
-.content-embed a {
+/* Embed facades: the box keeps 16:9 for the poster and the player alike, so nothing shifts on play. The button
+   shows only once the enhancement script can swap the player in */
+.content-embed-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.content-embed-frame :where(picture, img, iframe) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.content-embed-frame iframe {
+  border: 0;
+}
+
+.content-embed-play {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  cursor: pointer;
+}
+
+.content-can-play .content-embed-play {
   display: grid;
-  gap: calc(var(--spacing) * 2);
+}
+
+.content-embed-icon {
+  display: grid;
+  place-items: center;
+  inline-size: calc(var(--target-comfortable) * 1.6);
+  block-size: calc(var(--target-comfortable) * 1.6);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-raised);
+  transition: transform var(--dur-instant) var(--ease-out);
+}
+
+/* A play triangle drawn with borders, in the accent color */
+.content-embed-icon::before {
+  content: "";
+  margin-inline-start: 0.25em;
+  border-block: 0.6em solid transparent;
+  border-inline-start: 1em solid var(--color-accent);
+}
+
+.content-embed-play:hover .content-embed-icon {
+  transform: scale(1.06);
+}
+
+.content-embed-play:focus-visible {
+  outline-offset: calc(var(--focus-ring-offset) * -2);
 }
 </style>

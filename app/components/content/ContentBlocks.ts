@@ -10,7 +10,7 @@ import { contentHref, linkRel } from '#shared/content/url'
 import { useContentContext } from './context'
 import type { ContentContext } from './context'
 import ContentCode from './nodes/ContentCode.vue'
-import ContentEmbedLink from './nodes/ContentEmbedLink.vue'
+import ContentEmbed from './nodes/ContentEmbed.vue'
 import ContentFigure from './nodes/ContentFigure.vue'
 import ContentGallery from './nodes/ContentGallery.vue'
 import ContentVideo from './nodes/ContentVideo.vue'
@@ -129,7 +129,7 @@ function block(node: Node, context: ContentContext, t: Translate): VNodeChild {
     case 'video':
       return h(ContentVideo, { node: attrs })
     case 'embed':
-      return h(ContentEmbedLink, { node: attrs })
+      return h(ContentEmbed, { node: attrs })
     default:
       return null
   }

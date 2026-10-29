@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// Admin-only. An embed from the allowlist (ADR-0012): provider, the provider's video id, a title and a poster from
-// the library. F05-T5 replaces the id field with a URL parser and adds the facade
-import { EMBED_ID_PATTERNS, EMBED_PROVIDERS } from '#shared/content/document-schema'
+// Admin-only. An embed from the allowlist (ADR-0012): the video's URL as the owner copies it from YouTube or Vimeo
+// (parsed into provider and id, F05-T5), a title and a poster from the library. Nothing is fetched from the provider
 import type { EmbedProvider } from '#shared/content/document-schema'
+import { EMBED_PROVIDER_NAMES, parseEmbedUrl } from '#shared/content/embeds'
 import MediaPicker from '~/components/admin/media/MediaPicker.vue'
 import type { MediaListItem } from '~/utils/admin/media'
 import EditorDialog from './EditorDialog.vue'
@@ -18,17 +18,17 @@ const emit = defineEmits<{ insert: [attrs: EmbedAttrs] }>()
 
 const frame = useTemplateRef<InstanceType<typeof EditorDialog>>('frame')
 const picker = useTemplateRef<InstanceType<typeof MediaPicker>>('picker')
-const provider = ref<EmbedProvider>('youtube')
-const externalId = ref('')
+const url = ref('')
 const title = ref('')
 const poster = ref<MediaListItem>()
-const errors = ref<Partial<Record<'externalId' | 'title' | 'poster', string>>>({})
-const providerId = useId()
+const errors = ref<Partial<Record<'url' | 'title' | 'poster', string>>>({})
+const formId = useId()
 const { t } = useI18n()
 
+const parsed = computed(() => parseEmbedUrl(url.value))
+
 function open() {
-  provider.value = 'youtube'
-  externalId.value = ''
+  url.value = ''
   title.value = ''
   poster.value = undefined
   errors.value = {}
@@ -36,16 +36,16 @@ function open() {
 }
 
 function insert() {
-  const id = externalId.value.trim()
+  const result = parsed.value
   errors.value = {
-    ...(EMBED_ID_PATTERNS[provider.value].test(id) ? {} : { externalId: t(`admin.editor.embed.invalidId.${provider.value}`) }),
+    ...(result.ok ? {} : { url: t(`admin.editor.embed.invalidUrl.${result.reason}`) }),
     ...(title.value.trim() ? {} : { title: t('admin.editor.embed.titleRequired') }),
     ...(poster.value ? {} : { poster: t('admin.editor.embed.posterRequired') }),
   }
-  if (Object.keys(errors.value).length > 0 || !poster.value) {
+  if (Object.keys(errors.value).length > 0 || !poster.value || !result.ok) {
     return
   }
-  emit('insert', { provider: provider.value, externalId: id, title: title.value.trim(), posterMediaId: poster.value.id })
+  emit('insert', { provider: result.provider, externalId: result.externalId, title: title.value.trim(), posterMediaId: poster.value.id })
   frame.value?.close()
 }
 
@@ -62,39 +62,31 @@ defineExpose({ open })
       novalidate
       @submit.prevent="insert"
     >
-      <div class="grid gap-2">
-        <label
-          :for="providerId"
-          class="font-strong"
-        >{{ $t('admin.editor.embed.provider') }}</label>
-        <select
-          :id="providerId"
-          v-model="provider"
-          class="min-h-(--target-comfortable) border border-border bg-bg px-3"
-        >
-          <option
-            v-for="item in EMBED_PROVIDERS"
-            :key="item"
-            :value="item"
-          >
-            {{ $t(`admin.editor.embed.providers.${item}`) }}
-          </option>
-        </select>
-      </div>
       <UiField
         v-slot="field"
-        :label="$t('admin.editor.embed.externalId')"
-        :description="$t(`admin.editor.embed.idHint.${provider}`)"
-        :error="errors.externalId"
+        :label="$t('admin.editor.embed.url')"
+        :description="$t('admin.editor.embed.urlHint')"
+        :error="errors.url"
         required
       >
         <UiInput
-          v-model="externalId"
+          v-model="url"
           v-bind="field"
+          type="url"
+          inputmode="url"
           autocomplete="off"
           spellcheck="false"
         />
       </UiField>
+      <p
+        role="status"
+        class="text-step--1 text-text-muted"
+        data-testid="embed-detected"
+      >
+        <template v-if="parsed.ok">
+          {{ $t('admin.editor.embed.detected', { provider: EMBED_PROVIDER_NAMES[parsed.provider], id: parsed.externalId }) }}
+        </template>
+      </p>
       <UiField
         v-slot="field"
         :label="$t('admin.editor.embed.videoTitle')"
@@ -120,13 +112,13 @@ defineExpose({ open })
         <UiButton
           variant="secondary"
           size="sm"
-          :aria-describedby="errors.poster ? `${providerId}-poster-error` : undefined"
+          :aria-describedby="errors.poster ? `${formId}-poster-error` : undefined"
           @click="picker?.open()"
         >
           {{ poster ? $t('admin.editor.embed.changePoster') : $t('admin.editor.embed.choosePoster') }}
         </UiButton>
         <UiFieldError
-          :id="`${providerId}-poster-error`"
+          :id="`${formId}-poster-error`"
           :message="errors.poster"
         />
       </div>

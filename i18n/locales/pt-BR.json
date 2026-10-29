@@ -62,6 +62,7 @@
       "close": "Fechar"
     },
     "embed": {
+      "play": "Reproduzir vídeo: {title}",
       "watch": "Assistir no {provider}: {title}"
     }
   },
@@ -458,19 +459,18 @@
       },
       "embed": {
         "title": "Incorporar vídeo",
-        "provider": "Serviço",
+        "url": "Endereço do vídeo",
+        "urlHint": "Copie o endereço do vídeo no YouTube ou no Vimeo. Vídeos não listados do Vimeo não são aceitos.",
+        "detected": "{provider}, vídeo {id}",
+        "invalidUrl": {
+          "invalid": "Cole um endereço completo, começando com https://.",
+          "provider": "Só vídeos do YouTube ou do Vimeo podem ser incorporados.",
+          "video": "Este endereço não aponta para um vídeo.",
+          "unlisted": "Vídeos não listados do Vimeo não podem ser incorporados."
+        },
         "providers": {
           "youtube": "YouTube",
           "vimeo": "Vimeo"
-        },
-        "externalId": "ID do vídeo",
-        "idHint": {
-          "youtube": "Os 11 caracteres depois de “v=” no endereço do YouTube.",
-          "vimeo": "Os números no fim do endereço do Vimeo."
-        },
-        "invalidId": {
-          "youtube": "Um ID do YouTube tem 11 letras, números, “-” ou “_”.",
-          "vimeo": "Um ID do Vimeo tem só números."
         },
         "videoTitle": "Título do vídeo",
         "videoTitleHint": "Lido por leitores de tela e mostrado antes de carregar o vídeo.",
