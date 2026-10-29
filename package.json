@@ -35,12 +35,17 @@
   },
   "dependencies": {
     "@better-auth/passkey": "1.7.13",
+    "@jsquash/avif": "~2.1.1",
+    "@jsquash/jpeg": "~1.6.0",
+    "@jsquash/resize": "~2.1.1",
+    "@jsquash/webp": "~1.5.0",
     "@nuxt/fonts": "~1.2.0",
     "@nuxtjs/i18n": "~10.6.0",
     "better-auth": "~1.7.13",
     "drizzle-orm": "~0.45.4",
     "nuxt": "~4.6.2",
     "reflect-metadata": "~0.2.2",
+    "thumbhash": "~0.1.1",
     "vue": "~3.5.44",
     "vue-router": "~5.4.0",
     "zod": "~4.6.7"
