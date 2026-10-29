@@ -66,6 +66,9 @@ test.describe('content security policy', () => {
       expect(policy, path).toContain('script-src')
       expect(policy, path).not.toContain('wasm-unsafe-eval')
     }
+    // Only the admin may play a local file (the video uploader reads its duration from a blob: URL)
+    expect(directive((await request.get('/admin/midia', { headers: HTML })).headers()['content-security-policy'], 'media-src')).toBe(`media-src 'self' blob:`)
+    expect(directive((await request.get('/', { headers: HTML })).headers()['content-security-policy'], 'media-src')).toBe(`media-src 'self'`)
     const html = await (await request.get('/', { headers: HTML })).text()
     const script = html.match(/src="(\/_nuxt\/[^"]+\.js)"/)?.[1]
     // Ignored by browsers for classic and module scripts; it governs a script only when it runs as a worker

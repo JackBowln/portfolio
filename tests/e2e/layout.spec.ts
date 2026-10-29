@@ -31,6 +31,8 @@ test('the header goes name → sections → theme by keyboard, and the current s
   test.skip(isMobile, 'Tab focus order is a desktop keyboard check')
   await page.goto('/sobre')
   await hydrated(page)
+  // The theme toggle stays invisible (and unfocusable) until it knows the theme
+  await expect(page.getByRole('button', { name: 'Tema escuro' })).toBeVisible()
   const order: string[] = []
   for (let step = 0; step < 7; step++) {
     await page.keyboard.press('Tab')

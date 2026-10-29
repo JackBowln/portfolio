@@ -25,3 +25,33 @@ for (const colorScheme of ['light', 'dark'] as const) {
     })
   }
 }
+
+// F04-T4: the library screens with a real item, and its dialogs open
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`media detail, delete dialog and media picker have no serious or critical axe violations (${colorScheme})`, async ({ page, context }) => {
+    const request = context.request
+    expect((await request.post('/api/_test/session?role=owner', { headers: { origin: SITE_ORIGIN } })).status()).toBe(200)
+    const listed = await (await request.get('/api/admin/media', { params: { kind: 'image', status: 'ready', limit: '1' } })).json()
+    test.skip(listed.items.length === 0, 'needs one uploaded image (the media API specs create them)')
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+
+    await page.goto(`/admin/midia/${listed.items[0].id}`)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await expectNoBlockingViolations(page)
+
+    const remove = page.getByRole('button', { name: 'Excluir mídia' })
+    if (await remove.isEnabled()) {
+      await remove.click()
+      await expect(page.getByRole('alertdialog')).toBeVisible()
+      await expectNoBlockingViolations(page)
+      await page.keyboard.press('Escape')
+    }
+
+    await page.goto('/admin/midia')
+    await page.getByRole('button', { name: 'Escolher poster' }).click()
+    await expect(page.getByRole('dialog', { name: 'Escolher da biblioteca' })).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await expectNoBlockingViolations(page)
+  })
+}

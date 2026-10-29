@@ -17,7 +17,9 @@ async function uploadPhoto(page: Page, file: Buffer): Promise<string> {
   await page.goto('/admin/midia')
   await page.getByLabel('Escolher imagem').setInputFiles({ name, mimeType: 'image/jpeg', buffer: file })
   const row = page.getByTestId('media-row').filter({ hasText: name })
-  await expect(row).toContainText('Pronta', { timeout: 90_000 })
+  // Listed once finalized; only unfinished items carry the "Incompleta" tag
+  await expect(row).toBeVisible({ timeout: 90_000 })
+  await expect(row).not.toContainText('Incompleta')
   return (await row.getAttribute('data-media-id'))!
 }
 

@@ -70,7 +70,8 @@ test('a photo with GPS is processed, uploaded without metadata and listed', asyn
   expect(manifest.dominantColor).toMatch(/^#[0-9a-f]{6}$/)
 
   const row = page.getByTestId('media-row').filter({ hasText: name })
-  await expect(row).toContainText('Pronta')
+  await expect(row).toBeVisible()
+  await expect(row).not.toContainText('Incompleta')
   await expect(row).toContainText('1400 × 1050 px')
   const id = await row.getAttribute('data-media-id')
   const detail = await (await page.context().request.get(`/api/admin/media/${id}`)).json()

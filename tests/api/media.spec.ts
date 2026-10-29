@@ -137,6 +137,9 @@ test.describe('happy path', () => {
     expect((await finalize(request, created.id)).status()).toBe(200)
     const detail = await (await request.get(`/api/admin/media/${created.id}`)).json()
     expect(detail.tracks).toEqual([expect.objectContaining({ locale: 'pt-BR', kind: 'captions', label: 'Português' })])
+    // A video's file is the delivered object, so its key is shown; an image original's never is
+    expect(detail.fileKey).toMatch(/^media\/[0-9a-f]{2}\/[0-9a-f]{64}\/video\.webm$/)
+    expect((await (await request.get(`/api/admin/media/${poster.id}`)).json()).fileKey).toBeNull()
 
     const blocked = await request.delete(`/api/admin/media/${poster.id}`, { headers: ORIGIN })
     expect(blocked.status()).toBe(409)
@@ -221,6 +224,44 @@ test.describe('rejected uploads', () => {
       kind: 'video', mimeType: 'video/mp4', originalFilename: 'v.mp4', size: 100, width: 10, height: 10, durationMs: 1, sha256: randomSha256(), posterMediaId: created.id.replace(/.$/, '0'),
     })
     expect(video.status(), 'poster must be a ready image').toBe(400)
+    await request.dispose()
+  })
+})
+
+test.describe('library list and metadata rules (F04-T4)', () => {
+  test('the list filters by upload day and gives each item its thumbnail and missing-alt flag', async ({ playwright, baseURL }) => {
+    const { request } = await session(playwright, baseURL, 'owner')
+    const item = await readyImage(request)
+    const today = new Date().toISOString().slice(0, 10)
+    const listed = await (await request.get('/api/admin/media', { params: { from: today, to: today, limit: '100' } })).json()
+    const entry = listed.items.find((candidate: { id: string }) => candidate.id === item.id)
+    expect(entry).toMatchObject({ missingAlt: true, thumbnailKey: expect.stringMatching(/^media\/[0-9a-f]{2}\/[0-9a-f]{64}\/webp-320\.webp$/) })
+    expect(entry).not.toHaveProperty('variants')
+    expect((await (await request.get('/api/admin/media', { params: { to: '2020-01-01' } })).json()).items).toEqual([])
+    expect((await request.get('/api/admin/media', { params: { from: '29/10/2026' } })).status()).toBe(400)
+
+    await request.patch(`/api/admin/media/${item.id}`, { headers: ORIGIN, data: { localizations: { 'pt-BR': { alt: 'Uma foto' } } } })
+    const after = await (await request.get('/api/admin/media', { params: { from: today, limit: '100' } })).json()
+    expect(after.items.find((candidate: { id: string }) => candidate.id === item.id).missingAlt).toBe(false)
+    await request.dispose()
+  })
+
+  test('an informative image never goes back to having no pt-BR alt', async ({ playwright, baseURL }) => {
+    const { request } = await session(playwright, baseURL, 'owner')
+    const item = await readyImage(request)
+    const patch = (data: Record<string, unknown>) => request.patch(`/api/admin/media/${item.id}`, { headers: ORIGIN, data })
+
+    // A new upload may stay without alt until publishing; other fields still save
+    expect((await patch({ focalX: 0.3 })).status()).toBe(200)
+    expect((await patch({ localizations: { 'pt-BR': { alt: 'Uma foto' } } })).status()).toBe(200)
+    const cleared = await patch({ localizations: { 'pt-BR': { alt: '' } } })
+    expect(cleared.status()).toBe(400)
+    expect((await cleared.json()).data.issues[0].path).toBe('localizations.pt-BR.alt')
+
+    // Decorative may drop the alt; unmarking it again needs an alt
+    expect((await patch({ decorative: true, localizations: { 'pt-BR': { alt: '' } } })).status()).toBe(200)
+    expect((await patch({ decorative: false })).status()).toBe(400)
+    expect((await patch({ decorative: false, localizations: { 'pt-BR': { alt: 'De volta' } } })).status()).toBe(200)
     await request.dispose()
   })
 })

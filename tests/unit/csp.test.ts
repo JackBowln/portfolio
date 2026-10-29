@@ -45,6 +45,13 @@ describe('scriptHash', () => {
 })
 
 describe('pageCsp', () => {
+  it('lets only admin pages play local blob: media, never as a script', () => {
+    const admin = pageCsp({ scriptHashes: [], upgradeInsecureRequests: false, localMedia: true })
+    expect(admin).toContain(`media-src 'self' blob:`)
+    expect(admin.split('; ').find(directive => directive.startsWith('script-src'))).toBe(`script-src 'self'`)
+    expect(pageCsp({ scriptHashes: [], upgradeInsecureRequests: false })).toContain(`media-src 'self';`)
+  })
+
   const base = { scriptHashes: [`'sha256-a'`, `'sha256-b'`, `'sha256-a'`], upgradeInsecureRequests: false }
 
   it('allows scripts only from the site and the listed hashes', () => {
