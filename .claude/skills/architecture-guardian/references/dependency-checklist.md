@@ -36,4 +36,4 @@ Depois do build: confirme em qual bundle ele caiu (público, admin ou servidor) 
 
 `nuxt`, `vue`, `@nuxtjs/i18n`, `tailwindcss` + `@tailwindcss/vite`, `@nuxt/fonts`, `drizzle-orm`, `drizzle-kit`, `better-auth`, `@better-auth/passkey`, `zod`, `@tiptap/*` (só MIT), `shiki` (admin), `gsap`, `three` (condicional), `wrangler`, `vitest`, `@nuxt/test-utils`, `@cloudflare/vitest-plugin`, `@playwright/test`, `@axe-core/playwright`, `eslint`, `@nuxt/eslint`.
 
-Candidatos que ainda dependem de avaliação na tarefa: `@jsquash/*`, `thumbhash` (F04-T2), `@nuxtjs/sitemap` (F02-T3) e a ferramenta de Lighthouse (F00-T7).
+Candidatos que ainda dependem de avaliação na tarefa: `@nuxtjs/sitemap` (F02-T3) e a ferramenta de Lighthouse (F00-T7). Admitidos na F04-T2, com exceção de manutenção: `@jsquash/avif`, `@jsquash/webp`, `@jsquash/jpeg`, `@jsquash/resize` e `thumbhash` (ADR-0007).

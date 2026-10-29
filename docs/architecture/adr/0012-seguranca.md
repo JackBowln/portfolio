@@ -96,6 +96,11 @@
   - gravado como HMAC-SHA256 em hex com `IP_HASH_SALT` (`server/utils/ip-hash.ts`). Sem a chave, `ip_hash` fica nulo: nunca há hash sem chave;
   - os eventos do Better Auth e do bootstrap passam o IP ao serviço de auditoria; os handlers do admin usam `auditRequest(event, …)`, que preenche o ator e o IP.
 
+### Decisões da F04-T2 (owner, 2026-10-29)
+
+- **WebAssembly só em Worker:** os codecs do pipeline de imagem rodam num Web Worker, cujo contexto segue a CSP da resposta do script dele, e não a da página. Por isso nenhuma página ganhou `'wasm-unsafe-eval'`: a do admin continua `script-src 'self'` + hashes.
+- **CSP dos scripts em `/_nuxt/`** (`_headers`): `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'`. O navegador ignora CSP em script carregado por `<script>`, então ela só vale quando o script roda como Worker. Até aqui os assets estáticos não tinham CSP nenhuma, e um Worker podia buscar qualquer origem.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |

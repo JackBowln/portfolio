@@ -51,7 +51,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F04-T1 | RF-06.2, RNF-08 | `/cms-engineer`, `/architecture-guardian`, `/performance-audit` |
+| concluída | F04-T1 | RF-06.2, RNF-08 | `/cms-engineer`, `/architecture-guardian`, `/performance-audit` |
 
 **Objetivo.** Rodar num Web Worker:
 - decodificação, orientação e remoção de EXIF/GPS;
@@ -66,14 +66,21 @@ com progresso e cancelamento na interface.
 **Fora do escopo.** Vídeo (sem transcodificação; T4 trata do upload direto).
 
 **Critérios de aceite**
-- [ ] Checklist de dependência do guardian para cada codec, com tamanho do WASM e licença registrados; os codecs só carregam no admin, sob demanda.
-- [ ] Os metadados EXIF/GPS são removidos (verificado num arquivo de teste com GPS).
-- [ ] Uma imagem de 4000×3000 é processada sem travar a interface (o trabalho fica no Worker); o tempo é registrado.
-- [ ] A saída é determinística para a mesma entrada (mesmo SHA-256 da variante).
+- [x] Checklist de dependência do guardian para cada codec, com tamanho do WASM e licença registrados; os codecs só carregam no admin, sob demanda.
+- [x] Os metadados EXIF/GPS são removidos (verificado num arquivo de teste com GPS).
+- [x] Uma imagem de 4000×3000 é processada sem travar a interface (o trabalho fica no Worker); o tempo é registrado.
+- [x] A saída é determinística para a mesma entrada (mesmo SHA-256 da variante).
 
 **Testes**
 - Nuxt/unit: as funções puras (cálculo de larguras, montagem do manifesto).
 - E2E (Chromium): upload de uma imagem de fixture, com as variantes criadas e listadas.
+
+**Resultado (29/10/2026).**
+- **Pipeline:** `app/workers/admin/image-pipeline.worker.ts`, `app/composables/admin/useImagePipeline.ts` e `useMediaUpload.ts`, e as funções puras em `shared/media/pipeline.ts`. Tela mínima de envio em `/admin/midia` (`MediaUploader`), com progresso por etapa e cancelamento; a biblioteca completa fica na T4.
+- **Dependências:** `@jsquash/avif`, `webp`, `jpeg` e `resize` e `thumbhash`, só no Worker do admin, com a exceção de manutenção aprovada (ADR-0007, "Decisões da F04-T2").
+- **Medidas:** 4000×3000 em 8,2 s, nenhuma tarefa longa na thread principal; ~1,36 MB de WASM no primeiro envio ([perf-log](../quality/perf-log.md)).
+- **CSP:** nenhuma página ganhou `'wasm-unsafe-eval'`; os scripts de `/_nuxt/` levam uma CSP que só vale para Workers (ADR-0012, "Decisões da F04-T2").
+- **Testes:** `tests/unit/media-pipeline.test.ts`, `tests/e2e/media-pipeline.spec.ts`, a CSP no `hardening.spec` e a tela no `a11y/admin.spec`.
 
 ---
 

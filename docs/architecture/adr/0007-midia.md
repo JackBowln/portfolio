@@ -69,6 +69,23 @@
 - **Exclusão lógica:** `status = 'deleted'` + `deleted_at`. Os objetos do R2 e os itens `pending` abandonados ficam para o cron da F06.
 - **Risco aceito:** só a cabeça do arquivo é inspecionada (varrer 10 MB estoura a CPU). Uma carga no fim do arquivo continua contida por `nosniff`, `Content-Type` do registro, `Content-Disposition: inline`, a origem separada de mídia em produção, originais nunca servidos e variantes re-encodadas no pipeline (F04-T2).
 
+### Decisões da F04-T2 (owner, 2026-10-29)
+
+- **Onde roda:** `app/workers/admin/image-pipeline.worker.ts`, um Web Worker por arquivo, criado por `useImagePipeline`. Cancelar encerra o Worker (`terminate()`) e aborta os `fetch` do `useMediaUpload`.
+- **Decodificação nativa:** `createImageBitmap` (orientação EXIF aplicada) e `getImageData` do `OffscreenCanvas` em sRGB, que converte Display P3. Nenhum decoder WASM. O determinismo vale por motor de navegador: o mesmo arquivo dá os mesmos bytes no mesmo navegador.
+- **Redimensionamento e codificação:** `@jsquash/resize` (Lanczos3) e `@jsquash/avif` (qualidade 50, speed 6, thread única), `@jsquash/webp` (80) e `@jsquash/jpeg` (mozjpeg 78, progressivo). No JPEG a transparência é achatada sobre branco.
+- **Metadados:** as variantes saem dos pixels, sem metadados. O original é limpo sem perda (`shared/media/pipeline.ts`): o JPEG perde APP1 (Exif/XMP), APP3–APP13, APP15 e COM, e guarda o ICC, o APP14 e só a orientação, num APP1 mínimo; o PNG perde `eXIf`, `tEXt`, `zTXt`, `iTXt` e `tIME`; o WebP perde `EXIF` e `XMP`, com as flags do VP8X e o tamanho do RIFF corrigidos. Um AVIF de entrada é re-codificado em resolução cheia (qualidade 80). O `sha256` é o do original já limpo.
+- **Placeholder:** ThumbHash de uma miniatura de até 100 px, renderizado e codificado como WebP pequeno em data URL (o PNG sem compressão do `thumbhash` passaria dos 4096 caracteres). A cor dominante é a média do ThumbHash.
+- **Exceção de manutenção** (aprovada pelo owner): `@jsquash/avif` 2.1.1 (2025-05), `@jsquash/jpeg` 1.6.0 (2025-05), `@jsquash/webp` 1.5.0 (2025-08) e `thumbhash` 0.1.1 (2023-03) passam dos 12 meses sem release. O monorepo jSquash segue ativo (`@jsquash/resize` 2.1.1 em 2026-01), os codecs são wrappers estáveis de libavif, libwebp e mozjpeg, e o `thumbhash` é um algoritmo fechado. Revisar a cada atualização de dependências.
+
+| Pacote | Versão | Destino | gzip | Licença | Último release | Workers ok |
+|---|---|---|---|---|---|---|
+| `@jsquash/avif` | 2.1.1 | Worker do admin | 1.116 KB (WASM) | Apache-2.0 | 2025-05 | não se aplica (navegador) |
+| `@jsquash/webp` | 1.5.0 | Worker do admin | 114–126 KB (WASM) | Apache-2.0 | 2025-08 | idem |
+| `@jsquash/jpeg` | 1.6.0 | Worker do admin | 59 KB (WASM) | Apache-2.0 | 2025-05 | idem |
+| `@jsquash/resize` | 2.1.1 | Worker do admin | 17 KB (WASM) | Apache-2.0 | 2026-01 | idem |
+| `thumbhash` | 0.1.1 | Worker do admin | 3,3 KB | MIT | 2023-03 | idem |
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -95,6 +112,7 @@
 ## Validação
 
 - F04-T1: testes enviam um polyglot, um SVG renomeado, um arquivo acima do limite e um MIME divergente, e todos são rejeitados. Feito em `tests/api/media.spec.ts` (também tamanho divergente, variante fora do manifesto, legenda com `<script>`, hash repetido, finalize incompleto e RBAC), `tests/unit/magic-bytes.test.ts`, `tests/unit/media-manifest.test.ts` e `tests/workers/media.test.ts`.
+- F04-T2: `tests/unit/media-pipeline.test.ts` (larguras, manifesto, remoção de metadados em JPEG, PNG e WebP) e `tests/e2e/media-pipeline.spec.ts` (nenhum EXIF/GPS sai do navegador, saída idêntica para o mesmo arquivo, 4000×3000 em 8,2 s sem tarefa longa na thread principal, envio e listagem, cancelamento, formato recusado).
 - F04-T3: Lighthouse sem "Properly size images" nem "Serve images in modern formats" nas páginas com mídia.
 
 ## Referências

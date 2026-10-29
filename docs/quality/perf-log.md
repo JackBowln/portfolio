@@ -48,3 +48,14 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-27 | F01-T3 (não commitado, base `4c2672d`) | R1 / R3 / R6 | 105,83 / 105,78 / 105,78 | 3,26 | 125 / 120 / 125 | Script e CSS de carregamento das fontes no `app.head` (+0,3 kB); `@font-face` inline no HTML (3,1 kB gzip na home); nenhuma fonte no caminho crítico |
 | 2026-10-27 | F01-T4 (não commitado, base `b7fd12c`) | R1 / R3 / R6 | 105,83 / 105,78 / 105,78 | 4,73 | 125 / 120 / 125 | Utilitários dos componentes base e estilos do `UiProse` no CSS global (+1,5 kB); Lighthouse R1/R6 sem mudança (mobile 99, LCP 1,81 s; desktop 100; CLS 0) |
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | R1 / R3 / R6 / E404 | 114,18 / 114,26 / 114,12 / 113,58 | 5,16 | 125 / 120 / 125 / 125 | O `check:budgets` passou a contar o chunk do layout (`layout` em cada rota), que toda página carrega antes de pintar e que ficava de fora desde a F03-T5; o E404 mede o `app/error.vue`, que vai no entry |
+| 2026-10-29 | F04-T2 (não commitado, base `7911158`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,28 | 125 / 120 / 125 | Codecs só no Worker do admin; +0,04 kB de JS (chaves de i18n do admin) e +0,12 kB de CSS (utilitários da tela de envio) |
+
+## Pipeline de imagem do admin (F04-T2)
+
+Medido em `tests/e2e/media-pipeline.spec.ts` (Chromium do Playwright, Apple Silicon, build de teste em `wrangler dev`). A API foi simulada no teste de tempo, então os números são só do processamento no navegador.
+
+| Data | Commit | Entrada | Saída | Tempo | Tarefa mais longa na thread principal | Notas |
+|---|---|---|---|---|---|---|
+| 2026-10-29 | F04-T2 (não commitado, base `7911158`) | JPEG 4000×3000 | original limpo + 18 variantes (6 larguras × AVIF/WebP/JPEG) + ThumbHash | 8,2 s (sozinho) · 15,4 s (com a suíte em paralelo) | 0 ms (nenhuma long task) | 440 quadros desenhados durante o processamento |
+
+**Chunks do admin, carregados só no Worker e só quando um envio começa** (gzip -9): Worker 40,3 KB; `avif_enc.wasm` 1.116 KB; `webp_enc_simd.wasm` 125,7 KB (ou `webp_enc.wasm` 113,9 KB sem SIMD); `mozjpeg_enc.wasm` 59,0 KB; `squoosh_resize_bg.wasm` 16,9 KB. Total no primeiro envio: ~1,36 MB, depois em cache `immutable`.
