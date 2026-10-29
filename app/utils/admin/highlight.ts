@@ -6,7 +6,7 @@ import { hastIssues } from '#shared/content/hast'
 import type { HastElement } from '#shared/content/hast'
 import type { CodeLanguage } from './code-languages'
 
-const THEMES = { light: 'github-light', dark: 'github-dark' } as const
+const THEMES = { light: 'github-light-default', dark: 'github-dark-default' } as const
 
 const GRAMMARS: Record<Exclude<CodeLanguage, 'text'>, { id: string, load: () => Promise<{ default: LanguageInput }> }> = {
   ts: { id: 'typescript', load: () => import('shiki/langs/typescript.mjs') },
@@ -35,8 +35,8 @@ function getHighlighter(): Promise<HighlighterCore> {
     const [{ createHighlighterCore }, { createJavaScriptRegexEngine }, light, dark] = await Promise.all([
       import('shiki/core'),
       import('shiki/engine/javascript'),
-      import('shiki/themes/github-light.mjs'),
-      import('shiki/themes/github-dark.mjs'),
+      import('shiki/themes/github-light-default.mjs'),
+      import('shiki/themes/github-dark-default.mjs'),
     ])
     return createHighlighterCore({ themes: [light.default, dark.default], langs: [], engine: createJavaScriptRegexEngine() })
   })()

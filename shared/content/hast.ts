@@ -21,7 +21,7 @@ export interface HastIssue {
 }
 
 /** Themes the admin highlighter uses; F05-T3 confirms them against Shiki's real output */
-export const SHIKI_THEMES = ['github-light', 'github-dark'] as const
+export const SHIKI_THEMES = ['github-light-default', 'github-dark-default'] as const
 const CLASS_TOKENS = new Set<string>(['shiki', 'shiki-themes', 'line', ...SHIKI_THEMES])
 
 const MAX_DEPTH = 8
