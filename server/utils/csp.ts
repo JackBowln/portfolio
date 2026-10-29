@@ -41,11 +41,6 @@ export async function scriptHash(content: string): Promise<string> {
   return source
 }
 
-// Nuxt's default 404 page (nuxt/dist/app/components/error-404.vue) adds this script on the client only, so it is
-// never in the server HTML; it also runs after a client-side navigation to an unknown route. Goes away with our own
-// app/error.vue (F01-T5); tests/unit/csp.test.ts checks it against the installed Nuxt
-export const CLIENT_ONLY_SCRIPT_HASHES = [`'sha256-Obm/pgvNhhb4DuoDisFDPpipssMoIKVJdm2bV3PvqR0='`] as const
-
 export interface PageCspOptions {
   scriptHashes: readonly string[]
   /** Origin serving media when it differs from the site's own (MEDIA_BASE_URL) */

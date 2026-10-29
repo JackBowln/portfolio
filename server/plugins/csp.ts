@@ -8,7 +8,7 @@ async function policyForPage(event: H3Event, html: string): Promise<string> {
   // response); the public site URL holds the same value, and an error page shows no media
   const siteUrl = env?.SITE_URL ?? useRuntimeConfig(event).public.siteUrl
   return pageCsp({
-    scriptHashes: [...await Promise.all(inlineScripts(html).map(scriptHash)), ...CLIENT_ONLY_SCRIPT_HASHES],
+    scriptHashes: await Promise.all(inlineScripts(html).map(scriptHash)),
     mediaOrigin: mediaOriginFor(siteUrl, env?.MEDIA_BASE_URL),
     upgradeInsecureRequests: siteUrl.startsWith('https://'),
   })
