@@ -55,6 +55,20 @@
    - Mídia em uso (`media_usages`) não pode ser apagada (409).
    - Exclusão lógica; o cron remove os objetos do R2 30 dias depois, com auditoria.
 
+### Decisões da F04-T1 (owner, 2026-10-29)
+
+- **Manifesto** (`shared/media/schemas.ts`, zod `strict`): imagem com original, dimensões, `sha256`, placeholder e cor dominante, mais as variantes `{format, width, height, size}`; vídeo com duração, `posterMediaId` (imagem `ready`) e legendas `{locale, kind, label, size}`.
+  - As larguras saem de `IMAGE_WIDTHS` ou, para originais mais estreitos que 320 px, da própria largura. Nunca passam do original, mantêm a proporção (±1 px) e cada largura vem nos 3 formatos.
+  - Limites em bytes decimais: variante 10 MB, original 25 MB, vídeo 95 MB, legenda 1 MB, até 10 legendas.
+- **Nomes e chaves:** o servidor deriva os nomes (`avif-640`, `original`, `captions-pt-BR`) e as chaves (`shared/media/keys.ts`); o vídeo fica em `media/{sha2}/{sha256}/video.{ext}` e o original de imagem em `originals/{sha256}.{ext}`. A chave do original nunca sai da API.
+- **`sha256`:** declarado pelo admin e validado só pelo formato e pela unicidade, sem recalcular no Worker (CPU). Ele é único na tabela, inclusive entre itens apagados, então um upload nunca sobrescreve o objeto de outro registro; repetir responde 409 com o id existente.
+- **Upload** (`PUT …/variants/:name`): `Content-Type` e `Content-Length` iguais aos declarados, senão 415/400 antes de ler o corpo. Os primeiros 64 KB passam por magic bytes (`server/utils/magic-bytes.ts`) e por uma busca de marcação (`<script`, `<html`, `<svg`, `<?xml`, `<!doctype`, `<iframe`, `<object`, `<embed`, `<?php`); o resto vai ao R2 por `FixedLengthStream`, sem buffer. Só quem criou o item envia arquivos e finaliza. O middleware de origem aceita corpo binário só nessa rota, com teto de 95 MB, e mantém a checagem de origem.
+- **Finalize:** `head()` de cada chave no R2 confere existência e tamanho; o que faltar volta no 409. Um vídeo finalizado registra o uso do poster (`context: 'poster'`), que bloqueia apagar o poster.
+- **Auditoria:** `media.created`, `media.finalized` (com o resumo: arquivos e bytes), `media.updated`, `media.deleted` e `media.upload_rejected` (motivo `type_mismatch`, `markup` ou `size_mismatch`). Os uploads aceitos não geram uma linha cada.
+- **Metadados:** alt, legenda e crédito por idioma (pt-BR `source`, os outros `approved`, porque foram digitados por uma pessoa), ponto de foco e a coluna nova `decorative`. O alt obrigatório é cobrado na publicação (F05/F06).
+- **Exclusão lógica:** `status = 'deleted'` + `deleted_at`. Os objetos do R2 e os itens `pending` abandonados ficam para o cron da F06.
+- **Risco aceito:** só a cabeça do arquivo é inspecionada (varrer 10 MB estoura a CPU). Uma carga no fim do arquivo continua contida por `nosniff`, `Content-Type` do registro, `Content-Disposition: inline`, a origem separada de mídia em produção, originais nunca servidos e variantes re-encodadas no pipeline (F04-T2).
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -80,7 +94,7 @@
 
 ## Validação
 
-- F04-T1: testes enviam um polyglot, um SVG renomeado, um arquivo acima do limite e um MIME divergente, e todos são rejeitados.
+- F04-T1: testes enviam um polyglot, um SVG renomeado, um arquivo acima do limite e um MIME divergente, e todos são rejeitados. Feito em `tests/api/media.spec.ts` (também tamanho divergente, variante fora do manifesto, legenda com `<script>`, hash repetido, finalize incompleto e RBAC), `tests/unit/magic-bytes.test.ts`, `tests/unit/media-manifest.test.ts` e `tests/workers/media.test.ts`.
 - F04-T3: Lighthouse sem "Properly size images" nem "Serve images in modern formats" nas páginas com mídia.
 
 ## Referências

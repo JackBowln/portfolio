@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F03 (gate) | RF-06.1, RF-06.6, RNF-07 | `/security-audit`, `/cms-engineer` |
+| concluída | F03 (gate) | RF-06.1, RF-06.6, RNF-07 | `/security-audit`, `/cms-engineer` |
 
 **Objetivo.** Criar as tabelas `media`, `media_localizations`, `media_tracks` e `media_usages` e os endpoints:
 - `POST /api/admin/media` (manifesto);
@@ -27,15 +27,23 @@
 **Fora do escopo.** Processamento no cliente (T2) e interface (T4).
 
 **Critérios de aceite**
-- [ ] Permissões `media:*` aplicadas via `defineAdminHandler`.
-- [ ] MIME por allowlist **e** magic bytes do primeiro chunk; limites (variante ≤ 10 MB, original ≤ 25 MB, vídeo ≤ 95 MB); nome e número das variantes conferidos contra o manifesto.
-- [ ] Chave do R2 gerada pelo servidor (`media/{sha2}/{sha256}/{variant}.{ext}`); nenhum caminho controlado pelo usuário.
-- [ ] `finalize` falha se faltar alguma variante; `DELETE` com uso em `media_usages` → 409.
-- [ ] Toda mutação é auditada.
+- [x] Permissões `media:*` aplicadas via `defineAdminHandler`.
+- [x] MIME por allowlist **e** magic bytes do primeiro chunk; limites (variante ≤ 10 MB, original ≤ 25 MB, vídeo ≤ 95 MB); nome e número das variantes conferidos contra o manifesto.
+- [x] Chave do R2 gerada pelo servidor (`media/{sha2}/{sha256}/{variant}.{ext}`); nenhum caminho controlado pelo usuário.
+- [x] `finalize` falha se faltar alguma variante; `DELETE` com uso em `media_usages` → 409.
+- [x] Toda mutação é auditada.
 
 **Testes**
 - API: polyglot (JPEG com payload), SVG renomeado para `.png`, MIME divergente, arquivo acima do limite, variante fora do manifesto → todos rejeitados; o fluxo feliz completo funciona.
 - Workers: o repositório de mídia e as regras de uso.
+
+**Resultado (29/10/2026).**
+- **Schema:** `server/db/schema/media.ts` e a migração `0003_media` (aplicada só com `--local`): `media`, `media_localizations`, `media_tracks` e `media_usages`, com a coluna nova `decorative`.
+- **API** em `server/api/admin/media/**`, todas com `defineAdminHandler`: `POST` (manifesto), `PUT …/:id/variants/:name` (streaming para o R2), `POST …/:id/finalize`, `GET` de lista e de detalhe, `PATCH` e `DELETE` (lógico, 409 em uso).
+- **Validação:** `shared/media/schemas.ts` (manifesto), `shared/media/keys.ts` (nomes e chaves), `server/utils/magic-bytes.ts` (tipo e marcação nos primeiros 64 KB) e `server/services/media/upload.ts` (`FixedLengthStream`). O middleware de origem ganhou a exceção do upload binário.
+- **CI:** passou a aplicar as migrações no D1 local antes da Playwright (faltava desde a F03).
+- **Decisões:** ADR-0007, "Decisões da F04-T1".
+- **Testes:** `tests/api/media.spec.ts`, `tests/workers/media.test.ts`, `tests/unit/magic-bytes.test.ts` e `tests/unit/media-manifest.test.ts`.
 
 ---
 

@@ -176,10 +176,10 @@ O mesmo padrão vale para artigos, projetos e páginas:
 
 | Tabela | Colunas | Notas |
 |---|---|---|
-| `media` | `id`, `kind`, `status`, `mime_type`, `original_filename`, `size_bytes`, `width`, `height`, `duration_ms`, `sha256` (único), `original_key`, `variants` (json `{ name, format, width, height, key, size }[]`), `placeholder_data_url`, `dominant_color`, `focal_x`/`focal_y` (0–1), `poster_media_id` (vídeo), auditoria | [ADR-0007](adr/0007-midia.md) |
+| `media` | `id`, `kind`, `status`, `mime_type`, `original_filename`, `size_bytes`, `width`, `height`, `duration_ms`, `sha256` (único, inclusive entre apagados), `original_key`, `variants` (json `{ name, format, width, height, key, size }[]`), `placeholder_data_url`, `dominant_color`, `focal_x`/`focal_y` (0–1, `CHECK`), `decorative` (alt vazio explícito, F04-T1), `poster_media_id` (vídeo), `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at` | [ADR-0007](adr/0007-midia.md); migração `0003_media` |
 | `media_localizations` | `media_id`, `locale`, `alt`, `caption`, `credit`, `translation_state`, `updated_at` | `PK(media_id, locale)`; `alt` obrigatório para imagens informativas (vazio só se decorativa, marcada explicitamente) |
-| `media_tracks` | `id`, `media_id`, `locale`, `kind` (`captions`/`subtitles`), `key`, `label` | Legendas WebVTT de vídeo |
-| `media_usages` | `media_id`, `entity_type`, `entity_id`, `locale` (nulo), `context` (`body`, `cover`, `og`, `gallery`, `poster`, `settings`) | PK composta; recalculada a cada gravação e publicação; impede exclusão de mídia em uso |
+| `media_tracks` | `id`, `media_id`, `locale`, `kind` (`captions`/`subtitles`), `key`, `label`, `size` | Legendas WebVTT de vídeo, registradas com o manifesto; únicas por `(media_id, locale, kind)` |
+| `media_usages` | `media_id`, `entity_type`, `entity_id`, `locale` (nulo), `context` (`body`, `cover`, `og`, `gallery`, `poster`, `settings`) | Sem chave única (um `locale` nulo não seria único): as linhas de uma entidade são trocadas por inteiro a cada gravação e publicação; índices em `media_id` e na entidade; impede exclusão de mídia em uso |
 
 ## 6. Configurações e sistema
 

@@ -23,7 +23,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `/api/auth/*` | Anônima | Checagem de origem (middleware + Better Auth), `RL_AUTH` por IP + rota nas mutações e no callback OAuth, allowlist do GitHub, sem cadastro público, auditoria com hash de IP |
 | `/admin/setup` (bootstrap) | Anônima até existir owner | Exige ausência de owner **e** `BOOTSTRAP_TOKEN`; 404 depois; origem + JSON + `RL_AUTH` em `POST /api/setup` |
 | `/api/admin/*` | Autenticada | Origem + JSON + 1 MB (antes da sessão), sessão obrigatória, `RL_ADMIN` por sessão, `requirePermission`, propriedade, zod, auditoria (`auditRequest`) |
-| Upload de mídia | Autenticada | Magic bytes, allowlist de MIME, limites, chaves geradas pelo servidor, SVG bloqueado, `nosniff` |
+| Upload de mídia | Autenticada | Magic bytes, allowlist de MIME, limites, chaves geradas pelo servidor, SVG bloqueado, `nosniff`; desde a F04-T1: marcação (HTML, SVG, XML, PHP) recusada nos primeiros 64 KB, `Content-Length` igual ao declarado no manifesto, só quem criou o item envia arquivos e finaliza, rejeições auditadas |
 | Editor e conteúdo (embeds, links, código) | Autenticada → público | Schema estrito, protocolos de URL, allowlist de embeds, HAST com allowlist |
 | `/preview/{token}` | Quem tiver o link | HMAC, expiração ≤ 24 h, `noindex`, `private, no-store` |
 | Cron e tarefas | Interna | Sem entrada externa; idempotente; poucos itens por execução |
@@ -67,6 +67,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
+- **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.
 - **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
 - **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).
 
