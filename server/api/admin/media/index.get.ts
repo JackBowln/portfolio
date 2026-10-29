@@ -8,6 +8,8 @@ const querySchema = z.object({
   status: z.enum(['pending', 'ready']).optional(),
   q: z.string().trim().min(1).max(100).optional(),
   missingAlt: z.enum(['true', 'false']).transform(value => value === 'true').optional(),
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
   cursor: z.string().min(1).max(64).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 })
@@ -15,7 +17,7 @@ const querySchema = z.object({
 export default defineAdminHandler({
   permission: { media: ['read'] },
   handler: async (event) => {
-    const { q, ...query } = getValidatedQueryStrict(event, querySchema)
-    return queryMedia(useDb(event), { ...query, search: q })
+    const { q, from, to, ...query } = getValidatedQueryStrict(event, querySchema)
+    return queryMedia(useDb(event), { ...query, search: q, fromDay: from, toDay: to })
   },
 })

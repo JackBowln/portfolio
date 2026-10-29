@@ -1,5 +1,5 @@
 // Media queries (data-model §5). Deleted rows stay in the table (soft delete) and are hidden from every read here
-import { and, desc, eq, like, lt, ne, notExists, sql } from 'drizzle-orm'
+import { and, desc, eq, exists, gte, like, lt, ne, notExists, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
 import type { Locale, MediaKind, MediaStatus, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
@@ -111,6 +111,10 @@ export interface MediaFilters {
   search?: string | undefined
   /** Informative images without a pt-BR alt */
   missingAlt?: boolean | undefined
+  /** Uploaded at or after */
+  from?: Date | undefined
+  /** Uploaded before (exclusive) */
+  to?: Date | undefined
   /** Id of the last item already shown; ids are UUIDv7, so they sort by time */
   before?: string | undefined
 }
@@ -121,6 +125,11 @@ function escapeLike(value: string): string {
 }
 
 export async function listMedia(db: Db, filters: MediaFilters, limit: number) {
+  const sourceAlt = db.select({ one: sql`1` }).from(mediaLocalizations).where(and(
+    eq(mediaLocalizations.mediaId, media.id),
+    eq(mediaLocalizations.locale, SOURCE_LOCALE),
+    ne(mediaLocalizations.alt, ''),
+  ))
   const conditions: SQL[] = [ne(media.status, 'deleted')]
   if (filters.kind) {
     conditions.push(eq(media.kind, filters.kind))
@@ -132,13 +141,13 @@ export async function listMedia(db: Db, filters: MediaFilters, limit: number) {
     conditions.push(sql`${like(media.originalFilename, `%${escapeLike(filters.search)}%`)} ESCAPE '\\'`)
   }
   if (filters.missingAlt) {
-    conditions.push(eq(media.kind, 'image'), eq(media.decorative, false), notExists(
-      db.select({ one: sql`1` }).from(mediaLocalizations).where(and(
-        eq(mediaLocalizations.mediaId, media.id),
-        eq(mediaLocalizations.locale, SOURCE_LOCALE),
-        ne(mediaLocalizations.alt, ''),
-      )),
-    ))
+    conditions.push(eq(media.kind, 'image'), eq(media.decorative, false), notExists(sourceAlt))
+  }
+  if (filters.from) {
+    conditions.push(gte(media.createdAt, filters.from))
+  }
+  if (filters.to) {
+    conditions.push(lt(media.createdAt, filters.to))
   }
   if (filters.before) {
     conditions.push(lt(media.id, filters.before))
@@ -155,6 +164,8 @@ export async function listMedia(db: Db, filters: MediaFilters, limit: number) {
     placeholderDataUrl: media.placeholderDataUrl,
     dominantColor: media.dominantColor,
     decorative: media.decorative,
+    variants: media.variants,
+    hasSourceAlt: sql<number>`${exists(sourceAlt)}`,
     createdAt: media.createdAt,
   }).from(media).where(and(...conditions)).orderBy(desc(media.id)).limit(limit)
 }

@@ -136,10 +136,11 @@ export async function getMediaDetail(db: Db, id: string) {
     throw createAppError('not_found')
   }
   const [localizations, tracks, usages] = await Promise.all([listLocalizations(db, id), listTracks(db, id), listUsages(db, id)])
-  // The original's key stays internal: originals are never served
-  const { originalKey: _originalKey, ...media } = row
+  // An image original's key stays internal (originals are never served); a video's file is the delivered one
+  const { originalKey, ...media } = row
   return {
     ...media,
+    fileKey: row.kind === 'video' ? originalKey : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     localizations,
@@ -155,10 +156,27 @@ export interface MetadataInput {
   localizations?: Partial<Record<Locale, { alt?: string | undefined, caption?: string | null | undefined, credit?: string | null | undefined }>> | undefined
 }
 
-/** Focal point, decorative flag and alt/caption/credit per locale; a person typing them makes them approved */
+/**
+ * Focal point, decorative flag and alt/caption/credit per locale; a person typing them makes them approved.
+ * An informative image never goes back to having no pt-BR alt: clearing it, or unmarking decorative without one, is
+ * refused. New uploads may still be without alt until publishing, which blocks them (F05/F06)
+ */
 export async function updateMediaMetadata(db: Db, userId: string, id: string, input: MetadataInput) {
-  if (!await findMedia(db, id)) {
+  const row = await findMedia(db, id)
+  if (!row) {
     throw createAppError('not_found')
+  }
+  if (row.kind === 'image') {
+    const current = (await listLocalizations(db, id)).find(item => item.locale === SOURCE_LOCALE)?.alt ?? ''
+    const requested = input.localizations?.[SOURCE_LOCALE]?.alt
+    const decorative = input.decorative ?? row.decorative
+    const alt = requested ?? current
+    if (!decorative && requested === '' && current !== '') {
+      throw createAppError('bad_request', 'Invalid input', [{ path: `localizations.${SOURCE_LOCALE}.alt`, message: 'An informative image needs an alt' }])
+    }
+    if (input.decorative === false && row.decorative && alt === '') {
+      throw createAppError('bad_request', 'Invalid input', [{ path: `localizations.${SOURCE_LOCALE}.alt`, message: 'Add an alt before unmarking decorative' }])
+    }
   }
   const localizations = Object.entries(input.localizations ?? {}).map(([locale, fields]) => ({
     locale: locale as Locale,
@@ -192,16 +210,33 @@ export async function deleteMedia(db: Db, userId: string, id: string) {
   }
 }
 
-export interface MediaQuery extends Omit<MediaFilters, 'before'> {
+export interface MediaQuery extends Omit<MediaFilters, 'before' | 'from' | 'to'> {
+  /** YYYY-MM-DD, inclusive, in UTC */
+  fromDay?: string | undefined
+  /** YYYY-MM-DD, inclusive, in UTC */
+  toDay?: string | undefined
   cursor?: string | undefined
   limit: number
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
 export async function queryMedia(db: Db, query: MediaQuery) {
-  const rows = await listMedia(db, { ...query, before: query.cursor }, query.limit + 1)
+  const rows = await listMedia(db, {
+    ...query,
+    from: query.fromDay ? new Date(`${query.fromDay}T00:00:00Z`) : undefined,
+    to: query.toDay ? new Date(new Date(`${query.toDay}T00:00:00Z`).getTime() + DAY_MS) : undefined,
+    before: query.cursor,
+  }, query.limit + 1)
   const page = rows.slice(0, query.limit)
   return {
-    items: page.map(row => ({ ...row, createdAt: row.createdAt.toISOString() })),
+    items: page.map(({ variants, hasSourceAlt, ...row }) => ({
+      ...row,
+      createdAt: row.createdAt.toISOString(),
+      // The smallest WebP is the grid thumbnail; the full variant list stays in the detail
+      thumbnailKey: variants.filter(variant => variant.format === 'webp').toSorted((a, b) => a.width - b.width)[0]?.key ?? null,
+      missingAlt: row.kind === 'image' && !row.decorative && !hasSourceAlt,
+    })),
     nextCursor: rows.length > query.limit ? page.at(-1)?.id ?? null : null,
   }
 }
