@@ -100,6 +100,7 @@ Todo par texto/fundo passa pelo script de contraste da F01-T2. O tema padrão (c
 | Tema padrão | Claro e escuro; o padrão segue `prefers-color-scheme`, com troca manual guardada em `localStorage` (Q-03) | 2026-10-25 |
 | Tokens finais | Em `app/assets/css/main.css` (F01-T2), com os valores da F01-T1. Novos: `success`, `warning` e `danger`, todos em AA nos dois temas; revisáveis pelo owner na `/dev/styleguide` | 2026-10-27 |
 | Troca de tema | Botão de 2 estados ("Tema escuro", `aria-pressed`) no header; a escolha fica em `localStorage` e vence o sistema dali em diante | 2026-10-27 |
+| Layout público | Header estático (não fixo) com nome, seções e tema; abaixo de `md`, as seções vão para um menu em `<dialog>` modal de tela cheia. Seletor de idioma no footer, uma vez por página. `<main>` no layout; o artigo usa o layout `reading` (medida de leitura). Páginas 404/500 com mensagem genérica e link para a home do idioma (ADR-0010, "Decisões da F01-T5") | 2026-10-29 |
 | Referências visuais | [ingrassiadaniel.it](https://ingrassiadaniel.it/), [emotion-agency.com](https://emotion-agency.com/), [junkbranding.com](https://www.junkbranding.com/) (Q-02) | 2026-10-25 |
 
 ### Leitura das referências (F01-T1)

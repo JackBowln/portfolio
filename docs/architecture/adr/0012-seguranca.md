@@ -69,7 +69,8 @@
 - **CSP das páginas:**
   - calculada no hook `render:response` do Nitro (`server/plugins/csp.ts`), sobre o corpo final. Os scripts que executam (sem `src`, de tipo vazio, `module`, `importmap` ou JavaScript) recebem `sha256`; blocos de dados (`application/json`, `ld+json`) ficam de fora;
   - hoje são 4: tema, fontes, `window.__NUXT__.config` e o import map do Vite. Não há atributos `on*`, então não há `'unsafe-hashes'`;
-  - exceção temporária: a página 404 padrão do Nuxt (`error-404.vue`) insere um script só no cliente, que nunca aparece no HTML do servidor. O hash exato dele fica em `CLIENT_ONLY_SCRIPT_HASHES` (`server/utils/csp.ts`), conferido contra o Nuxt instalado por `tests/unit/csp.test.ts`, até o `app/error.vue` próprio da F01-T5 substituir essa página;
+  - ~~exceção temporária: o hash do script que a 404 padrão do Nuxt insere só no cliente (`CLIENT_ONLY_SCRIPT_HASHES`)~~. Removida na F01-T5: o `app/error.vue` próprio não usa script inline, e a política só lista os hashes do HTML servido;
+  - o payload das páginas de erro 5xx leva só o texto genérico de status, nunca a mensagem da exceção (`app/plugins/redact-server-errors.server.ts`, F01-T5);
   - a CSP vai junto com o HTML no cache de borda, então hash e corpo não se separam. O custo é uma regex e alguns SHA-256, com memo por isolate;
   - o 404 e o 500 do Nuxt são renderizados numa sub-requisição sem bindings, cujos headers o handler de erro copia. Ali a origem vem do `runtimeConfig.public.siteUrl`, que tem o mesmo valor;
   - desligada em `nuxt dev`, por causa do cliente do Vite;

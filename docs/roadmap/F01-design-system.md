@@ -6,7 +6,7 @@
 
 **Leitura obrigatória:** [design-direction](../design/design-direction.md), [ADR-0010](../architecture/adr/0010-design-system.md), [accessibility](../quality/accessibility.md), [performance-budgets](../quality/performance-budgets.md).
 
-**Gate de saída:** design-direction §9 preenchido com as suas escolhas, e o shell público com axe sem violações sérias ou críticas em 360, 768 e 1280 px.
+**Gate de saída:** design-direction §9 preenchido com as suas escolhas, e o shell público com axe sem violações sérias ou críticas em 360, 768 e 1280 px. **Cumprido em 2026-10-29** (`tests/a11y/layout.spec.ts`).
 
 ---
 
@@ -154,7 +154,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F01-T4, F02-T2 | RF-01.8, RX-01, RNF-10, RNF-11 | `/frontend-design`, `/i18n-manager` |
+| concluída | F01-T4, F02-T2 | RF-01.8, RX-01, RNF-10, RNF-11 | `/frontend-design`, `/i18n-manager` |
 
 **Objetivo.** Criar o header (nome e navegação), o menu mobile (dialog acessível), o footer, o encaixe do seletor de idioma, os layouts `default` e `reading` e o `error.vue` (404/500 localizados).
 
@@ -163,17 +163,26 @@
 **Fora do escopo.** O conteúdo das páginas (F06–F08); motion (F10).
 
 **Critérios de aceite**
-- [ ] Skip link como primeiro foco; landmarks corretos; `nav` com rótulo.
-- [ ] Menu mobile com foco preso, `Esc` fecha, foco devolvido ao botão e `aria-expanded` correto.
-- [ ] O header fixo (se houver) não cobre o foco (`scroll-padding-top`).
-- [ ] 404 e 500 localizados nos 5 idiomas, com link para a home do idioma; status HTTP correto.
-- [ ] O `error.vue` não usa script inline, e o hash da 404 padrão do Nuxt sai de `CLIENT_ONLY_SCRIPT_HASHES` (`server/utils/csp.ts`, F03-T4), com o `tests/e2e/csp.spec.ts` verde.
-- [ ] Responsivo de 360 a 1920 px sem rolagem horizontal; JS do layout dentro do orçamento (`check:budgets`).
+- [x] Skip link como primeiro foco; landmarks corretos; `nav` com rótulo.
+- [x] Menu mobile com foco preso, `Esc` fecha, foco devolvido ao botão e `aria-expanded` correto.
+- [x] O header fixo (se houver) não cobre o foco (`scroll-padding-top`).
+- [x] 404 e 500 localizados nos 5 idiomas, com link para a home do idioma; status HTTP correto.
+- [x] O `error.vue` não usa script inline, e o hash da 404 padrão do Nuxt sai de `CLIENT_ONLY_SCRIPT_HASHES` (`server/utils/csp.ts`, F03-T4), com o `tests/e2e/csp.spec.ts` verde.
+- [x] Responsivo de 360 a 1920 px sem rolagem horizontal; JS do layout dentro do orçamento (`check:budgets`).
 
 **Testes**
 - E2E: navegação por teclado completa; menu mobile em viewport de 390 px.
 - a11y: axe no layout em pt-BR e de, nos temas claro e escuro.
 - API: 404 em rota inexistente de cada idioma.
+
+**Resultado (29/10/2026).**
+- **Moldura:** `app/components/layout/SiteShell.vue` (skip link, header, `main#main`, footer), `SiteHeader`, `SiteNav` (as seções, usadas no header, no menu e no footer), `MobileMenu` (`<dialog>` modal com invoker commands) e `SiteFooter`; layouts `default` e `reading` (o artigo do blog). As páginas perderam o `<main>` próprio; a styleguide ficou sem layout (`layout: false`).
+- **Erros:** `app/error.vue` (404 e 500 nos 5 idiomas, link para a home do idioma, `noindex`, `<html lang>`), `app/plugins/redact-server-errors.server.ts` (a mensagem de exceções 5xx não vai para o payload) e a página de teste `app/pages/_test/server-error.vue` (só no build de teste).
+- **CSP:** saiu o `CLIENT_ONLY_SCRIPT_HASHES`; `tests/e2e/csp.spec.ts` cobre também `/de/does-not-exist`.
+- **Orçamentos:** o `check:budgets` passou a contar o chunk do layout (R1 114,18/125 KB, R3 114,26/120, E404 113,58/125). Lighthouse R1 mobile 98 (o elemento LCP passou a ser o nome do site), R6 mobile 100, desktop 100 nas duas ([perf-log](../quality/perf-log.md)).
+- **Chaves:** `layout.skipLink`, `layout.menu.*`, `layout.footer.*` e `errors.*` nos 5 idiomas; traduções de en, es, de e fr escritas na tarefa, para revisão do owner.
+- **Decisões:** ADR-0010, "Decisões da F01-T5".
+- **Testes:** `tests/e2e/layout.spec.ts`, `tests/a11y/layout.spec.ts`, `tests/api/errors.spec.ts`, `tests/nuxt/app.test.ts` e `tests/unit/check-budgets.test.ts`.
 
 ---
 

@@ -155,7 +155,7 @@
 - **Rate limit:** `server/middleware/01.rate-limit.ts` (`RL_AUTH` por IP + rota) e `RL_ADMIN` por sessão em `admin-session.ts`, via `server/utils/rate-limit.ts`.
 - **IP:** `server/utils/ip-hash.ts` (só `CF-Connecting-IP`, HMAC-SHA256 com `IP_HASH_SALT`); o serviço de auditoria grava o hash; `server/utils/audit.ts` (`auditRequest`) serve os handlers do admin.
 - **Tipos:** os segredos de `server/types/env.d.ts` passaram a valer no `Env` global, que é o tipo devolvido pelo `useEnv` (antes eles só aumentavam o `Cloudflare.Env`).
-- **Exceção temporária:** o hash do script que a 404 padrão do Nuxt insere só no cliente (`CLIENT_ONLY_SCRIPT_HASHES`), até o `error.vue` da F01-T5.
+- **Exceção temporária:** o hash do script que a 404 padrão do Nuxt insere só no cliente (`CLIENT_ONLY_SCRIPT_HASHES`), até o `error.vue` da F01-T5. Removida na F01-T5 (29/10/2026).
 - **Decisões:** ADR-0012, "Decisões da F03-T4".
 - **Testes:** `tests/unit/csp.test.ts`, `tests/unit/ip-hash.test.ts`, `tests/api/hardening.spec.ts`, `tests/e2e/csp.spec.ts` e o HMAC do IP no `auth-flow`.
 

@@ -26,6 +26,10 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-27 | F01-T3 (não commitado, base `4c2672d`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` | R1 `/` | desktop | 100 | 100 | 100 | 100 | 408 ms | 0 ms | 0 | Idem |
 | 2026-10-27 | F01-T3 (não commitado, base `4c2672d`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` | R6 `/sobre` | mobile | 99 | 100 | 100 | 100 | 1811 ms | 0 ms | 0 | Idem |
 | 2026-10-27 | F01-T3 (não commitado, base `4c2672d`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 497 ms | 0 ms | 0 | Idem |
+| 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` | R1 `/` | mobile | 98 | 100 | 100 | 100 | 1989 ms | 1 ms | 0 | Layout público. O elemento LCP passou a ser o nome do site no header (o `h1` da home esqueleto é texto de corpo); FCP 1813 ms como antes. Detalhamento observado: TTFB 34 ms, atraso de renderização 62 ms; o bloqueio é o `entry.css` (157 ms), como antes. Item de investigação: volta a ser medido com o hero real (F10) |
+| 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 413 ms | 0 ms | 0 | — |
+| 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | mobile | 100 (±2) | 100 | 100 | 100 | 1362 ms | 0 ms | 0 | LCP = FCP; abaixo da meta de 1,8 s pela primeira vez |
+| 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 480 ms | 0 ms | 0 | Relatórios em `reports/lighthouse/2026-10-29` |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -43,3 +47,4 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-27 | F01-T2 (não commitado, base `25bb042`) | R1 / R3 / R6 | 105,54 / 105,49 / 105,49 | 3,23 | 125 / 120 / 125 | Tailwind 4 (preflight + utilitários usados + tokens `static`) e o toggle de tema (+0,6 kB de JS) |
 | 2026-10-27 | F01-T3 (não commitado, base `4c2672d`) | R1 / R3 / R6 | 105,83 / 105,78 / 105,78 | 3,26 | 125 / 120 / 125 | Script e CSS de carregamento das fontes no `app.head` (+0,3 kB); `@font-face` inline no HTML (3,1 kB gzip na home); nenhuma fonte no caminho crítico |
 | 2026-10-27 | F01-T4 (não commitado, base `b7fd12c`) | R1 / R3 / R6 | 105,83 / 105,78 / 105,78 | 4,73 | 125 / 120 / 125 | Utilitários dos componentes base e estilos do `UiProse` no CSS global (+1,5 kB); Lighthouse R1/R6 sem mudança (mobile 99, LCP 1,81 s; desktop 100; CLS 0) |
+| 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | R1 / R3 / R6 / E404 | 114,18 / 114,26 / 114,12 / 113,58 | 5,16 | 125 / 120 / 125 / 125 | O `check:budgets` passou a contar o chunk do layout (`layout` em cada rota), que toda página carrega antes de pintar e que ficava de fora desde a F03-T5; o E404 mede o `app/error.vue`, que vai no entry |
