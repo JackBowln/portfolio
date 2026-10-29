@@ -49,7 +49,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F05-T1 | RF-04.1, RF-04.2, RF-04.3, RF-04.4, RF-04.5, RF-04.6, RNF-07 | `/cms-engineer`, `/security-audit` |
+| concluída | F05-T1 | RF-04.1, RF-04.2, RF-04.3, RF-04.4, RF-04.5, RF-04.6, RNF-07 | `/cms-engineer`, `/security-audit` |
 
 **Objetivo.** Criar o `shared/content/document-schema.ts` (zod `strict`) com nós, marks e atributos do ADR-0006, mais os validadores de URL e o validador de HAST com allowlist. Incluir também `schemaVersion` com a pasta de migradores e as funções puras de dados derivados:
 - contagem de palavras e tempo de leitura;
@@ -62,13 +62,19 @@
 **Fora do escopo.** Editor (T3) e renderer (T4).
 
 **Critérios de aceite**
-- [ ] Todo nó válido é aceito; nó desconhecido, atributo extra, `javascript:`/`data:` em link, HAST com `script` ou `on*`, e embed fora da allowlist → rejeitados com erro claro.
-- [ ] O cálculo de tempo de leitura e o TOC são determinísticos; os IDs de heading são estáveis (UniqueID).
-- [ ] Um migrador de exemplo (v1 → v1, identidade) tem teste, documentando o padrão.
+- [x] Todo nó válido é aceito; nó desconhecido, atributo extra, `javascript:`/`data:` em link, HAST com `script` ou `on*`, e embed fora da allowlist → rejeitados com erro claro.
+- [x] O cálculo de tempo de leitura e o TOC são determinísticos; os IDs de heading são estáveis (UniqueID).
+- [x] Um migrador de exemplo (v1 → v1, identidade) tem teste, documentando o padrão.
 
 **Testes**
 - Unit: matriz de payloads válidos e maliciosos (≥ 30 casos); propriedades do `derive`.
 - Cobertura ≥ 90% de branches no schema.
+
+**Resultado (29/10/2026).**
+- **Código:** `shared/content/{document-schema,hast,url,derive}.ts` e `shared/content/migrations/index.ts`; a coluna `body` (F05-T1) passou a validar com o schema real.
+- **Dependência:** `@vitest/coverage-v8 ~5.0.5` (dev, MIT) e o script `pnpm test:coverage`, com limite de 90% de branches em `document-schema.ts` e `hast.ts` (medido: 93,5% e 100%).
+- **Testes:** matriz de 59 payloads recusados (mais limites e URLs) e casos válidos em `tests/unit/document-schema.test.ts`, mais `content-hast`, `content-derive` e `content-migrations`; `tests/workers/document-cpu.test.ts` mede o custo no workerd; `tests/support/documents.ts` tem o documento com todos os nós, para as T3 e T4.
+- **Decisões:** ADR-0006, "Decisões da F05-T2".
 
 ---
 

@@ -15,7 +15,7 @@
 
 1. **Formato.** Documento ProseMirror/Tiptap em JSON, com versão de schema (`schemaVersion`) para migrações de conteúdo.
 2. **Fonte única de verdade.** `shared/content/document-schema.ts` (zod) define:
-   - **Nós:** `doc`, `paragraph`, `heading` (níveis 2–4), `bulletList`, `orderedList`, `listItem`, `blockquote`, `horizontalRule`, `hardBreak`, `text`, `codeBlock` (`language`, `code`, `hast`), `image` (`mediaId`, `caption?`, `altOverride?`), `gallery` (`items: mediaId[]`, `layout`), `video` (`mediaId` + `posterId` + `captions[]`, ou `embed`), `embed` (`provider` ∈ allowlist, `externalId`, `title`, `posterMediaId`), `callout` (`tone`) e, como _should_, `table` simples.
+   - **Nós:** `doc`, `paragraph`, `heading` (níveis 2–4), `bulletList`, `orderedList`, `listItem`, `blockquote`, `horizontalRule`, `hardBreak`, `text`, `codeBlock` (`language`, `code`, `hast`), `image` (`mediaId`, `caption?`, `altOverride?`), `gallery` (`items: mediaId[]`, `layout`), `video` (`mediaId`; poster e legendas vêm do registro da mídia, e vídeo externo é um `embed`; decisão da F05-T2), `embed` (`provider` ∈ allowlist, `externalId`, `title`, `posterMediaId`), `callout` (`tone`) e, como _should_, `table` simples.
    - **Marks:** `bold`, `italic`, `strike`, `code`, `link` (`href` validado: `https:`, `http:`, `mailto:` ou relativo; `rel` derivado).
    - Todo bloco tem um `id` estável (extensão UniqueID) para âncoras, diff, mídia e segmentos de tradução.
 3. **Editor (só no admin).**
@@ -43,6 +43,20 @@
    - Publicação: `draft → scheduled → published`, com `unpublished` possível depois de publicado.
    - Tradução: `source | missing | machine | in_review | approved | outdated` ([ADR-0009](0009-traducao-assistida-por-ia.md)).
 8. **Preview.** `/preview/{token}`, com token HMAC (`PREVIEW_TOKEN_SECRET`) contendo `{type, id, locale, revisionId?, exp ≤ 24h}`. Renderiza a cópia de trabalho com `private, no-store` e `noindex`.
+
+## Decisões da F05-T2
+
+- **Código:** `shared/content/document-schema.ts` (schema e `validateDocument`), `hast.ts` (allowlist do HAST), `url.ts` (`contentHref`, `linkRel`), `derive.ts` e `migrations/index.ts`. A coluna `body` valida com esse schema em toda escrita e leitura.
+- **Versão:** `doc.attrs.schemaVersion` (padrão 1, ausente = 1), que o Tiptap emite com um atributo na extensão Document. Migradores puros de n para n + 1 em `shared/content/migrations/`; o v1 → v1 (identidade) documenta o padrão.
+- **Vídeo:** o nó guarda só `{ id, mediaId, caption? }`. O poster e as faixas WebVTT ficam no registro da mídia ([ADR-0007](0007-midia.md), F04-T4), para não haver duas fontes de verdade.
+- **Valores fechados:** `gallery.layout` ∈ `grid` | `stack` (2 a 24 itens); `callout.tone` ∈ `info` | `tip` | `warning` | `danger`; `embed.provider` ∈ `youtube` (ID de 11 caracteres) | `vimeo` (numérico).
+- **Link:** a mark guarda **só** `href`; `rel` é derivado no render (`linkRel`) e `target`/`class` do Tiptap são recusados (o editor da F05-T3 normaliza). `tel:` fica fora, assim como `//host` e `\`.
+- **Tabela simples:** células aceitam só os atributos padrão do Tiptap (`colspan: 1`, `rowspan: 1`, `colwidth: null`) e só parágrafos.
+- **HAST:** o nó guarda o `pre` do Shiki (`pre > code > span*` + texto). `class` vem de uma lista fechada (`shiki`, `shiki-themes`, `line` e os temas `github-light`/`github-dark`, a confirmar na F05-T3); `style` só define as variáveis `--shiki-(light|dark)[-bg]` com cor hex e `--shiki-*-font-style|font-weight|text-decoration` com palavras fixas (`defaultColor: false`). O texto do HAST precisa ser **igual** a `code`.
+- **Limites:** 512 KB de JSON, 5.000 nós e 12 níveis, checados antes do parse completo; código até 32 KB, porque o HAST de um bloco maior não caberia no limite do documento; textos curtos (legenda, alt) até 500 caracteres.
+- **Derivados:** palavras por `Intl.Segmenter` do idioma, sobre texto de prosa, legendas e títulos de embed (código fica fora); tempo de leitura = `ceil(palavras / 220)`, com mínimo de 1; sumário com h2 e h3 e o `id` como âncora; `media_usages` com `image`/`video` → `body`, `gallery` → `gallery` e poster de embed → `poster`.
+- **Segmentos:** um por parágrafo ou heading com texto (conteúdo inline com marks), mais `{id}:caption`, `{id}:alt` e `{id}:title` e campos `field:{nome}`. O hash é o SHA-256 do JSON canônico. Código e IDs de mídia não são segmentos.
+- **Medição:** validar um documento de ~77 KB com todos os tipos de nó leva ~1 ms, e derivar + hashes ~2 ms, no workerd local (o relógio do workerd tem resolução de ms).
 
 ## Alternativas consideradas
 

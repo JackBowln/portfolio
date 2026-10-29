@@ -8,7 +8,7 @@ Portfólio profissional e blog pessoal full-stack com CMS próprio:
 
 **Metas:** Lighthouse 100 nas 4 categorias, WCAG 2.2 AA e custo de ~US$ 0 (plano Free).
 
-**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor), F02-T2 (i18n e rotas nos 5 idiomas) e F02-T3 (SEO base) concluídas: a F02 está completa. F03-T1 (Better Auth), F03-T3 (RBAC), F01-T2 (tokens e temas), F01-T3 (fontes), F01-T4 (componentes base), F03-T2 (passkey + GitHub), F03-T4 (hardening) e F03-T5 (shell do admin) concluídas: a F03 está completa. F01-T5 (layout público e páginas de erro) concluída: a F01 está completa. F04-T1 (schema e API de upload), F04-T2 (pipeline de imagem), F04-T3 (entrega e `<ResponsiveImage>`) e F04-T4 (biblioteca de mídia) concluídas: a F04 está completa. F05-T1 (schema de conteúdo e repositórios) concluída. Próximo passo: **F05-T2** (schema do documento) ([roadmap](docs/roadmap/README.md)).
+**Estado:** F00 concluída (gate cumprido em 2026-10-26: plano Free mantido), F01-T1 concluída (direção visual escolhida); F02-T1 (D1 + Drizzle), F02-T4 (infra do servidor), F02-T2 (i18n e rotas nos 5 idiomas) e F02-T3 (SEO base) concluídas: a F02 está completa. F03-T1 (Better Auth), F03-T3 (RBAC), F01-T2 (tokens e temas), F01-T3 (fontes), F01-T4 (componentes base), F03-T2 (passkey + GitHub), F03-T4 (hardening) e F03-T5 (shell do admin) concluídas: a F03 está completa. F01-T5 (layout público e páginas de erro) concluída: a F01 está completa. F04-T1 (schema e API de upload), F04-T2 (pipeline de imagem), F04-T3 (entrega e `<ResponsiveImage>`) e F04-T4 (biblioteca de mídia) concluídas: a F04 está completa. F05-T1 (schema de conteúdo e repositórios) e F05-T2 (schema do documento e derivados) concluídas. Próximo passo: **F05-T3** (editor Tiptap) ([roadmap](docs/roadmap/README.md)).
 
 ## Onde está cada coisa
 
@@ -46,7 +46,7 @@ Fora da stack, salvo ADR: NuxtHub, Nitro 3, `nuxt-security`, `nuxt-og-image` em 
 
 ## Comandos (criados na F00; confira o `package.json`)
 
-`pnpm dev` · `pnpm build` · `pnpm preview` · `pnpm typecheck` · `pnpm lint` · `pnpm lint:fix` · `pnpm test` (unit + nuxt + workers) · `pnpm test:api` · `pnpm test:e2e` · `pnpm test:a11y` · `pnpm lighthouse` · `pnpm check:budgets` · `pnpm check:i18n` · `pnpm db:generate` · `pnpm db:migrate:local` · `pnpm db:seed` · `pnpm cf:types`
+`pnpm dev` · `pnpm build` · `pnpm preview` · `pnpm typecheck` · `pnpm lint` · `pnpm lint:fix` · `pnpm test` (unit + nuxt + workers) · `pnpm test:coverage` · `pnpm test:api` · `pnpm test:e2e` · `pnpm test:a11y` · `pnpm lighthouse` · `pnpm check:budgets` · `pnpm check:i18n` · `pnpm db:generate` · `pnpm db:migrate:local` · `pnpm db:seed` · `pnpm cf:types`
 
 ## Fronteiras
 
