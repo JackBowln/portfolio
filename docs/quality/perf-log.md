@@ -52,6 +52,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-29 | F01-T5 (não commitado, base `ae475d5`) | R1 / R3 / R6 / E404 | 114,18 / 114,26 / 114,12 / 113,58 | 5,16 | 125 / 120 / 125 / 125 | O `check:budgets` passou a contar o chunk do layout (`layout` em cada rota), que toda página carrega antes de pintar e que ficava de fora desde a F03-T5; o E404 mede o `app/error.vue`, que vai no entry |
 | 2026-10-29 | F04-T2 (não commitado, base `7911158`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,28 | 125 / 120 / 125 | Codecs só no Worker do admin; +0,04 kB de JS (chaves de i18n do admin) e +0,12 kB de CSS (utilitários da tela de envio) |
 | 2026-10-29 | F04-T3 (não commitado, base `036b5ce`) | R1 / R3 / E404 | 114,22 / 114,30 / 113,62 | 5,31 | 125 / 120 / 125 | Os componentes de mídia só entram nas rotas que os usam (nenhuma pública ainda); +0,03 kB de CSS |
+| 2026-10-29 | F04-T4 (não commitado, base `5803662`) | R1 / R3 / E404 | 114,35 / 114,43 / 113,75 | 6,01 | 125 / 120 / 125 | +0,13 kB de JS (chaves de i18n do admin nas mensagens pt-BR) e +0,7 kB de CSS (utilitários das telas do admin no CSS global). Item de acompanhamento: separar mensagens e CSS do admin do público |
 
 ## Pipeline de imagem do admin (F04-T2)
 

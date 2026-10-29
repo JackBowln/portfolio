@@ -6,7 +6,7 @@
 
 **Leitura obrigatória:** [ADR-0007](../architecture/adr/0007-midia.md), [data-model §5](../architecture/data-model.md#5-mídia), [ADR-0012](../architecture/adr/0012-seguranca.md), [accessibility](../quality/accessibility.md).
 
-**Gate de saída:** upload → variantes → finalize → entrega com `<ResponsiveImage>` funcionando de ponta a ponta, todos os casos maliciosos rejeitados e Lighthouse sem avisos de imagem numa página de teste.
+**Gate de saída:** upload → variantes → finalize → entrega com `<ResponsiveImage>` funcionando de ponta a ponta, todos os casos maliciosos rejeitados e Lighthouse sem avisos de imagem numa página de teste. **Cumprido em 2026-10-29** (`tests/api/media.spec.ts`, `tests/e2e/media-pipeline.spec.ts`, `tests/e2e/media-delivery.spec.ts` e o Lighthouse da F04-T3).
 
 ---
 
@@ -121,7 +121,7 @@ com progresso e cancelamento na interface.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F04-T2, F04-T3 | RF-06.3, RF-06.4, RF-06.5, RF-06.6 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
+| concluída | F04-T2, F04-T3 | RF-06.3, RF-06.4, RF-06.5, RF-06.6 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
 
 **Objetivo.** Criar a biblioteca de mídia:
 - grade com busca e filtros (tipo, data, sem alt);
@@ -137,12 +137,20 @@ Inclui também o componente "seletor de mídia", reaproveitado pelo editor (F05-
 **Fora do escopo.** Tradução automática de alt (F09).
 
 **Critérios de aceite**
-- [ ] Alt obrigatório para imagem informativa; a opção "decorativa" é explícita.
-- [ ] Exclusão bloqueada com a lista de onde a mídia é usada.
-- [ ] Interface operável por teclado; axe sem violações sérias ou críticas.
+- [x] Alt obrigatório para imagem informativa; a opção "decorativa" é explícita.
+- [x] Exclusão bloqueada com a lista de onde a mídia é usada.
+- [x] Interface operável por teclado; axe sem violações sérias ou críticas.
 
 **Testes**
 - E2E: upload → editar alt nos 5 idiomas → definir o foco → tentar excluir mídia em uso (bloqueado) → excluir mídia sem uso.
+
+**Resultado (29/10/2026).**
+- **Telas:** `/admin/midia` (grade com miniaturas, busca, tipo, período e "sem alt" na query string, "Carregar mais", envio de imagem e de vídeo) e `/admin/midia/[id]` (prévia, textos por idioma, ponto de foco, usos e exclusão com confirmação).
+- **Componentes** em `app/components/admin/media/`: `MediaMetadataForm`, `FocalPointPicker` (dois sliders nativos e clique na prévia), `MediaUsages`, `DeleteMediaDialog`, `VideoUploader` (poster da biblioteca, WebVTT por idioma, guia de otimização) e `MediaPicker`, o seletor que a F05-T3 reaproveita. `useVideoFile` lê dimensões e duração (também de WebM sem duração no cabeçalho) e calcula o SHA-256.
+- **Servidor:** lista com `from`/`to`, `thumbnailKey` e `missingAlt`; `PATCH` recusa deixar uma imagem informativa sem alt em pt-BR; o detalhe de vídeo traz o `fileKey`.
+- **CSP:** `media-src` ganhou `blob:` só nas páginas `/admin/**`, para ler o vídeo escolhido antes do envio (ADR-0012).
+- **Decisões:** ADR-0007, "Decisões da F04-T4".
+- **Testes:** `tests/e2e/media-library.spec.ts` (o roteiro acima, filtros, vídeo com `MediaPicker` por teclado, 360 px), `tests/api/media.spec.ts` (lista e regras de alt), `tests/nuxt/admin-media.test.ts`, o axe das telas e diálogos e a CSP no `hardening.spec`.
 
 ---
 

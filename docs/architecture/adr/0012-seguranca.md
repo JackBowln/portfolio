@@ -101,6 +101,10 @@
 - **WebAssembly só em Worker:** os codecs do pipeline de imagem rodam num Web Worker, cujo contexto segue a CSP da resposta do script dele, e não a da página. Por isso nenhuma página ganhou `'wasm-unsafe-eval'`: a do admin continua `script-src 'self'` + hashes.
 - **CSP dos scripts em `/_nuxt/`** (`_headers`): `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'`. O navegador ignora CSP em script carregado por `<script>`, então ela só vale quando o script roda como Worker. Até aqui os assets estáticos não tinham CSP nenhuma, e um Worker podia buscar qualquer origem.
 
+### Decisões da F04-T4 (owner, 2026-10-29)
+
+- **`media-src … blob:` só em `/admin/**`:** o envio de vídeo lê dimensões e duração do arquivo escolhido por uma URL `blob:` antes de enviá-lo. Sem isso o navegador recusa o vídeo (erro 4). Libera só mídia local da própria página; `script-src` não muda, e as páginas públicas continuam com `media-src 'self'`.
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |

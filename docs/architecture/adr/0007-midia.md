@@ -100,6 +100,16 @@
 - **SSR:** uma página que busca dados em `/api` precisa de `useRequestFetch()`. Um `$fetch` direto roda numa sub-requisição sem os bindings da Cloudflare (o mesmo que a F03-T4 viu na página de erro). Isso vale para as páginas de conteúdo da F05.
 - **Medido:** Lighthouse na página de teste (`/_test/media`, só no build de teste), com imagens reais do pipeline, sem nenhum aviso de imagem ([perf-log](../../quality/perf-log.md)).
 
+### Decisões da F04-T4 (owner, 2026-10-29)
+
+- **Biblioteca:** a grade lê os filtros da query string (link compartilhável) e mostra a menor WebP de cada item (`thumbnailKey`), sem trazer as variantes; o selo "Sem alt" vem do servidor (`missingAlt`).
+- **Alt:** o formulário exige o alt em pt-BR de uma imagem informativa; "Imagem decorativa" é uma escolha explícita que esconde o campo. Os outros idiomas são opcionais e usam o texto em pt-BR quando vazios. O `PATCH` recusa limpar o alt em pt-BR de uma imagem informativa e desmarcar `decorative` sem alt. Um item recém-enviado ainda pode ficar sem alt: o bloqueio final é na publicação (F05/F06).
+- **Ponto de foco:** dois `input type="range"` com rótulo e `aria-valuetext` em %, mais o clique na prévia como atalho de mouse; recortes 1:1 e 16:9 ao vivo.
+- **Exclusão:** confirmação em `alertdialog` com Cancelar em foco; o botão fica desabilitado, com a explicação, quando há usos; um 409 de corrida recarrega e mostra os usos.
+- **Vídeo:** sem conversão. O navegador lê dimensões e duração pelo `<video>` (buscando o fim quando o cabeçalho não traz a duração, como no WebM do `MediaRecorder`) e calcula o SHA-256. O poster vem só da biblioteca (`MediaPicker`); há uma legenda WebVTT opcional por idioma (`captions`), rotulada com o nome do idioma. O guia de otimização fica na tela.
+- **`MediaPicker`:** `<dialog>` modal com busca e uma lista de botões (teclado nativo), Tab circular e foco devolvido; emite o item escolhido.
+- **Fora:** o tipo `file` (PDF e outros) segue fora do escopo (§4).
+
 ## Alternativas consideradas
 
 | Alternativa | Por que não |
@@ -127,6 +137,7 @@
 
 - F04-T1: testes enviam um polyglot, um SVG renomeado, um arquivo acima do limite e um MIME divergente, e todos são rejeitados. Feito em `tests/api/media.spec.ts` (também tamanho divergente, variante fora do manifesto, legenda com `<script>`, hash repetido, finalize incompleto e RBAC), `tests/unit/magic-bytes.test.ts`, `tests/unit/media-manifest.test.ts` e `tests/workers/media.test.ts`.
 - F04-T2: `tests/unit/media-pipeline.test.ts` (larguras, manifesto, remoção de metadados em JPEG, PNG e WebP) e `tests/e2e/media-pipeline.spec.ts` (nenhum EXIF/GPS sai do navegador, saída idêntica para o mesmo arquivo, 4000×3000 em 8,2 s sem tarefa longa na thread principal, envio e listagem, cancelamento, formato recusado).
+- F04-T4: `tests/e2e/media-library.spec.ts` (envio → alt nos 5 idiomas → foco por teclado → exclusão bloqueada por uso → exclusão sem uso; filtros; vídeo com poster e legenda; 360 px), `tests/api/media.spec.ts` e `tests/nuxt/admin-media.test.ts`.
 - F04-T3: Lighthouse sem "Properly size images" nem "Serve images in modern formats" nas páginas com mídia. Feito na página de teste: `image-delivery-insight`, `unsized-images`, `image-size-responsive`, `image-aspect-ratio` e `lcp-discovery-insight` passam nas 6 execuções (Lighthouse 13 reúne as duas primeiras auditorias em `image-delivery-insight`). Testes: `tests/api/media-delivery.spec.ts`, `tests/e2e/media-delivery.spec.ts`, `tests/nuxt/media.test.ts`, `tests/unit/media-public.test.ts` e `tests/unit/http-range.test.ts`.
 
 ## Referências
