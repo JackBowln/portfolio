@@ -3,7 +3,7 @@
 // never the last passkey without GitHub); this page only explains its answers
 import { AUTH_ERRORS, authClient } from '~/utils/admin/auth-client'
 
-definePageMeta({ i18n: false })
+definePageMeta({ i18n: false, layout: 'admin', middleware: 'admin' })
 
 interface PasskeyRow {
   id: string
@@ -24,14 +24,7 @@ async function load() {
   loaded.value = true
 }
 
-onMounted(async () => {
-  const { data } = await authClient.getSession()
-  if (!data) {
-    await navigateTo('/admin/login')
-    return
-  }
-  await load()
-})
+onMounted(load)
 
 function explain(error: { code?: string } | object) {
   const code = 'code' in error ? error.code : undefined
@@ -70,33 +63,16 @@ async function remove(id: string) {
   await load()
 }
 
-async function signOut() {
-  await authClient.signOut()
-  await navigateTo('/admin/login')
-}
-
 const label = (passkey: PasskeyRow) => passkey.name || t('admin.passkeys.unnamed')
 
 useHead({ title: () => t('admin.passkeys.title'), meta: [{ name: 'robots', content: 'noindex, nofollow' }] })
 </script>
 
 <template>
-  <UiContainer
-    as="main"
-    size="reading"
-    class="grid gap-6 py-section"
-  >
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <UiHeading :level="1">
-        {{ $t('admin.passkeys.title') }}
-      </UiHeading>
-      <UiButton
-        variant="ghost"
-        @click="signOut"
-      >
-        {{ $t('admin.common.signOut') }}
-      </UiButton>
-    </div>
+  <div class="grid gap-6">
+    <UiHeading :level="1">
+      {{ $t('admin.passkeys.title') }}
+    </UiHeading>
     <p>{{ $t('admin.passkeys.intro') }}</p>
 
     <template v-if="loaded">
@@ -151,5 +127,5 @@ useHead({ title: () => t('admin.passkeys.title'), meta: [{ name: 'robots', conte
         <UiLink href="/admin/login">{{ $t('admin.passkeys.signInAgain') }}</UiLink>
       </p>
     </UiStatusMessage>
-  </UiContainer>
+  </div>
 </template>

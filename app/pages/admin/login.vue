@@ -1,16 +1,16 @@
 <script setup lang="ts">
-// Admin sign-in (ADR-0005 §2): passkey first, GitHub (allowlisted owner only) for recovery.
-// The admin SPA shell, layout and route guard arrive in F03-T5
+// Admin sign-in (ADR-0005 §2): passkey first, GitHub (allowlisted owner only) for recovery. No admin layout:
+// there is nobody to show in the header yet
 import { authClient } from '~/utils/admin/auth-client'
 
-definePageMeta({ i18n: false })
+definePageMeta({ i18n: false, layout: false })
 
 const { t } = useI18n()
 const route = useRoute()
 const error = ref(route.query.error ? t('admin.login.githubFailed') : '')
 const busy = ref(false)
 
-const AFTER_LOGIN = '/admin/conta/passkeys'
+const AFTER_LOGIN = '/admin'
 
 async function signInWithPasskey() {
   busy.value = true

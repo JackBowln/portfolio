@@ -88,6 +88,56 @@
       "notFresh": "Por segurança, entre de novo para continuar.",
       "lastPasskey": "Vincule o GitHub antes de remover a última passkey.",
       "signInAgain": "Entrar de novo"
+    },
+    "layout": {
+      "skip": "Ir para o conteúdo",
+      "nav": "Admin",
+      "dashboard": "Painel",
+      "audit": "Auditoria",
+      "passkeys": "Passkeys",
+      "sessions": "Sessões",
+      "signedInAs": "Conectado como {name}"
+    },
+    "dashboard": {
+      "title": "Painel",
+      "intro": "Resumo do conteúdo e das traduções.",
+      "drafts": "Rascunhos",
+      "scheduled": "Agendados",
+      "translations": "Traduções pendentes ou desatualizadas",
+      "aiUsage": "Uso de IA no mês",
+      "placeholder": "[PLACEHOLDER] Disponível quando o conteúdo existir."
+    },
+    "sessions": {
+      "title": "Sessões",
+      "intro": "Dispositivos com sessão aberta neste admin. Revogar encerra o acesso do dispositivo na hora.",
+      "empty": "Nenhuma sessão ativa.",
+      "unknownDevice": "Dispositivo desconhecido",
+      "current": "Este dispositivo",
+      "currentHint": "Use “Sair” para encerrar esta sessão.",
+      "details": "Criada em {created} · último uso em {used} · expira em {expires}",
+      "revoke": "Revogar",
+      "revokeLabel": "Revogar a sessão de {device}",
+      "revoked": "Sessão revogada."
+    },
+    "audit": {
+      "title": "Auditoria",
+      "intro": "Quem fez o quê e quando, do mais recente para o mais antigo.",
+      "filters": "Filtros da auditoria",
+      "from": "De",
+      "to": "Até",
+      "actor": "Quem",
+      "anyActor": "Qualquer pessoa",
+      "action": "Ação",
+      "anyAction": "Qualquer ação",
+      "apply": "Filtrar",
+      "empty": "Nenhum registro para estes filtros.",
+      "more": "Carregar mais",
+      "system": "Sistema",
+      "when": "Quando",
+      "who": "Quem",
+      "what": "Ação",
+      "entity": "Item",
+      "details": "Detalhes"
     }
   }
 }

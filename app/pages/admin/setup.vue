@@ -3,7 +3,7 @@
 // The server decides: /api/setup answers 404 once an owner exists, and GitHub creates a user only with the grant
 import { authClient } from '~/utils/admin/auth-client'
 
-definePageMeta({ i18n: false })
+definePageMeta({ i18n: false, layout: false })
 
 const { t } = useI18n()
 const route = useRoute()

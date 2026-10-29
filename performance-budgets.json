@@ -65,6 +65,8 @@
   },
   "forbiddenInPublicRoutes": [
     "/admin/",
+    "better-auth",
+    "@simplewebauthn/",
     "@tiptap/",
     "/shiki/",
     "@shikijs/",
