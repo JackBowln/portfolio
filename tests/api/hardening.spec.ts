@@ -60,6 +60,18 @@ test.describe('content security policy', () => {
     }
   })
 
+  test('no page may compile WebAssembly; only Web Worker scripts may (the admin image pipeline, F04-T2)', async ({ request }) => {
+    for (const path of ['/', '/admin/login', '/admin/midia']) {
+      const policy = (await request.get(path, { headers: HTML })).headers()['content-security-policy']
+      expect(policy, path).toContain('script-src')
+      expect(policy, path).not.toContain('wasm-unsafe-eval')
+    }
+    const html = await (await request.get('/', { headers: HTML })).text()
+    const script = html.match(/src="(\/_nuxt\/[^"]+\.js)"/)?.[1]
+    // Ignored by browsers for classic and module scripts; it governs a script only when it runs as a worker
+    expect((await request.get(script!)).headers()['content-security-policy']).toBe(`default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'`)
+  })
+
   test('static assets are never sniffed', async ({ request }) => {
     const html = await (await request.get('/', { headers: HTML })).text()
     const script = html.match(/src="(\/_nuxt\/[^"]+\.js)"/)?.[1]

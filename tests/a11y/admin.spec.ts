@@ -8,6 +8,7 @@ const SCREENS = [
   { path: '/admin/conta/sessoes', heading: 'Sessões' },
   { path: '/admin/auditoria', heading: 'Auditoria' },
   { path: '/admin/conta/passkeys', heading: 'Passkeys' },
+  { path: '/admin/midia', heading: 'Mídia' },
 ]
 
 for (const colorScheme of ['light', 'dark'] as const) {
