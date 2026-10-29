@@ -37,6 +37,8 @@ export async function insertMedia(db: Db, row: NewMedia, tracks: NewTrack[]): Pr
 export async function listTracks(db: Db, mediaId: string) {
   return db.select({ locale: mediaTracks.locale, kind: mediaTracks.kind, label: mediaTracks.label, key: mediaTracks.key, size: mediaTracks.size })
     .from(mediaTracks).where(eq(mediaTracks.mediaId, mediaId))
+    // Stable order for the <track> list and the upload plan
+    .orderBy(mediaTracks.locale, mediaTracks.kind)
 }
 
 /** pending → ready, plus the poster use of a video; false if it was no longer pending */

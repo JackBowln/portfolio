@@ -29,6 +29,8 @@ export const cacheTags = {
   tag: (id: string) => `tag:${id}`,
   settings: () => 'settings',
   media: (id: string) => `media:${id}`,
+  // Delivered files are content addressed: the tag is the SHA-256 their keys share (F04-T3)
+  mediaFile: (sha256: string) => `media-file:${sha256}`,
   sitemap: () => 'sitemap',
   rss: (locale: Locale) => `rss:${locale}`,
   redirects: () => 'redirects',
