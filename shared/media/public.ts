@@ -76,3 +76,7 @@ export function toPublicImage(record: ImageRecord, localizations: LocalizationRe
     credit: text?.credit ?? null,
   }
 }
+
+/** One media item as a document renders it; a document carries a map of these by media id */
+export type PublicMedia = { kind: 'image', image: PublicImage } | { kind: 'video', video: PublicVideo }
+export type PublicMediaMap = Record<string, PublicMedia>

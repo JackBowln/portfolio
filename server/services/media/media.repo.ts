@@ -1,7 +1,7 @@
 // Media queries (data-model §5). Deleted rows stay in the table (soft delete) and are hidden from every read here
-import { and, desc, eq, exists, gte, like, lt, ne, notExists, sql } from 'drizzle-orm'
+import { and, desc, eq, exists, gte, inArray, like, lt, ne, notExists, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
-import type { Locale, MediaKind, MediaStatus, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
+import type { Locale, MediaKind, MediaStatus, MediaTrackKind, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { media, mediaLocalizations, mediaTracks, mediaUsages } from '../../db/schema/media.ts'
@@ -175,4 +175,38 @@ export async function findReadyImage(db: Db, id: string): Promise<boolean> {
   const [row] = await db.select({ id: media.id }).from(media)
     .where(and(eq(media.id, id), eq(media.kind, 'image'), eq(media.status, 'ready')))
   return row !== undefined
+}
+
+// D1 binds at most 100 parameters per query
+const IN_LIMIT = 90
+
+function chunked<T>(items: readonly T[]): T[][] {
+  const out: T[][] = []
+  for (let start = 0; start < items.length; start += IN_LIMIT) {
+    out.push(items.slice(start, start + IN_LIMIT))
+  }
+  return out
+}
+
+/** Ready rows among `ids`, with their localizations and tracks: a single D1 batch whatever the count */
+export async function findReadyMediaWithText(db: Db, ids: readonly string[]) {
+  const unique = [...new Set(ids)]
+  if (unique.length === 0) {
+    return { rows: [], localizations: [], tracks: [] }
+  }
+  const groups = chunked(unique)
+  const queries = groups.flatMap(group => [
+    db.select().from(media).where(and(inArray(media.id, group), eq(media.status, 'ready'))),
+    db.select({ mediaId: mediaLocalizations.mediaId, locale: mediaLocalizations.locale, alt: mediaLocalizations.alt, caption: mediaLocalizations.caption, credit: mediaLocalizations.credit })
+      .from(mediaLocalizations).where(inArray(mediaLocalizations.mediaId, group)),
+    db.select({ mediaId: mediaTracks.mediaId, locale: mediaTracks.locale, kind: mediaTracks.kind, label: mediaTracks.label, key: mediaTracks.key })
+      .from(mediaTracks).where(inArray(mediaTracks.mediaId, group)).orderBy(mediaTracks.locale, mediaTracks.kind),
+  ] as const)
+  const results = await db.batch(queries as unknown as [typeof queries[number], ...typeof queries[number][]]) as unknown[][]
+  const at = <T>(offset: number) => results.filter((_, index) => index % 3 === offset).flat() as T[]
+  return {
+    rows: at<MediaRow>(0),
+    localizations: at<{ mediaId: string, locale: Locale, alt: string, caption: string | null, credit: string | null }>(1),
+    tracks: at<{ mediaId: string, locale: Locale, kind: MediaTrackKind, label: string, key: string }>(2),
+  }
 }

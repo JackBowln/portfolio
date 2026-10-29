@@ -32,7 +32,8 @@ interface AnyNode {
   content?: unknown[] | undefined
 }
 
-function inlineText(content: InlineNode[] | undefined): string {
+/** The text of inline content, a hard break counting as a space */
+export function inlineText(content: InlineNode[] | undefined): string {
   return (content ?? []).map(node => (node.type === 'text' ? node.text : ' ')).join('')
 }
 
