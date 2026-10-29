@@ -37,6 +37,10 @@
     },
     "backHome": "Volver a la página de inicio"
   },
+  "media": {
+    "videoFallback": "Este navegador no puede reproducir el vídeo.",
+    "videoDownload": "Descargar el vídeo"
+  },
   "pages": {
     "about": {
       "title": "Sobre mí"

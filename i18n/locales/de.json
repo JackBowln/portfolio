@@ -37,6 +37,10 @@
     },
     "backHome": "Zurück zur Startseite"
   },
+  "media": {
+    "videoFallback": "Dieser Browser kann das Video nicht abspielen.",
+    "videoDownload": "Video herunterladen"
+  },
   "pages": {
     "about": {
       "title": "Über mich"

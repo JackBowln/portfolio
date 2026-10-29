@@ -37,6 +37,10 @@
     },
     "backHome": "Retour à l’accueil"
   },
+  "media": {
+    "videoFallback": "Ce navigateur ne peut pas lire la vidéo.",
+    "videoDownload": "Télécharger la vidéo"
+  },
   "pages": {
     "about": {
       "title": "À propos"

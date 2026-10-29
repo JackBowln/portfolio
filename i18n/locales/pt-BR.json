@@ -37,6 +37,10 @@
     },
     "backHome": "Voltar para a página inicial"
   },
+  "media": {
+    "videoFallback": "Este navegador não reproduz o vídeo.",
+    "videoDownload": "Baixar o vídeo"
+  },
   "pages": {
     "about": {
       "title": "Sobre"

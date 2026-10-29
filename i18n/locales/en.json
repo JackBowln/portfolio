@@ -37,6 +37,10 @@
     },
     "backHome": "Back to the home page"
   },
+  "media": {
+    "videoFallback": "This browser cannot play the video.",
+    "videoDownload": "Download the video"
+  },
   "pages": {
     "about": {
       "title": "About"
