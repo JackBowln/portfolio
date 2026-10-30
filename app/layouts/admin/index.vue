@@ -7,6 +7,7 @@ import { useAdminUser } from '~/utils/admin/session'
 const user = useAdminUser()
 // Hides the link only; /api/admin/audit checks audit:read itself
 const canReadAudit = computed(() => can(user.value?.role ?? '', { audit: ['read'] }))
+const canReadSettings = computed(() => can(user.value?.role ?? '', { settings: ['read'] }))
 
 const links = computed(() => [
   { to: '/admin', label: 'admin.layout.dashboard' },
@@ -15,6 +16,7 @@ const links = computed(() => [
   { to: '/admin/projetos', label: 'admin.layout.projects' },
   { to: '/admin/tecnologias', label: 'admin.layout.technologies' },
   { to: '/admin/midia', label: 'admin.layout.media' },
+  ...(canReadSettings.value ? [{ to: '/admin/configuracoes', label: 'admin.layout.settings' }] : []),
   ...(canReadAudit.value ? [{ to: '/admin/auditoria', label: 'admin.layout.audit' }] : []),
   { to: '/admin/conta/passkeys', label: 'admin.layout.passkeys' },
   { to: '/admin/conta/sessoes', label: 'admin.layout.sessions' },

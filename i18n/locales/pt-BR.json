@@ -22,7 +22,17 @@
     "footer": {
       "nav": "Navegação do rodapé",
       "privacy": "Privacidade",
-      "copyright": "© {year} {name}"
+      "copyright": "© {year} {name}",
+      "social": "Redes e e-mail"
+    },
+    "social": {
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "mastodon": "Mastodon",
+      "bluesky": "Bluesky",
+      "x": "X",
+      "youtube": "YouTube",
+      "website": "Site"
     }
   },
   "errors": {
@@ -145,11 +155,6 @@
   "common": {
     "sampleDate": "Data de exemplo: {date}"
   },
-  "seo": {
-    "siteName": "[PLACEHOLDER]",
-    "titleTemplate": "%s — [PLACEHOLDER]",
-    "defaultDescription": "[PLACEHOLDER]"
-  },
   "admin": {
     "common": {
       "signOut": "Sair",
@@ -204,7 +209,8 @@
       "articles": "Artigos",
       "tags": "Temas",
       "projects": "Projetos",
-      "technologies": "Tecnologias"
+      "technologies": "Tecnologias",
+      "settings": "Configurações"
     },
     "dashboard": {
       "title": "Painel",
@@ -929,6 +935,91 @@
         "deleteText": "O projeto some da lista e o endereço fica livre. Esta ação não pode ser desfeita pelo admin.",
         "deletePublished": "Despublique o projeto antes de excluí-lo.",
         "deleteForbidden": "Você só pode excluir os seus próprios rascunhos."
+      }
+    },
+    "settings": {
+      "title": "Configurações",
+      "intro": "Valem para o site inteiro. Cada seção salva sozinha; a mudança aparece no site em até um minuto.",
+      "readOnly": "Você pode ver as configurações; só owner e admin as alteram.",
+      "saved": "Configuração salva.",
+      "notFresh": "Por segurança, entre de novo (sessão com menos de 15 minutos) para alterar a tradução por IA.",
+      "stale": "Esta seção mudou em outra aba. Recarregue a página para ver a versão salva.",
+      "forbidden": "Você não tem permissão para alterar as configurações.",
+      "invalid": "Algum campo não é válido. Confira links (https://), e-mail e os limites.",
+      "updatedAt": "Salvo em {date} (versão {version}).",
+      "defaults": "Ainda não salvo: o site usa os valores padrão.",
+      "locale": "Idioma do texto",
+      "noTranslation": "Este idioma ainda não tem texto próprio; o site mostra o português.",
+      "translate": "Escrever para este idioma",
+      "removeTranslation": "Voltar a usar o português neste idioma",
+      "save": "Salvar {section}",
+      "discard": "Descartar mudanças",
+      "httpsOnly": "Só links https://.",
+      "identity": {
+        "title": "Identidade",
+        "intro": "O nome aparece no cabeçalho, no rodapé e no título das páginas.",
+        "name": "Nome",
+        "role": "Cargo",
+        "bio": "Bio curta"
+      },
+      "social": {
+        "title": "Redes",
+        "intro": "Aparecem no rodapé, na ordem da lista.",
+        "empty": "Nenhuma rede ainda.",
+        "network": "Rede {number}",
+        "url": "Link da rede {number}",
+        "remove": "Remover a rede {number}",
+        "add": "Adicionar rede"
+      },
+      "contact": {
+        "title": "Contato",
+        "intro": "O e-mail só aparece no site se você marcar a opção.",
+        "email": "E-mail público",
+        "showEmail": "Mostrar o e-mail no rodapé"
+      },
+      "seo": {
+        "title": "SEO",
+        "intro": "Valem quando a página não define os seus.",
+        "ogImage": "Imagem de compartilhamento padrão",
+        "titleTemplate": "Modelo de título",
+        "titleTemplateHint": "%s vira o título da página, por exemplo “%s — Seu nome”.",
+        "description": "Descrição padrão"
+      },
+      "navigation": {
+        "title": "Navegação",
+        "intro": "Páginas do menu principal, na ordem do site. A página de privacidade fica sempre no rodapé.",
+        "up": "Subir {page}",
+        "down": "Descer {page}",
+        "hide": "Tirar do menu: {page}",
+        "hideShort": "Tirar do menu",
+        "show": "Mostrar {page}"
+      },
+      "footer": {
+        "title": "Rodapé",
+        "showSocial": "Mostrar as redes no rodapé",
+        "text": "Texto do rodapé"
+      },
+      "features": {
+        "title": "Recursos",
+        "contactForm": "Formulário de contato",
+        "rss": "RSS do blog"
+      },
+      "ai": {
+        "title": "Tradução por IA",
+        "intro": "Limites do que a tradução pode gastar. Alterar esta seção pede uma entrada recente.",
+        "enabled": "Tradução por IA ligada",
+        "provider": "Provedor: Workers AI (fixo).",
+        "model": "Modelo",
+        "modelHint": "Definido na F09; deixe vazio por enquanto.",
+        "dailyNeuronCap": "Teto diário de neurônios",
+        "dailyNeuronCapHint": "Até {max} (o plano gratuito).",
+        "monthlyBudget": "Orçamento mensal (micro-US$)",
+        "microUsdHint": "0 = nada pago.",
+        "perJobMax": "Máximo por tradução (micro-US$)",
+        "formality": "Tom em {locale}",
+        "notes": "Notas de estilo em {locale}",
+        "informal": "Informal",
+        "formal": "Formal"
       }
     }
   }
