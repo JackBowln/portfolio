@@ -31,6 +31,7 @@
     "lighthouse": "node scripts/lighthouse.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state",
+    "db:migrate:prodlike": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state-prod",
     "db:seed": "node server/db/seed/dev.ts",
     "postinstall": "nuxt prepare"
   },

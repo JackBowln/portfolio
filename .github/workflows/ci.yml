@@ -42,6 +42,8 @@ jobs:
       - run: pnpm check:budgets
       # The preview's local D1 starts empty: the API and E2E suites need the schema (auth since F03, media since F04)
       - run: pnpm db:migrate:local
+      # The production-like instance has its own local D1; the sitemap reads it since F06-T5
+      - run: pnpm db:migrate:prodlike
 
       - run: pnpm exec playwright install --with-deps chromium
       - name: Playwright (api, api-prod, e2e smoke, a11y)
