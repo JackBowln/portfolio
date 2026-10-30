@@ -566,14 +566,9 @@
         "chooseOgImage": "Escolher imagem",
         "removeOgImage": "Remover imagem",
         "noindex": "Pedir aos buscadores para não indexar este artigo",
-        "save": "Salvar",
-        "saving": "Salvando…",
-        "saved": "Alterações salvas.",
         "unsaved": "Há alterações não salvas.",
         "invalid": "Corrija os campos marcados antes de salvar.",
         "slugTaken": "Já existe um artigo com este endereço. Escolha outro.",
-        "stale": "O artigo foi salvo em outra aba ou por outra pessoa. Recarregue para ver a versão atual; suas alterações nesta aba não foram salvas.",
-        "reload": "Recarregar",
         "forbidden": "Você não tem permissão para alterar este artigo.",
         "failed": "Não foi possível salvar. Tente de novo.",
         "delete": "Excluir artigo",
@@ -587,7 +582,16 @@
         "mediaNotReady": "Escolha uma imagem pronta da biblioteca.",
         "bodyInvalid": "O corpo cita uma mídia que não existe mais. Remova o bloco e insira de novo.",
         "topicMissing": "Um dos temas marcados não existe mais. Recarregue a página.",
-        "fieldInvalid": "Valor inválido."
+        "fieldInvalid": "Valor inválido.",
+        "autosave": {
+          "idle": "Salvamento automático ligado.",
+          "pending": "Alterações não salvas…",
+          "saving": "Salvando…",
+          "saved": "Salvo às {time}.",
+          "retrying": "Não salvo: tentando de novo.",
+          "paused": "Salvamento automático pausado."
+        },
+        "saveNow": "Salvar agora"
       }
     },
     "serp": {
@@ -628,6 +632,96 @@
       "pickerEmpty": "Nenhum tema ainda. Crie um abaixo.",
       "pickerNew": "Criar tema",
       "pickerAdd": "Criar e marcar"
+    },
+    "history": {
+      "title": "Histórico",
+      "intro": "Cada salvamento automático, versão salva e restauração. Compare com o texto atual ou restaure uma versão; nada é apagado.",
+      "open": "Mostrar histórico",
+      "empty": "Nenhuma versão ainda.",
+      "item": "Versão {number} ({kind})",
+      "meta": "{author} · {date}",
+      "unknownAuthor": "Autoria desconhecida",
+      "compare": "Comparar",
+      "compareLabel": "Comparar {item} com o texto atual",
+      "compareTitle": "O que mudou de {item} até o texto atual",
+      "currentText": "texto atual",
+      "restore": "Restaurar",
+      "restoreLabel": "Restaurar {item}",
+      "restoreTitle": "Restaurar {item}?",
+      "restoreText": "O texto atual é substituído por esta versão e uma nova versão “restauração” entra no histórico. Nenhuma versão é apagada.",
+      "restored": "Versão {number} restaurada.",
+      "restoreSlugTaken": "O endereço desta versão agora é de outro artigo. Mude o endereço do outro artigo ou restaure outra versão.",
+      "kinds": {
+        "autosave": "salvamento automático",
+        "manual": "versão salva",
+        "publish": "publicação",
+        "restore": "restauração",
+        "ai": "tradução por IA"
+      },
+      "status": {
+        "added": "Adicionado",
+        "removed": "Removido",
+        "changed": "Alterado",
+        "moved": "Movido",
+        "same": "Sem mudança"
+      },
+      "blockTypes": {
+        "paragraph": "Parágrafo",
+        "heading": "Título",
+        "bulletList": "Lista",
+        "orderedList": "Lista numerada",
+        "blockquote": "Citação",
+        "callout": "Destaque",
+        "horizontalRule": "Divisor",
+        "codeBlock": "Bloco de código",
+        "image": "Imagem",
+        "gallery": "Galeria",
+        "video": "Vídeo",
+        "embed": "Vídeo incorporado",
+        "table": "Tabela"
+      },
+      "fields": {
+        "title": "Título",
+        "slug": "Endereço",
+        "excerpt": "Resumo",
+        "seoTitle": "Título SEO",
+        "seoDescription": "Descrição SEO",
+        "noindex": "Não indexar",
+        "coverMediaId": "Capa",
+        "ogImageMediaId": "Imagem de compartilhamento",
+        "tagIds": "Temas"
+      },
+      "diff": {
+        "identical": "Nenhuma diferença.",
+        "direction": "De “{before}” para “{after}”.",
+        "fields": "Campos",
+        "body": "{count} bloco alterado no corpo | {count} blocos alterados no corpo",
+        "added": "inserido",
+        "removed": "removido",
+        "empty": "(vazio)",
+        "noText": "(sem texto)",
+        "yes": "sim",
+        "no": "não",
+        "image": "outra imagem",
+        "deletedTopic": "(tema excluído)"
+      },
+      "version": {
+        "button": "Salvar versão",
+        "title": "Salvar uma versão",
+        "note": "Nota (opcional)",
+        "noteHint": "Ajuda a achar esta versão no histórico, por exemplo “antes da revisão”.",
+        "save": "Salvar versão",
+        "saved": "Versão {number} salva.",
+        "repeated": "Esta versão já estava salva com a mesma nota."
+      },
+      "conflict": {
+        "title": "O artigo foi salvo em outro lugar",
+        "text": "Outra aba ou outra pessoa salvou este artigo depois que você o abriu. O salvamento automático parou e nada foi sobrescrito. Escolha qual versão continua.",
+        "theirs": "versão salva",
+        "mine": "esta aba",
+        "keepMine": "Manter a desta aba",
+        "useTheirs": "Usar a versão salva"
+      }
     }
   }
 }

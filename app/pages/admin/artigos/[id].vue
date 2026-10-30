@@ -1,8 +1,10 @@
 <script setup lang="ts">
 // One article's pt-BR working copy (F06-T1): title and slug (following the title until edited), excerpt, body,
-// cover, topics, SEO with a search-result preview, noindex and featured. Save sends only what changed, with the
-// version read; a 409 on "version" means another tab saved first and nothing here is written. Every rule is the
-// server's; the screen shows the same ones before sending. Autosave and revisions are F06-T2
+// cover, topics, SEO with a search-result preview, noindex and featured. Changes save themselves 2 s after the
+// last edit (F06-T2), sending only what changed with the version read: a 409 on "version" means another tab saved
+// first, so autosave stops and the conflict dialog asks which version stays; nothing is overwritten silently.
+// "Save version" names a point in the history, and the history compares and restores. Every rule is the server's;
+// the screen shows the same ones before sending
 import { can } from '#shared/auth/permissions'
 import { ARTICLE_LIMITS } from '#shared/content/article-input'
 import { canonicalJson } from '#shared/content/canonical-json'
@@ -11,11 +13,18 @@ import { SOURCE_LOCALE } from '#shared/types/enums'
 import { MAX_SLUG_LENGTH, SLUG_PATTERN, slugify } from '#shared/utils/slugify'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
 import TopicPicker from '~/components/admin/articles/TopicPicker.vue'
+import ConflictDialog from '~/components/admin/history/ConflictDialog.vue'
+import HistoryPanel from '~/components/admin/history/HistoryPanel.vue'
+import SaveVersionDialog from '~/components/admin/history/SaveVersionDialog.vue'
 import MediaField from '~/components/admin/media/MediaField.vue'
 import SerpPreview from '~/components/admin/seo/SerpPreview.vue'
+import { useAutosave } from '~/composables/admin/useAutosave'
+import type { SaveOutcome } from '~/composables/admin/useAutosave'
 import type { ArticleDetail, TopicItem } from '~/utils/admin/articles'
 import { apiError, hasIssue } from '~/utils/admin/articles'
+import type { VersionFields } from '~/utils/admin/document-diff'
 import { formatDateTime } from '~/utils/admin/format'
+import type { RevisionItem } from '~/utils/admin/revisions'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
 
 definePageMeta({ i18n: false, layout: 'admin', middleware: 'admin' })
@@ -49,10 +58,15 @@ const saved = ref<Draft>()
 const slugFollows = ref(false)
 // The editor's model changes on open too (missing block ids); only a real edit makes the body unsaved
 const bodyEdited = ref(false)
+// The editor reads its content once: a new key remounts it with a restored or reloaded body
+const editorKey = ref(0)
 const errors = ref<Partial<Record<Field, string>>>({})
-const status = ref<{ tone: 'success' | 'warning' | 'danger', text: string, stale?: boolean }>()
-const saving = ref(false)
+const status = ref<{ tone: 'success' | 'warning' | 'danger', text: string }>()
+const conflict = ref<{ theirs: ArticleDetail, theirFields: VersionFields, mine: VersionFields } | null>(null)
+const historyRefresh = ref(0)
 const confirmDelete = useTemplateRef<InstanceType<typeof ConfirmDialog>>('confirmDelete')
+const conflictDialog = useTemplateRef<InstanceType<typeof ConflictDialog>>('conflictDialog')
+const versionDialog = useTemplateRef<InstanceType<typeof SaveVersionDialog>>('versionDialog')
 
 const copy = computed(() => article.value?.localizations.find(item => item.locale === SOURCE_LOCALE))
 const canDelete = computed(() => can(user.value?.role ?? '', { article: ['delete'] }))
@@ -75,7 +89,36 @@ function draftOf(detail: ArticleDetail): Draft {
 }
 
 // JSON data only; a JSON round trip also reads through the reactive proxies nested in the body
-const clone = (value: Draft): Draft => JSON.parse(JSON.stringify(value)) as Draft
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
+
+/** The draft as the history and the conflict dialog compare versions */
+function fieldsOf(value: Draft): VersionFields {
+  return {
+    title: value.title,
+    slug: value.slug,
+    excerpt: value.excerpt,
+    seoTitle: value.seoTitle.trim() || null,
+    seoDescription: value.seoDescription.trim() || null,
+    ogImageMediaId: value.ogImageMediaId,
+    noindex: value.noindex,
+    coverMediaId: value.coverMediaId,
+    tagIds: value.tagIds,
+    body: value.body ?? { type: 'doc', content: [] },
+  }
+}
+
+/** Shows a version from the server as the working state: the draft, the last save and a fresh editor */
+function apply(detail: ArticleDetail) {
+  article.value = detail
+  draft.value = draftOf(detail)
+  saved.value = clone(draft.value)
+  slugFollows.value = draft.value.slug === slugify(draft.value.title)
+  bodyEdited.value = false
+  errors.value = {}
+  editorKey.value++
+}
 
 async function load() {
   try {
@@ -83,13 +126,8 @@ async function load() {
       adminFetch<ArticleDetail>(`/api/admin/articles/${encodeURIComponent(id.value)}`),
       adminFetch<{ items: TopicItem[] }>('/api/admin/tags'),
     ])
-    article.value = detail
     topics.value = list.items
-    draft.value = draftOf(detail)
-    saved.value = clone(draft.value)
-    slugFollows.value = draft.value.slug === slugify(draft.value.title)
-    bodyEdited.value = false
-    errors.value = {}
+    apply(detail)
   }
   catch {
     missing.value = true
@@ -167,55 +205,166 @@ function messageFor(field: Field): string {
   }
 }
 
-async function save() {
-  if (!draft.value || !copy.value || saving.value) {
-    return
+/** One save of what changed; the autosave decides when */
+async function persist(): Promise<SaveOutcome> {
+  if (!draft.value || !copy.value) {
+    return 'saved'
   }
-  status.value = undefined
   if (!validate()) {
-    status.value = { tone: 'danger', text: t('admin.articles.edit.invalid') }
-    return
+    return 'invalid'
   }
   if (!dirty.value) {
-    status.value = { tone: 'success', text: t('admin.articles.edit.saved') }
-    return
+    return 'saved'
   }
-  saving.value = true
+  const sent = clone(draft.value)
   try {
     const detail = await adminFetch<ArticleDetail>(`/api/admin/articles/${encodeURIComponent(id.value)}`, {
       method: 'PATCH',
       body: { version: copy.value.version, ...changes.value },
     })
     article.value = detail
-    // The server trims text and turns blank SEO fields into null; the body stays as the editor has it
-    const fresh = draftOf(detail)
-    draft.value = { ...fresh, body: draft.value.body }
-    saved.value = clone(draft.value)
-    bodyEdited.value = false
-    status.value = { tone: 'success', text: t('admin.articles.edit.saved') }
+    // Fields untouched while saving take the server's form (trimmed, blank SEO as empty); edits made meanwhile
+    // stay, and so does the body, which the editor owns
+    const fresh: Draft = { ...draftOf(detail), body: sent.body }
+    const now = draft.value
+    for (const key of Object.keys(fresh) as (keyof Draft)[]) {
+      if (key !== 'body' && canonicalJson(now[key] ?? null) === canonicalJson(sent[key] ?? null) && canonicalJson(now[key] ?? null) !== canonicalJson(fresh[key] ?? null)) {
+        (now as unknown as Record<string, unknown>)[key] = fresh[key]
+      }
+    }
+    saved.value = clone(fresh)
+    errors.value = {}
+    if (status.value?.tone === 'danger') {
+      status.value = undefined
+    }
+    return 'saved'
   }
   catch (error) {
     const { status: code, issues } = apiError(error)
     if (code === 409 && hasIssue(issues, 'version')) {
-      status.value = { tone: 'danger', text: t('admin.articles.edit.stale'), stale: true }
+      await openConflict()
+      return 'conflict'
     }
-    else if (code === 409 && hasIssue(issues, 'slug')) {
+    if (code === 409 && hasIssue(issues, 'slug')) {
       errors.value = { slug: t('admin.articles.edit.slugTaken') }
-      status.value = { tone: 'danger', text: t('admin.articles.edit.invalid') }
+      return 'invalid'
     }
-    else if (code === 400 && issues.length > 0) {
+    if (code === 400 && issues.length > 0) {
       errors.value = Object.fromEntries(issues.map(issue => [issue.path.split('.')[0], messageFor(issue.path.split('.')[0] as Field)]))
-      status.value = { tone: 'danger', text: t('admin.articles.edit.invalid') }
+      return 'invalid'
     }
-    else if (code === 403) {
+    if (code === 403) {
       status.value = { tone: 'danger', text: t('admin.articles.edit.forbidden') }
+      return 'invalid'
+    }
+    return 'error'
+  }
+}
+
+const autosave = useAutosave({ dirty, save: persist })
+
+watch(draft, () => {
+  // An edit ends a pause (the next save checks the fields again); a conflict waits for the dialog
+  if (autosave.state.value === 'paused' && !conflict.value) {
+    errors.value = {}
+    autosave.resume()
+  }
+  autosave.changed()
+}, { deep: true })
+
+const autosaveText = computed(() => {
+  const state = autosave.state.value
+  if (state === 'saved' && autosave.savedAt.value) {
+    return t('admin.articles.edit.autosave.saved', { time: autosave.savedAt.value.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) })
+  }
+  if (state === 'paused' && Object.keys(errors.value).length > 0) {
+    return t('admin.articles.edit.invalid')
+  }
+  return t(`admin.articles.edit.autosave.${state}`)
+})
+
+async function saveNow() {
+  if (conflict.value) {
+    conflictDialog.value?.open()
+    return
+  }
+  autosave.resume()
+  await autosave.flush()
+}
+
+async function openConflict() {
+  autosave.pause()
+  const theirs = await adminFetch<ArticleDetail>(`/api/admin/articles/${encodeURIComponent(id.value)}`)
+  conflict.value = { theirs, theirFields: fieldsOf(draftOf(theirs)), mine: fieldsOf(clone(draft.value!)) }
+  conflictDialog.value?.open()
+}
+
+/** Saves this tab's version on top of the other: the changes are now measured against the saved version */
+function keepMine() {
+  const theirs = conflict.value!.theirs
+  article.value = theirs
+  saved.value = draftOf(theirs)
+  bodyEdited.value = true
+  conflict.value = null
+  autosave.resume()
+}
+
+function useTheirs() {
+  apply(conflict.value!.theirs)
+  conflict.value = null
+  autosave.resume()
+}
+
+async function saveVersion(note: string) {
+  await saveNow()
+  if (conflict.value || dirty.value || !copy.value) {
+    return
+  }
+  try {
+    const response = await adminFetch.raw<RevisionItem>(`/api/admin/articles/${encodeURIComponent(id.value)}/revisions`, {
+      method: 'POST',
+      body: { version: copy.value.version, note },
+    })
+    const revision = response._data!
+    status.value = { tone: 'success', text: response.status === 201 ? t('admin.history.version.saved', { number: revision.number }) : t('admin.history.version.repeated') }
+    historyRefresh.value++
+  }
+  catch (error) {
+    const { status: code, issues } = apiError(error)
+    if (code === 409 && hasIssue(issues, 'version')) {
+      await openConflict()
     }
     else {
-      status.value = { tone: 'danger', text: t('admin.articles.edit.failed') }
+      status.value = { tone: 'danger', text: code === 403 ? t('admin.articles.edit.forbidden') : t('admin.common.unexpectedError') }
     }
   }
-  finally {
-    saving.value = false
+}
+
+async function restore(revision: RevisionItem) {
+  await saveNow()
+  if (conflict.value || !copy.value) {
+    return
+  }
+  try {
+    const detail = await adminFetch<ArticleDetail>(`/api/admin/articles/${encodeURIComponent(id.value)}/restore`, {
+      method: 'POST',
+      body: { version: copy.value.version, revisionId: revision.id },
+    })
+    apply(detail)
+    status.value = { tone: 'success', text: t('admin.history.restored', { number: revision.number }) }
+    historyRefresh.value++
+  }
+  catch (error) {
+    const { status: code, issues } = apiError(error)
+    if (code === 409 && hasIssue(issues, 'version')) {
+      await openConflict()
+    }
+    else if (code === 409 && hasIssue(issues, 'slug')) {
+      status.value = { tone: 'danger', text: t('admin.history.restoreSlugTaken') }
+    }
+    else {
+      status.value = { tone: 'danger', text: code === 403 ? t('admin.articles.edit.forbidden') : t('admin.common.unexpectedError') }
+    }
   }
 }
 
@@ -234,7 +383,7 @@ async function remove() {
   }
 }
 
-// Leaving with unsaved changes asks first, in the admin and when closing the tab
+// Leaving saves what is pending first; it asks only if something could not be saved
 const warnBeforeUnload = (event: BeforeUnloadEvent) => {
   if (dirty.value) {
     event.preventDefault()
@@ -242,7 +391,12 @@ const warnBeforeUnload = (event: BeforeUnloadEvent) => {
 }
 onMounted(() => window.addEventListener('beforeunload', warnBeforeUnload))
 onBeforeUnmount(() => window.removeEventListener('beforeunload', warnBeforeUnload))
-onBeforeRouteLeave(() => !dirty.value || window.confirm(t('admin.articles.edit.unsaved')))
+onBeforeRouteLeave(async () => {
+  if (!conflict.value) {
+    await autosave.flush()
+  }
+  return !dirty.value || window.confirm(t('admin.articles.edit.unsaved'))
+})
 
 useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{ name: 'robots', content: 'noindex, nofollow' }] })
 </script>
@@ -266,7 +420,7 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
       v-else-if="draft && copy && article"
       class="grid grid-cols-1 gap-10"
       novalidate
-      @submit.prevent="save"
+      @submit.prevent="saveNow"
     >
       <div class="grid gap-3">
         <UiHeading
@@ -373,6 +527,7 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :message="errors.body"
         />
         <ContentEditor
+          :key="editorKey"
           v-model="draft.body"
           :label="$t('admin.articles.edit.body')"
           @edit="bodyEdited = true"
@@ -479,23 +634,62 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
         />
       </section>
 
+      <section
+        class="grid gap-4"
+        aria-labelledby="article-history"
+      >
+        <UiHeading
+          id="article-history"
+          :level="2"
+          :size="3"
+        >
+          {{ $t('admin.history.title') }}
+        </UiHeading>
+        <p class="text-text-muted">
+          {{ $t('admin.history.intro') }}
+        </p>
+        <details class="grid gap-4">
+          <summary class="inline-flex min-h-(--target-min) cursor-pointer items-center font-strong underline underline-offset-(--underline-offset)">
+            {{ $t('admin.history.open') }}
+          </summary>
+          <HistoryPanel
+            class="mt-4"
+            :article-id="article.id"
+            :current="fieldsOf(draft)"
+            :topics="topics"
+            :refresh="historyRefresh"
+            @restore="restore"
+          />
+        </details>
+      </section>
+
       <div class="sticky bottom-0 z-(--z-header) grid gap-3 border-t border-border bg-bg py-4">
         <div class="flex flex-wrap items-center gap-3">
+          <p
+            class="text-step--1"
+            :class="autosave.state.value === 'retrying' || autosave.state.value === 'paused' ? 'text-danger' : 'text-text-muted'"
+            role="status"
+            data-testid="autosave-status"
+          >
+            {{ autosaveText }}
+          </p>
           <UiButton
             type="submit"
-            :disabled="saving"
+            variant="secondary"
+            size="sm"
           >
-            {{ saving ? $t('admin.articles.edit.saving') : $t('admin.articles.edit.save') }}
+            {{ $t('admin.articles.edit.saveNow') }}
           </UiButton>
-          <p
-            v-if="dirty && !status"
-            class="text-step--1 text-text-muted"
+          <UiButton
+            size="sm"
+            @click="versionDialog?.open()"
           >
-            {{ $t('admin.articles.edit.unsaved') }}
-          </p>
+            {{ $t('admin.history.version.button') }}
+          </UiButton>
           <UiButton
             v-if="canDelete"
             variant="ghost"
+            size="sm"
             class="ms-auto"
             @click="confirmDelete?.open()"
           >
@@ -507,15 +701,6 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :tone="status.tone"
         >
           {{ status.text }}
-          <UiButton
-            v-if="status.stale"
-            variant="secondary"
-            size="sm"
-            class="ms-2"
-            @click="load"
-          >
-            {{ $t('admin.articles.edit.reload') }}
-          </UiButton>
         </UiStatusMessage>
       </div>
     </form>
@@ -526,6 +711,18 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
       :text="$t('admin.articles.edit.deleteText')"
       :confirm-label="$t('admin.articles.edit.deleteConfirm')"
       @confirm="remove"
+    />
+    <SaveVersionDialog
+      ref="versionDialog"
+      @save="saveVersion"
+    />
+    <ConflictDialog
+      ref="conflictDialog"
+      :theirs="conflict?.theirFields ?? null"
+      :mine="conflict?.mine ?? null"
+      :topics="topics"
+      @keep-mine="keepMine"
+      @use-theirs="useTheirs"
     />
   </div>
 </template>
