@@ -38,7 +38,7 @@ test('a preview link shows the saved draft to someone who is not signed in', asy
     await preview.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' })
     await preview.goto(link)
     await expect(preview.getByTestId('preview-band')).toContainText('Pré-visualização')
-    await expect(preview.getByTestId('preview-band')).toContainText('UTC')
+    await expect(preview.getByTestId('preview-band')).toContainText(/BRT|GMT-3/)
     await expect(preview.getByRole('heading', { level: 1, name: title })).toBeVisible()
     await expect(preview.getByText('Primeira versão do texto.')).toBeVisible()
     await expectNoBlockingViolations(preview)
