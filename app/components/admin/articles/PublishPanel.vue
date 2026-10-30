@@ -1,24 +1,37 @@
 <script setup lang="ts">
-// Admin-only. Where the article stands on the site and what can happen next (F06-T4): publish now (or publish the
-// changes), take it off the site, schedule it in the site's time zone, or cancel the schedule. The page saves
+// Admin-only. Where an article or a project stands on the site and what can happen next (F06-T4, F07-T1): publish
+// now (or publish the changes), take it off the site and, for articles, schedule it in the site's time zone or
+// cancel the schedule. The page saves
 // pending changes first (`beforeAction`); the server checks every rule again and the reasons it refuses (an image
 // without alt, a slug another article uses on the site) come back as messages here
 import { can } from '#shared/auth/permissions'
 import { SOURCE_LOCALE } from '#shared/types/enums'
 import { formatInZone, SITE_TIME_ZONE, utcToZoned, zonedToUtc } from '#shared/utils/time-zone'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
-import type { ArticleDetail, ArticleLocalization } from '~/utils/admin/articles'
+import type { ArticleLocalization } from '~/utils/admin/articles'
 import { apiError } from '~/utils/admin/articles'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
 
-const props = defineProps<{ article: ArticleDetail, copy: ArticleLocalization, changed: boolean, beforeAction: () => Promise<boolean> }>()
-const emit = defineEmits<{ updated: [article: ArticleDetail], conflict: [] }>()
+type Detail = Record<string, unknown> & { id: string }
+
+const props = withDefaults(defineProps<{
+  /** The item's admin API, e.g. /api/admin/articles/{id} */
+  apiBase: string
+  resource?: 'article' | 'project'
+  copy: Pick<ArticleLocalization, 'status' | 'version' | 'publishedAt' | 'scheduledAt'>
+  changed: boolean
+  beforeAction: () => Promise<boolean>
+}>(), { resource: 'article' })
+const emit = defineEmits<{ updated: [detail: Detail], conflict: [] }>()
 
 const { t } = useI18n()
 const user = useAdminUser()
 const role = computed(() => user.value?.role ?? '')
-const canPublish = computed(() => can(role.value, { article: ['publish'] }))
-const canSchedule = computed(() => can(role.value, { article: ['schedule'] }))
+const canPublish = computed(() => can(role.value, { [props.resource]: ['publish'] }))
+// Projects are published by hand only (F07-T1, decision 2), and some texts name the type
+const PROJECT_TEXTS = new Set(['unpublishTitle', 'unpublishText', 'published', 'unpublished', 'unavailable', 'slugTaken'])
+const text = (key: string, group = '') => (props.resource === 'project' && PROJECT_TEXTS.has(key) ? t(`admin.publish.project.${key}`) : t(`admin.publish.${group}${key}`))
+const canSchedule = computed(() => props.resource === 'article' && can(role.value, { article: ['schedule'] }))
 const at = ref(utcToZoned(new Date(Date.now() + 24 * 3600 * 1000)).slice(0, 11) + '09:00')
 const message = ref<{ tone: 'success' | 'danger', text: string }>()
 const busy = ref(false)
@@ -49,10 +62,10 @@ function failure(error: unknown): string {
     return t('admin.publish.errors.missingAlt', { count: missingAlt }, missingAlt)
   }
   if (issues.some(issue => issue.message.startsWith('unavailable:'))) {
-    return t('admin.publish.errors.unavailable')
+    return text('unavailable', 'errors.')
   }
   if (issues.some(issue => issue.message === 'published_slug_taken')) {
-    return t('admin.publish.errors.slugTaken')
+    return text('slugTaken', 'errors.')
   }
   if (issues.some(issue => issue.path === 'translationState' || issue.path === 'source')) {
     return t('admin.publish.errors.translation')
@@ -71,8 +84,8 @@ async function act(path: string, body: Record<string, unknown>, done: string) {
       message.value = { tone: 'danger', text: t('admin.preview.unsaved') }
       return
     }
-    const article = await adminFetch<ArticleDetail>(`/api/admin/articles/${encodeURIComponent(props.article.id)}/${path}`, { method: 'POST', body })
-    emit('updated', article)
+    const detail = await adminFetch<Detail>(`${props.apiBase}/${path}`, { method: 'POST', body })
+    emit('updated', detail)
     message.value = { tone: 'success', text: done }
   }
   catch (error) {
@@ -89,8 +102,8 @@ async function act(path: string, body: Record<string, unknown>, done: string) {
   }
 }
 
-const publish = () => act('publish', { locale: SOURCE_LOCALE, version: props.copy.version }, t('admin.publish.done.published'))
-const unpublish = () => act('unpublish', { locale: SOURCE_LOCALE }, t('admin.publish.done.unpublished'))
+const publish = () => act('publish', { locale: SOURCE_LOCALE, version: props.copy.version }, text('published', 'done.'))
+const unpublish = () => act('unpublish', { locale: SOURCE_LOCALE }, text('unpublished', 'done.'))
 const unschedule = () => act('unschedule', { locale: SOURCE_LOCALE }, t('admin.publish.done.unscheduled'))
 
 function schedule() {
@@ -184,8 +197,8 @@ function schedule() {
     </UiStatusMessage>
     <ConfirmDialog
       ref="confirmUnpublish"
-      :title="$t('admin.publish.unpublishTitle')"
-      :text="$t('admin.publish.unpublishText')"
+      :title="text('unpublishTitle')"
+      :text="text('unpublishText')"
       :confirm-label="$t('admin.publish.unpublish')"
       @confirm="unpublish"
     />

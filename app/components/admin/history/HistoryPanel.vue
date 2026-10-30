@@ -1,34 +1,43 @@
 <script setup lang="ts">
-// Admin-only. An article's history (F06-T2, RF-05.5–RF-05.6): every revision with its kind, note, author and time,
+// Admin-only. An article's or a project's history (F06-T2, F07-T1, RF-05.5–RF-05.6), from the item's API (`apiBase`): every revision with its kind, note, author and time,
 // newest first; "compare" shows what changed from that revision to the current text, and "restore" brings it back
 // after a confirmation (a new `restore` revision; nothing is deleted). Loaded when opened
 import { can } from '#shared/auth/permissions'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
 import type { TopicItem } from '~/utils/admin/articles'
-import type { VersionFields } from '~/utils/admin/document-diff'
+import { DIFF_FIELDS } from '~/utils/admin/document-diff'
+import type { AnyVersionFields, DiffField } from '~/utils/admin/document-diff'
 import { formatDateTime } from '~/utils/admin/format'
 import type { RevisionDetail, RevisionItem } from '~/utils/admin/revisions'
 import { versionFieldsOf } from '~/utils/admin/revisions'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
 import RevisionDiff from './RevisionDiff.vue'
 
-const props = defineProps<{ articleId: string, current: VersionFields, topics: TopicItem[], refresh: number }>()
+const props = withDefaults(defineProps<{
+  /** The item's admin API, e.g. /api/admin/articles/{id} */
+  apiBase: string
+  resource?: 'article' | 'project'
+  current: AnyVersionFields
+  topics: TopicItem[]
+  fields?: readonly DiffField[]
+  refresh: number
+}>(), { resource: 'article', fields: () => DIFF_FIELDS })
 const emit = defineEmits<{ restore: [revision: RevisionItem] }>()
 
 const { t } = useI18n()
 const user = useAdminUser()
-const canRestore = computed(() => can(user.value?.role ?? '', { article: ['restore'] }))
+const canRestore = computed(() => can(user.value?.role ?? '', { [props.resource]: ['restore'] }))
 const revisions = ref<RevisionItem[]>([])
 const loaded = ref(false)
 const failed = ref(false)
-const compared = ref<{ revision: RevisionItem, fields: VersionFields } | null>(null)
+const compared = ref<{ revision: RevisionItem, fields: AnyVersionFields } | null>(null)
 const pending = ref<RevisionItem>()
 const confirm = useTemplateRef<InstanceType<typeof ConfirmDialog>>('confirm')
 
 async function load() {
   failed.value = false
   try {
-    revisions.value = (await adminFetch<{ items: RevisionItem[] }>(`/api/admin/articles/${encodeURIComponent(props.articleId)}/revisions`)).items
+    revisions.value = (await adminFetch<{ items: RevisionItem[] }>(`${props.apiBase}/revisions`)).items
     loaded.value = true
   }
   catch {
@@ -39,7 +48,7 @@ onMounted(load)
 watch(() => props.refresh, load)
 
 async function compare(revision: RevisionItem) {
-  const detail = await adminFetch<RevisionDetail>(`/api/admin/articles/${encodeURIComponent(props.articleId)}/revisions/${encodeURIComponent(revision.id)}`)
+  const detail = await adminFetch<RevisionDetail>(`${props.apiBase}/revisions/${encodeURIComponent(revision.id)}`)
   compared.value = { revision, fields: versionFieldsOf(detail.snapshot) }
 }
 
@@ -126,6 +135,7 @@ const label = (revision: RevisionItem) => t('admin.history.item', { number: revi
         :before-label="label(compared.revision)"
         :after-label="$t('admin.history.currentText')"
         :topics="topics"
+        :fields="fields"
       />
     </section>
 

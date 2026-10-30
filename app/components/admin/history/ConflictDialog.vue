@@ -1,12 +1,13 @@
 <script setup lang="ts">
-// Admin-only. Two tabs (or two people) saved the same article: autosave stops and nothing is overwritten until the
+// Admin-only. Two tabs (or two people) saved the same article or project: autosave stops and nothing is overwritten until the
 // owner chooses (F06-T2). The diff shows the saved version against this tab's; "keep mine" saves this tab's on top,
 // "use the saved one" drops this tab's changes. Escape keeps the dialog open: the choice is required
 import type { TopicItem } from '~/utils/admin/articles'
-import type { VersionFields } from '~/utils/admin/document-diff'
+import { DIFF_FIELDS } from '~/utils/admin/document-diff'
+import type { AnyVersionFields, DiffField } from '~/utils/admin/document-diff'
 import RevisionDiff from './RevisionDiff.vue'
 
-defineProps<{ theirs: VersionFields | null, mine: VersionFields | null, topics: TopicItem[] }>()
+withDefaults(defineProps<{ theirs: AnyVersionFields | null, mine: AnyVersionFields | null, topics: TopicItem[], fields?: readonly DiffField[] }>(), { fields: () => DIFF_FIELDS })
 const emit = defineEmits<{ keepMine: [], useTheirs: [] }>()
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
@@ -53,6 +54,7 @@ defineExpose({ open: () => dialog.value?.showModal() })
         :before-label="$t('admin.history.conflict.theirs')"
         :after-label="$t('admin.history.conflict.mine')"
         :topics="topics"
+        :fields="fields"
       />
       <div class="flex flex-wrap gap-3">
         <UiButton @click="choose('keepMine')">

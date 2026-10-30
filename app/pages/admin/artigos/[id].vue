@@ -673,11 +673,11 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           {{ $t('admin.publish.title') }}
         </UiHeading>
         <PublishPanel
-          :article="article"
+          :api-base="`/api/admin/articles/${encodeURIComponent(article.id)}`"
           :copy="copy"
           :changed="unpublishedChanges"
           :before-action="saveBeforePreview"
-          @updated="published"
+          @updated="published($event as unknown as ArticleDetail)"
           @conflict="openConflict"
         />
       </section>
@@ -719,7 +719,7 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           </summary>
           <HistoryPanel
             class="mt-4"
-            :article-id="article.id"
+            :api-base="`/api/admin/articles/${encodeURIComponent(article.id)}`"
             :current="fieldsOf(draft)"
             :topics="topics"
             :refresh="historyRefresh"

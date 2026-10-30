@@ -1,23 +1,38 @@
 <script setup lang="ts">
-// Admin-only. What changed from one version to another (utils/admin/document-diff.ts): the fields, then the body's
+// Admin-only. What changed from one version to another (utils/admin/document-diff.ts): the fields of the type
+// (`fields`, an article's by default), then the body's
 // changed blocks with the words added and removed. Insertions and deletions are words for screen readers as well
 // as colors and strikes (WCAG 1.4.1)
 import type { TopicItem } from '~/utils/admin/articles'
-import { diffVersions } from '~/utils/admin/document-diff'
-import type { DiffField, VersionFields } from '~/utils/admin/document-diff'
+import { DIFF_FIELDS, diffVersions } from '~/utils/admin/document-diff'
+import type { AnyVersionFields, DiffField } from '~/utils/admin/document-diff'
 
-const props = defineProps<{ before: VersionFields, after: VersionFields, beforeLabel: string, afterLabel: string, topics: TopicItem[] }>()
+const props = withDefaults(defineProps<{
+  before: AnyVersionFields
+  after: AnyVersionFields
+  beforeLabel: string
+  afterLabel: string
+  /** Names of the tags the fields refer to (topics, technologies) */
+  topics: TopicItem[]
+  fields?: readonly DiffField[]
+}>(), { fields: () => DIFF_FIELDS })
 const { t } = useI18n()
 
-const diff = computed(() => diffVersions(props.before, props.after))
+const diff = computed(() => diffVersions(props.before, props.after, props.fields))
 const changedBlocks = computed(() => diff.value.blocks.filter(block => block.status !== 'same'))
 
 function show(field: DiffField, value: unknown): string {
   if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
     return t('admin.history.diff.empty')
   }
-  if (field === 'tagIds') {
+  if (field === 'tagIds' || field === 'technologyIds') {
     return (value as string[]).map(id => props.topics.find(topic => topic.id === id)?.name ?? t('admin.history.diff.deletedTopic')).join(', ')
+  }
+  if (field === 'galleryMediaIds') {
+    return t('admin.history.diff.images', { count: (value as string[]).length }, (value as string[]).length)
+  }
+  if (field === 'highlights') {
+    return (value as { label: string, value: string }[]).map(item => `${item.label}: ${item.value}`).join(' · ')
   }
   if (field === 'noindex') {
     return value ? t('admin.history.diff.yes') : t('admin.history.diff.no')

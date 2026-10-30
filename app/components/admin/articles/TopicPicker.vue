@@ -1,14 +1,18 @@
 <script setup lang="ts">
-// Admin-only. The article's topics as checkboxes, plus a field to create one and tick it at once for roles with
-// tag:create (the server decides; this only hides the field)
+// Admin-only. An article's topics or a project's technologies (`kind`, F07-T1) as checkboxes, kept in the order they
+// were ticked, plus a field to create one and tick it at once for roles with tag:create (the server decides; this
+// only hides the field)
 import { can } from '#shared/auth/permissions'
 import { ARTICLE_LIMITS, TAG_NAME_MAX } from '#shared/content/article-input'
+import type { TagKind } from '#shared/types/enums'
 import type { TopicItem } from '~/utils/admin/articles'
 import { apiError, hasIssue } from '~/utils/admin/articles'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
 
 const model = defineModel<string[]>({ required: true })
-const props = defineProps<{ topics: TopicItem[] }>()
+const props = withDefaults(defineProps<{ topics: TopicItem[], kind?: TagKind, max?: number }>(), { kind: 'topic', max: ARTICLE_LIMITS.tags })
+// Topic texts live under admin.tags, technology texts under admin.technologies
+const keys = computed(() => (props.kind === 'topic' ? 'admin.tags' : 'admin.technologies'))
 const emit = defineEmits<{ created: [topic: TopicItem] }>()
 
 const { t } = useI18n()
@@ -24,7 +28,7 @@ function toggle(id: string, checked: boolean) {
 async function create() {
   error.value = undefined
   try {
-    const topic = await adminFetch<Omit<TopicItem, 'uses'>>('/api/admin/tags', { method: 'POST', body: { name: name.value } })
+    const topic = await adminFetch<Omit<TopicItem, 'uses'>>('/api/admin/tags', { method: 'POST', body: { name: name.value, kind: props.kind } })
     emit('created', { ...topic, uses: 0 })
     model.value = [...model.value, topic.id]
     name.value = ''
@@ -39,13 +43,13 @@ async function create() {
 <template>
   <fieldset class="grid gap-3">
     <legend class="font-strong">
-      {{ $t('admin.tags.pickerLegend') }}
+      {{ $t(`${keys}.pickerLegend`) }}
     </legend>
     <p
       v-if="props.topics.length === 0"
       class="text-text-muted"
     >
-      {{ $t('admin.tags.pickerEmpty') }}
+      {{ $t(`${keys}.pickerEmpty`) }}
     </p>
     <ul
       v-else
@@ -60,14 +64,14 @@ async function create() {
             type="checkbox"
             class="size-5 accent-accent"
             :checked="model.includes(topic.id)"
-            :disabled="!model.includes(topic.id) && model.length >= ARTICLE_LIMITS.tags"
+            :disabled="!model.includes(topic.id) && model.length >= props.max"
             @change="toggle(topic.id, ($event.target as HTMLInputElement).checked)"
           >
           {{ topic.name }}
         </label>
       </li>
     </ul>
-    <!-- Not a <form>: the picker sits inside the article's form; Enter creates the topic instead of saving -->
+    <!-- Not a <form>: the picker sits inside the item's form; Enter creates the tag instead of saving -->
     <div
       v-if="canCreate"
       class="flex flex-wrap items-end gap-3"
@@ -75,7 +79,7 @@ async function create() {
     >
       <UiField
         v-slot="field"
-        :label="$t('admin.tags.pickerNew')"
+        :label="$t(`${keys}.pickerNew`)"
         :error="error"
       >
         <UiInput

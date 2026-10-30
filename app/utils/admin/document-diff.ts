@@ -1,5 +1,5 @@
-// Admin-only. What changed between two versions of an article (F06-T2, ADR-0006 §6), computed in the browser: the
-// fields (title, slug, SEO, cover, topics…) and the body block by block, matched by their stable `id` (added,
+// Admin-only. What changed between two versions of an article or a project (F06-T2, F07-T1, ADR-0006 §6), computed
+// in the browser: the fields (title, slug, SEO, cover, topics…; each type lists its own) and the body block by block, matched by their stable `id` (added,
 // removed, changed, moved), with a word diff inside changed blocks. Pure, so it is unit-tested; jsdiff does the
 // sequence work (Myers), which stays fast on long text and code
 import { diffArrays, diffWordsWithSpace } from 'diff'
@@ -7,8 +7,14 @@ import { canonicalJson } from '#shared/content/canonical-json'
 import type { BlockNode, DocumentJson } from '#shared/content/document-schema'
 import { inlineText } from '#shared/content/derive'
 
-/** The fields of a version that the diff compares, as a snapshot holds them */
-export interface VersionFields {
+/** Any version: a body and the fields its type compares, as a snapshot holds them (localization and entity) */
+export interface AnyVersionFields {
+  body: DocumentJson
+  [field: string]: unknown
+}
+
+/** An article's version */
+export interface VersionFields extends AnyVersionFields {
   title: string
   slug: string
   excerpt: string
@@ -22,12 +28,19 @@ export interface VersionFields {
 }
 
 export const DIFF_FIELDS = ['title', 'slug', 'excerpt', 'seoTitle', 'seoDescription', 'noindex', 'coverMediaId', 'ogImageMediaId', 'tagIds'] as const
-export type DiffField = (typeof DIFF_FIELDS)[number]
+
+/** A project's fields, in the order the diff lists them (F07-T1) */
+export const PROJECT_DIFF_FIELDS = [
+  'title', 'slug', 'summary', 'role', 'highlights', 'periodStart', 'periodEnd', 'repoUrl', 'demoUrl',
+  'technologyIds', 'coverMediaId', 'galleryMediaIds', 'seoTitle', 'seoDescription', 'noindex', 'ogImageMediaId',
+] as const
+
+export type DiffField = (typeof DIFF_FIELDS)[number] | (typeof PROJECT_DIFF_FIELDS)[number]
 
 export interface FieldChange {
   field: DiffField
-  before: VersionFields[DiffField]
-  after: VersionFields[DiffField]
+  before: unknown
+  after: unknown
 }
 
 export interface WordPart {
@@ -76,8 +89,8 @@ export function blockText(block: BlockNode | AnyNode): string {
 
 const same = (a: unknown, b: unknown) => canonicalJson(a ?? null) === canonicalJson(b ?? null)
 
-export function diffFields(before: VersionFields, after: VersionFields): FieldChange[] {
-  return DIFF_FIELDS.filter(field => !same(before[field], after[field])).map(field => ({ field, before: before[field], after: after[field] }))
+export function diffFields(before: AnyVersionFields, after: AnyVersionFields, fields: readonly DiffField[] = DIFF_FIELDS): FieldChange[] {
+  return fields.filter(field => !same(before[field], after[field])).map(field => ({ field, before: before[field], after: after[field] }))
 }
 
 function wordsOf(before: string, after: string): WordPart[] | null {
@@ -132,8 +145,8 @@ export interface VersionDiff {
   identical: boolean
 }
 
-export function diffVersions(before: VersionFields, after: VersionFields): VersionDiff {
-  const fields = diffFields(before, after)
+export function diffVersions(before: AnyVersionFields, after: AnyVersionFields, compared: readonly DiffField[] = DIFF_FIELDS): VersionDiff {
+  const fields = diffFields(before, after, compared)
   const blocks = diffBlocks(before.body, after.body)
   return { fields, blocks, identical: fields.length === 0 && blocks.every(block => block.status === 'same') }
 }
