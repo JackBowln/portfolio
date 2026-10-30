@@ -226,7 +226,8 @@ test.describe('topics', () => {
     const duplicate = await editor.request.post('/api/admin/tags', { headers: ORIGIN, data: { name: 'Outro', slug: topic.slug } })
     expect(duplicate.status()).toBe(409)
     expect((await editor.request.post('/api/admin/tags', { headers: ORIGIN, data: { name: '!!!' } })).status()).toBe(400)
-    expect((await editor.request.post('/api/admin/tags', { headers: ORIGIN, data: { name: 'x', kind: 'technology' } })).status()).toBe(400)
+    // An unknown kind is refused; technologies are the other kind since F07-T1 (tests/api/projects.spec.ts)
+    expect((await editor.request.post('/api/admin/tags', { headers: ORIGIN, data: { name: `Tipo ${unique()}`, kind: 'category' } })).status()).toBe(400)
 
     const article = await createArticle(author.request)
     expect((await patch(author.request, article.id, { version: 1, tagIds: [topic.id] })).status()).toBe(200)
