@@ -91,6 +91,29 @@
     "back": "Todos los artículos",
     "articleTopics": "Temas del artículo"
   },
+  "projects": {
+    "title": "Proyectos",
+    "intro": "[PLACEHOLDER]",
+    "empty": "Todavía no hay proyectos publicados.",
+    "filterLabel": "Filtrar por tecnología",
+    "all": "Todos",
+    "filtered": "Proyectos con {name}",
+    "count": "{count} proyecto | {count} proyectos",
+    "details": "Ficha del proyecto",
+    "role": "Rol",
+    "period": "Período",
+    "since": "Desde {date}",
+    "technologies": "Tecnologías",
+    "links": "Enlaces",
+    "repo": "Código en GitHub",
+    "demo": "Ver la demo",
+    "external": "(sitio externo)",
+    "results": "Resultados",
+    "narrative": "Caso de estudio",
+    "gallery": "Galería",
+    "related": "Proyectos relacionados",
+    "back": "Todos los proyectos"
+  },
   "preview": {
     "label": "Vista previa",
     "notice": "Borrador aún no publicado. Este enlace vale hasta {date}.",
@@ -102,9 +125,6 @@
     },
     "projects": {
       "title": "Proyectos"
-    },
-    "project": {
-      "title": "Proyecto"
     },
     "blog": {
       "title": "Blog"

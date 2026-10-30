@@ -31,6 +31,8 @@ export const IMAGE_SIZES = {
   reading: '(min-width: 53rem) 48rem, 100vw',
   readingThird: '(min-width: 53rem) 16rem, 50vw',
   wide: '(min-width: 90rem) 85rem, 100vw',
+  /** Half of the default container, from the lg breakpoint (a two-column grid) */
+  half: '(min-width: 64rem) 42rem, 100vw',
 } as const
 
 /** px, min-width */
