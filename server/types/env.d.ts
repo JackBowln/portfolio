@@ -11,6 +11,8 @@ declare global {
     BOOTSTRAP_TOKEN?: string
     /** HMAC key for the IPs in audit_log; rotated yearly (ADR-0012 §10) */
     IP_HASH_SALT?: string
+    /** HMAC key of preview links (F06-T3); rotating it invalidates every link */
+    PREVIEW_TOKEN_SECRET?: string
   }
 }
 
