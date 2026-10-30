@@ -42,6 +42,12 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-30 | idem | idem | idem | idem | R8 `/de/blog/x` | desktop | 100 | 100 | 100 | 100 | 483 ms | 0 ms | 0,036 | Idem R3 |
 | 2026-10-30 | idem | `pnpm lighthouse --path` / 13.5.0 | idem | idem | `/blog/artigo-de-referencia` | mobile | 96 (±2) | 100 | 100 | 100 | 2600 ms | 4 ms | 0 | Artigo de referência `[PLACEHOLDER]`: documento com todos os tipos de nó, capa e 4 imagens reais do pipeline, vídeo com facade. LCP: a capa (`priority`) |
 | 2026-10-30 | idem | idem | idem | idem | `/blog/artigo-de-referencia` | desktop | 100 | 100 | 100 | 100 | 458 ms | 0 ms | 0,019 | Relatórios em `reports/lighthouse/2026-10-30/{R1,R2,R3,R8,ARTICLE}-*`. R1 remedido depois da mudança das fontes: mobile 97 (±3), desktop 100 |
+| 2026-10-30 | F07-T2 (não commitado, base `87597ba`) | `pnpm lighthouse` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` (D1/R2 locais copiados da instância de teste) | R4 `/projetos` | mobile | 97 (±2) | 100 | 100 | 100 | 2446 ms | 9 ms | 0,024 | Antes: 92 e CLS 0,135: com a fonte web, os botões do filtro quebravam em outro ponto e empurravam a lista; o filtro passou a usar colunas fixas. LCP: a capa do projeto em destaque (`priority`) |
+| 2026-10-30 | idem | idem | idem | idem | R4 `/projetos` | desktop | 100 | 100 | 100 | 100 | 637 ms | 0 ms | 0 | — |
+| 2026-10-30 | idem | idem | idem | idem | R5 `/projetos/x` | mobile | 98 | 100 | 100 | 100 | 1961 ms | 9 ms | 0 | Elemento LCP: `<h1>`. O estudo de caso nunca hidrata (`CaseStudy`) |
+| 2026-10-30 | idem | idem | idem | idem | R5 `/projetos/x` | desktop | 100 | 100 | 100 | 100 | 420 ms | 0 ms | 0,055 | Troca de fonte nos valores `[PLACEHOLDER]` dos resultados (Fraunces grande); mesma pendência de fallback da display (F11) |
+| 2026-10-30 | idem | `pnpm lighthouse --path` / 13.5.0 | idem | idem | `/projetos/projeto-de-referencia` | mobile | 95 (±2) | 100 | 100 | 100 | 2584 ms | 4 ms | 0 | Projeto de referência `[PLACEHOLDER]`: documento com todos os nós, capa, galeria de 3 e imagens reais do pipeline. LCP: a capa |
+| 2026-10-30 | idem | idem | idem | idem | `/projetos/projeto-de-referencia` | desktop | 100 | 100 | 100 | 100 | 598 ms | 0 ms | 0,025 | Relatórios em `reports/lighthouse/2026-10-30/{R4,R5,PROJECT}-*` |
 
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
@@ -72,6 +78,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-10-30 | F06-T4 (não commitado, base `be24a74`) | R1 / R3 / E404 | 116,36 / 116,44 / 115,75 | 6,58 | 125 / 120 / 125 | +0,02 kB (o helper de fuso no chunk do preview). O painel de publicação fica no chunk da tela de edição |
 | 2026-10-30 | F06-T5 (não commitado, base `307147f`) | R1 / R2 / R3 / E404 | 118,52 / 123,07 / 119,85 / 117,91 | 6,57 (R3: 7,92) | 125 / 125 / 120 / 125 | +2,2 kB de JS no entry: as páginas do blog reorganizam os chunks compartilhados (+~2 kB) e o seletor com fallback (+0,2 kB). No R3, o corpo do artigo (`BlogArticleBody`) é `hydrate-never` e o `build:manifest` tira o prefetch/preload dele (sem isso, 124,69/120); os estilos dos blocos foram para `content.css` no layout `reading` (+1,35 kB de CSS só no R3). Margem do R3: 0,15 kB. `ZodError` proibido no JS público: o zod viola a CSP (`Function('')`) |
 | 2026-10-30 | F07-T1 (não commitado, base `c0acd13`) | R1 / R2 / R3 / E404 | 118,75 / 123,30 / 120,07 / 118,14 | 6,59 (R3: 7,95) | 125 / 125 / 121 / 125 | +0,22 kB: os registros das 3 rotas novas do admin (projetos, editor de projeto, tecnologias) no entry público. Medido: os 14 registros de rota do admin pesam 0,68 kB gz em toda rota pública, cerca de 0,05 kB por tela. O owner subiu o R3/R8 para 121 KB; a F11-T6 tira essas rotas do JS público |
+| 2026-10-30 | F07-T2 (não commitado, base `87597ba`) | R1 / R3 / R4 / R5 | 118,87 / 120,31 / 122,42 / 120,06 | 6,93 (R3/R5: 8,29) | 125 / 121 / 125 / 125 | +0,12 kB no entry (as páginas reais de projetos na tabela de rotas); o estudo de caso é `hydrate-never` e sai do prefetch pelo `build:manifest`; o `content.css` entra na página do projeto |
 
 ## Pipeline de imagem do admin (F04-T2)
 

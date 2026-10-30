@@ -75,7 +75,7 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 
 ## 6. Sitemap e feeds
 
-- `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008). Desde a F06-T5, lista o índice do blog nos idiomas com artigo e cada artigo publicado, com os alternates dos idiomas publicados e `lastmod` da versão publicada.
+- `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008). Desde a F06-T5, lista o índice do blog nos idiomas com artigo e cada artigo publicado, com os alternates dos idiomas publicados e `lastmod` da versão publicada; desde a F07-T2, o índice de projetos e os projetos publicados da mesma forma. A lista de projetos filtrada (`?tech=`) é `noindex`, com o canonical na lista inteira. Os nomes de tecnologia aparecem em pt-BR em todos os idiomas até a F09 (nomes próprios).
 - **Entram:** home, índices, artigos, projetos, temas com pelo menos 1 artigo publicado no idioma, sobre, contato e privacidade.
 - `lastmod`: `published_at` da revisão publicada; para índices, o mais recente dos itens.
 - **Não entram:** `/admin`, `/api`, `/preview`, páginas com `noindex`, paginação além da página 1.

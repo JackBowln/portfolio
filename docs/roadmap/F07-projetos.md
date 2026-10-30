@@ -51,7 +51,7 @@ Os serviços de revisão e publicação da F06 são reaproveitados de forma gen�
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F07-T1 | RF-01.3, RF-09.3, RF-09.4, RX-01 | `/frontend-design`, `/i18n-manager`, `/performance-audit` |
+| concluída | F07-T1 | RF-01.3, RF-09.3, RF-09.4, RX-01 | `/frontend-design`, `/i18n-manager`, `/performance-audit` |
 
 **Objetivo.** Criar:
 - `/projetos`: grade editorial e filtro por tecnologia (SSR via query, com ilha mínima, se necessário);
@@ -62,15 +62,23 @@ Os serviços de revisão e publicação da F06 são reaproveitados de forma gen�
 **Fora do escopo.** Transições cinematográficas (F10-T4) e JSON-LD completo (F11-T1).
 
 **Critérios de aceite**
-- [ ] Layout editorial aprovado por você (prints em 390, 1280 e 1920 px no relatório).
-- [ ] Filtro por tecnologia acessível (estado anunciado; funciona sem JS via query).
-- [ ] Alternates, cache tags e ausência de `Set-Cookie` como no blog.
-- [ ] Lighthouse dentro da política na R4 e na R5.
+- [x] Layout editorial aprovado por você (prints em 390, 1280 e 1920 px; aprovado em 30/10/2026) (prints em 390, 1280 e 1920 px no relatório).
+- [x] Filtro por tecnologia acessível (estado anunciado; funciona sem JS via query).
+- [x] Alternates, cache tags e ausência de `Set-Cookie` como no blog.
+- [x] Lighthouse dentro da política na R4 e na R5.
 
 **Testes**
 - E2E: lista → filtro → estudo de caso → link externo com `rel` correto.
 - a11y: axe nas duas páginas.
 - `/performance-audit` na R4 e na R5.
+
+**Resultado (30/10/2026).**
+- **Leitura pública:** `server/services/content/projects-public.{repo,service}.ts` leem só `published_snapshot`, as colunas `published_*` e `project_technologies`; rotas `server/api/public/projects/{index,[slug]}.get.ts` com cache de borda e as tags do ADR-0003; lista na ordem manual, filtro `?tech=<slug>` (desconhecido ou vazio → 404), relacionados por tecnologia em comum (até 3). O sitemap lista o índice de projetos e os projetos publicados.
+- **Páginas:** `/projetos` (o primeiro projeto em destaque na largura do container, depois 2 colunas; a lista filtrada é `noindex` e o canonical aponta para a lista inteira) e `/projetos/[slug]` (título e resumo em 8 colunas, a ficha com papel, período via `Intl.formatRange`, tecnologias e links em 4; resultados em números grandes; narrativa e galeria na medida de leitura; relacionados). O estudo de caso é `CaseStudy` com `hydrate-never`, e a página traz o `content.css`.
+- **Decisões:** nomes de tecnologia em pt-BR em todos os idiomas, por serem nomes próprios (1); `?tech=` igual nos idiomas (2); galeria do renderer, com o diálogo de ampliação (3); links externos na mesma aba com `rel="noopener noreferrer"` e "(site externo)" para leitores de tela (4); relacionados incluídos (5); layout como acima (6).
+- **CLS:** o filtro usa colunas de largura fixa, porque botões em linha quebravam em outro ponto quando a fonte web chegava e empurravam a lista inteira (R4 mobile: CLS 0,135 → 0,024, nota 92 → 97).
+- **Testes:** `tests/workers/projects-public.test.ts`, `tests/api/projects-public.spec.ts`, `tests/e2e/projects-public.spec.ts`, `tests/a11y/projects.spec.ts`; a fixture de teste ganhou o projeto `x` nos 5 idiomas, e as specs que tratavam projetos como esqueleto foram atualizadas.
+- **Gate da F07:** estudo de caso criado, revisado, publicado e exibido de ponta a ponta (E2E), Lighthouse dentro da política na R4 e na R5, e layout aprovado pelo owner em 30/10/2026.
 
 ---
 
