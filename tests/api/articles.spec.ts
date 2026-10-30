@@ -1,4 +1,4 @@
-// F06-T1: the article and topic API over HTTP. Strict validation (unknown fields, bad slugs, hostile documents, media
+// F06-T1 (+ F06-T2): the article and topic API over HTTP. Strict validation (unknown fields, bad slugs, hostile documents, media
 // and topics that do not exist), the 409s a form shows on a field, the author's own-content rule and the
 // tag permissions (security model §4), and one audit row per mutation. Sessions come from the test-only route
 import { randomBytes } from 'node:crypto'
@@ -55,13 +55,11 @@ test.describe('articles', () => {
     expect((await request.delete(`/api/admin/articles/${article.id}`, { headers: ORIGIN })).status()).toBe(200)
     expect((await request.get(`/api/admin/articles/${article.id}`)).status()).toBe(404)
 
-    for (const action of ['article.created', 'article.updated', 'article.deleted']) {
-      const audit = await (await request.get(`/api/admin/audit?action=${action}&limit=100`)).json() as { entries: { entityId: string, metadata: Record<string, string> | null }[] }
-      const entry = audit.entries.find(item => item.entityId === article.id)
-      expect(entry, action).toBeDefined()
-      if (action === 'article.updated') {
-        expect(entry!.metadata).toEqual({ fields: 'title,excerpt,body,seoTitle,noindex' })
-      }
+    // Saves are autosaves (F06-T2, decision 4): their revision records who and when, so the audit log has the
+    // creation and the deletion only
+    for (const action of ['article.created', 'article.deleted']) {
+      const audit = await (await request.get(`/api/admin/audit?action=${action}&limit=100`)).json() as { entries: { entityId: string }[] }
+      expect(audit.entries.some(item => item.entityId === article.id), action).toBe(true)
     }
   })
 
@@ -137,6 +135,80 @@ test.describe('articles', () => {
     const { request } = await session(playwright, baseURL, 'owner')
     const article = await createArticle(request)
     expect((await request.patch(`/api/admin/articles/${article.id}`, { headers: { origin: 'https://evil.example' }, data: { version: 1, title: 'x' } })).status()).toBe(403)
+  })
+})
+
+test.describe('history (F06-T2)', () => {
+  test('named versions and restore: validation, conflicts, permissions and audit', async ({ playwright, baseURL }) => {
+    const owner = await session(playwright, baseURL, 'owner')
+    const article = await createArticle(owner.request)
+    const id = article.id
+    expect((await patch(owner.request, id, { version: 1, title: 'Versão boa' })).status()).toBe(200)
+
+    for (const [name, data] of [
+      ['no version', { note: 'x' }],
+      ['unknown field', { version: 2, kind: 'publish' }],
+      ['note too long', { version: 2, note: 'x'.repeat(201) }],
+    ] as const) {
+      expect((await owner.request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data })).status(), name).toBe(400)
+    }
+    const named = await owner.request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data: { version: 2, note: 'Boa' } })
+    expect(named.status()).toBe(201)
+    const revision = await named.json() as { id: string, number: number, kind: string, note: string }
+    expect(revision).toMatchObject({ kind: 'manual', note: 'Boa' })
+    // The same note on the same content is a repeat
+    expect((await owner.request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data: { version: 2, note: 'Boa' } })).status()).toBe(200)
+    const stale = await owner.request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data: { version: 1, note: null } })
+    expect(stale.status()).toBe(409)
+
+    const list = await (await owner.request.get(`/api/admin/articles/${id}/revisions`)).json() as { items: { id: string, kind: string }[] }
+    expect(list.items.map(item => item.kind)).toEqual(['manual', 'autosave'])
+    const detail = await (await owner.request.get(`/api/admin/articles/${id}/revisions/${revision.id}`)).json()
+    expect(detail.snapshot.localization.title).toBe('Versão boa')
+    expect(detail).not.toHaveProperty('contentHash')
+
+    expect((await patch(owner.request, id, { version: 2, title: 'Versão ruim' })).status()).toBe(200)
+    for (const [name, data, code] of [
+      ['stale version', { version: 2, revisionId: revision.id }, 409],
+      ['revision of another article', { version: 3, revisionId: list.items[1]!.id.replace(/.$/, '0') }, 404],
+      ['not an id', { version: 3, revisionId: 'x' }, 400],
+    ] as const) {
+      expect((await owner.request.post(`/api/admin/articles/${id}/restore`, { headers: ORIGIN, data })).status(), name).toBe(code)
+    }
+    const restored = await owner.request.post(`/api/admin/articles/${id}/restore`, { headers: ORIGIN, data: { version: 3, revisionId: revision.id } })
+    expect(restored.status()).toBe(200)
+    expect((await restored.json()).localizations[0]).toMatchObject({ title: 'Versão boa', version: 4 })
+    const after = await (await owner.request.get(`/api/admin/articles/${id}/revisions`)).json() as { items: { kind: string }[] }
+    expect(after.items.map(item => item.kind)).toEqual(['restore', 'autosave', 'manual', 'autosave'])
+
+    for (const action of ['article.version_saved', 'article.restored']) {
+      const audit = await (await owner.request.get(`/api/admin/audit?action=${action}&limit=100`)).json() as { entries: { entityId: string, metadata: { revision: number } | null }[] }
+      expect(audit.entries.find(item => item.entityId === id)?.metadata, action).toEqual({ revision: revision.number })
+    }
+
+    // Authors only on their own articles; translators and viewers read but never write history
+    const author = await session(playwright, baseURL, 'author')
+    expect((await author.request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data: { version: 4 } })).status()).toBe(403)
+    expect((await author.request.post(`/api/admin/articles/${id}/restore`, { headers: ORIGIN, data: { version: 4, revisionId: revision.id } })).status()).toBe(403)
+    expect((await author.request.get(`/api/admin/articles/${id}/revisions`)).status()).toBe(200)
+    for (const role of ['translator', 'viewer'] as const) {
+      const { request } = await session(playwright, baseURL, role)
+      expect((await request.get(`/api/admin/articles/${id}/revisions/${revision.id}`)).status(), role).toBe(200)
+      expect((await request.post(`/api/admin/articles/${id}/revisions`, { headers: ORIGIN, data: { version: 4 } })).status(), role).toBe(403)
+      expect((await request.post(`/api/admin/articles/${id}/restore`, { headers: ORIGIN, data: { version: 4, revisionId: revision.id } })).status(), role).toBe(403)
+    }
+  })
+
+  test('two sessions saving the same version: the second gets 409 and nothing is overwritten', async ({ playwright, baseURL }) => {
+    const first = await session(playwright, baseURL, 'editor')
+    const second = await session(playwright, baseURL, 'editor')
+    const article = await createArticle(first.request)
+    expect((await patch(first.request, article.id, { version: 1, excerpt: 'Primeira sessão' })).status()).toBe(200)
+    const conflict = await patch(second.request, article.id, { version: 1, excerpt: 'Segunda sessão' })
+    expect(conflict.status()).toBe(409)
+    expect((await conflict.json()).data.issues).toEqual([{ path: 'version', message: 'stale' }])
+    const now = await (await second.request.get(`/api/admin/articles/${article.id}`)).json()
+    expect(now.localizations[0]).toMatchObject({ excerpt: 'Primeira sessão', version: 2 })
   })
 })
 

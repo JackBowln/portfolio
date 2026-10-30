@@ -101,7 +101,8 @@ for (const colorScheme of ['light', 'dark'] as const) {
   })
 }
 
-// F06-T1: the article editor with a cover, a topic and SEO warnings showing, and its delete dialog open
+// F06-T1 (+ F06-T2): the article editor with a cover, a topic and SEO warnings showing, its history and diff, and
+// its dialogs open
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`article editor and its delete dialog have no serious or critical axe violations (${colorScheme})`, async ({ page, context }) => {
     const request = context.request
@@ -110,12 +111,23 @@ for (const colorScheme of ['light', 'dark'] as const) {
     const cover = await readyImage(request, uniqueName('capa', 'jpg'))
     const topic = await (await request.post('/api/admin/tags', { headers: { origin: SITE_ORIGIN }, data: { name: `Tema ${uniqueName('t', 'x')}` } })).json()
     expect((await request.patch(`/api/admin/articles/${created.id}`, { headers: { origin: SITE_ORIGIN }, data: { version: 1, coverMediaId: cover, tagIds: [topic.id], excerpt: 'Curto' } })).status()).toBe(200)
+    expect((await request.patch(`/api/admin/articles/${created.id}`, { headers: { origin: SITE_ORIGIN }, data: { version: 2, title: 'Outro título', excerpt: 'Resumo diferente' } })).status()).toBe(200)
     await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
 
     await page.goto(`/admin/artigos/${created.id}`)
     await expect(page.getByRole('textbox', { name: 'Corpo do artigo' })).toBeVisible()
     await page.waitForLoadState('networkidle')
     await expectNoBlockingViolations(page)
+
+    // F06-T2: the history with a diff showing, and the "save version" dialog
+    await page.getByText('Mostrar histórico').click()
+    await page.getByTestId('history-list').getByRole('button', { name: /^Comparar/ }).first().click()
+    await expect(page.getByTestId('revision-diff')).toBeVisible()
+    await expectNoBlockingViolations(page)
+    await page.getByRole('button', { name: 'Salvar versão' }).click()
+    await expect(page.getByRole('dialog', { name: 'Salvar uma versão' })).toBeVisible()
+    await expectNoBlockingViolations(page)
+    await page.keyboard.press('Escape')
 
     await page.getByRole('button', { name: 'Excluir artigo' }).click()
     await expect(page.getByRole('alertdialog')).toBeVisible()

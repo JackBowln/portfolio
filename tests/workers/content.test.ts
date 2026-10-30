@@ -231,19 +231,24 @@ describe('revisions', () => {
     // Same content with keys in another order: no new revision
     const reordered = { localization: { ...Object.fromEntries(Object.entries(snapshot.localization).reverse()) }, entity: snapshot.entity }
     expect(await createRevision(db, 'article', { ...base, kind: 'autosave', snapshot: reordered as typeof snapshot })).toEqual({ created: false, revision: first.revision })
-    expect(await createRevision(db, 'article', { ...base, kind: 'manual', snapshot })).toEqual({ created: false, revision: first.revision })
+    // F06-T2, decision 3: a manual version is kept even when an autosave holds its content; only a repeat of the
+    // latest manual version with the same note is dropped
+    const manual = await createRevision(db, 'article', { ...base, kind: 'manual', snapshot, note: 'Antes da revisão' })
+    expect(manual).toMatchObject({ created: true, revision: { number: 2, kind: 'manual', note: 'Antes da revisão' } })
+    expect(await createRevision(db, 'article', { ...base, kind: 'manual', snapshot, note: 'Antes da revisão' })).toEqual({ created: false, revision: manual.revision })
+    expect(await createRevision(db, 'article', { ...base, kind: 'manual', snapshot, note: 'Outra nota' })).toMatchObject({ created: true, revision: { number: 3 } })
 
     // Publish always records its event
     const published = await createRevision(db, 'article', { ...base, kind: 'publish', snapshot })
-    expect(published).toMatchObject({ created: true, revision: { number: 2, kind: 'publish' } })
+    expect(published).toMatchObject({ created: true, revision: { number: 4, kind: 'publish' } })
 
     const changed = { ...snapshot, localization: { ...snapshot.localization, title: 'Outro título' } }
     const third = await createRevision(db, 'article', { ...base, kind: 'autosave', snapshot: changed, note: null })
-    expect(third).toMatchObject({ created: true, revision: { number: 3 } })
+    expect(third).toMatchObject({ created: true, revision: { number: 5 } })
     // An autosave that goes back to older content is new again: only the latest counts
-    expect(await createRevision(db, 'article', { ...base, kind: 'autosave', snapshot })).toMatchObject({ created: true, revision: { number: 4 } })
+    expect(await createRevision(db, 'article', { ...base, kind: 'autosave', snapshot })).toMatchObject({ created: true, revision: { number: 6 } })
 
-    expect((await listRevisions(db, 'article', row.id)).map(revision => revision.number)).toEqual([4, 3, 2, 1])
+    expect((await listRevisions(db, 'article', row.id)).map(revision => revision.number)).toEqual([6, 5, 4, 3, 2, 1])
     // Numbers restart for another localization
     const other = await localization(row.articleId, 'en')
     expect((await createRevision(db, 'article', { localizationId: other.id, entityId: other.articleId, locale: 'en', kind: 'manual', snapshot: snapshotOf('article', NO_ENTITY, other) })).revision.number).toBe(1)
