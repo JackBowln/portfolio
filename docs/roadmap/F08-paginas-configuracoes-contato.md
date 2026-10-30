@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06 (gate) | RF-08.1, RF-08.2, RF-08.3, RF-08.4, RF-08.5, RF-08.6 | `/cms-engineer`, `/security-audit` |
+| concluída | F06 (gate) | RF-08.1, RF-08.2, RF-08.3, RF-08.4, RF-08.5, RF-08.6 | `/cms-engineer`, `/security-audit` |
 
 **Objetivo.** Criar:
 - um schema zod por chave de `site_settings` (identity, social, contact, seo_defaults, navigation, footer, ai_translation, features), com as partes localizadas;
@@ -29,14 +29,22 @@ Mudar `ai_translation` exige sessão fresca.
 **Fora do escopo.** A lógica de tradução que consome `ai_translation` (F09).
 
 **Critérios de aceite**
-- [ ] Salvar configurações purga `settings` e a página pública reflete a mudança em ≤ 60 s (no preview, quando houver).
-- [ ] `settings:update` só para `owner` e `admin`; alterar `ai_translation` exige sessão fresca (testado).
-- [ ] Os padrões de `ai_translation` são seguros: `dailyNeuronCap` 8000, `monthlyBudgetMicroUsd` 0 e `provider` fixo em `workers-ai`.
+- [x] Salvar configurações purga `settings` e a página pública reflete a mudança em ≤ 60 s (local: na próxima requisição; no preview, a medir no primeiro deploy).
+- [x] `settings:update` só para `owner` e `admin`; alterar `ai_translation` exige sessão fresca (testado).
+- [x] Os padrões de `ai_translation` são seguros: `dailyNeuronCap` 8000, `monthlyBudgetMicroUsd` 0 e `provider` fixo em `workers-ai`.
 
 **Testes**
 - Unit: schemas por chave.
 - API: permissões, sessão fresca e validação.
 - E2E: mudar o rodapé → o público atualiza.
+
+**Resultado (30/10/2026).**
+- **Schemas:** `shared/settings/schemas.ts` (parte global, parte por idioma, padrões e se a chave é pública, para as 8 chaves), `shared/settings/input.ts` (corpo estrito do salvamento) e `shared/settings/public.ts` (o que o site lê, e os padrões sem zod para o JS público).
+- **Servidor:** `server/services/settings/settings.{repo,service}.ts`; `GET /api/admin/settings` (`settings:read`), `PUT /api/admin/settings/[key]` (`settings:update`, versão lida com 409, `requireFreshSession` em `ai_translation`, auditoria `settings.updated` só com chave, versão e idiomas, purge `settings`) e `GET /api/public/settings` (chaves públicas resolvidas: idioma, depois pt-BR, depois o padrão; nunca `ai_translation`).
+- **Site:** o `SiteShell` carrega as configurações do idioma no SSR (e de novo ao trocar de idioma no navegador); cabeçalho, navegação (ordem e páginas visíveis), rodapé (texto, redes, e-mail público), `usePageSeo` (modelo de título, `og:site_name`, imagem OG padrão já resolvida no servidor), home e RSS (`features.rss`) as leem. As páginas somam a tag `settings` às suas; respostas privadas não levam tags. As chaves `seo.*` da i18n saíram.
+- **Admin:** `/admin/configuracoes`, uma seção por chave com versão própria e, nas partes traduzíveis, um seletor de idioma (sem texto próprio, o idioma usa o pt-BR).
+- **Orçamento:** as configurações no layout somam ~1,37 kB a toda rota; mesmo com a F11-T6 adiantada (−0,79 kB), R3/R8 ficaram em 120,88, e o owner subiu o limite deles para 121 KB (performance-budgets §4).
+- **Testes:** `tests/unit/settings.test.ts`, `tests/workers/settings-service.test.ts`, `tests/api/settings.spec.ts`, `tests/e2e/settings.spec.ts` e a tela nova em `tests/a11y/admin.spec.ts`.
 
 ---
 

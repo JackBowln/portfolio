@@ -233,6 +233,8 @@ Desde a F07-T1: o autor de um projeto, para as permissões 🟡, é o `created_b
 | `contact_messages` | `id`, `name`, `email`, `message`, `locale`, `status` (`new`/`read`/`archived`/`spam`), `ip_hash`, `created_at`, `read_at`, `deleted_at` | Retenção de 12 meses (cron) |
 | `audit_log` | `id`, `actor_user_id` (nulo = sistema), `action` (`article.publish`, `auth.login_failed`…), `entity_type`, `entity_id`, `locale`, `metadata` json (sem segredos nem PII), `ip_hash`, `created_at` | Índices `(created_at DESC)`, `(entity_type, entity_id)`; retenção de 12 meses |
 
+Desde a F08-T1, os schemas ficam em `shared/settings/schemas.ts`: cada chave tem uma parte global (`site_settings.value`), uma parte por idioma quando é traduzível (`identity`: cargo e bio; `seo_defaults`: modelo de título e descrição; `footer`: texto), padrões e a marca de pública. A leitura pública resolve o idioma, depois o pt-BR, depois o padrão; um valor salvo que não passe mais no schema é lido como o padrão. Um salvamento grava a parte global com a versão lida e os idiomas alterados num `db.batch` (o texto escrito pelo owner num idioma fica `approved`).
+
 ### `site_settings.ai_translation` (exemplo do schema)
 
 ```ts

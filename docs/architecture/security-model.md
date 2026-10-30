@@ -71,6 +71,7 @@ A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/per
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
 - **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
+- **Configurações** (F08-T1): ler é `settings:read`; salvar é `settings:update` (owner e admin), por chave e com a versão lida. `ai_translation` decide o que o site gasta, então também exige sessão fresca (`requireFreshSession`, 15 min), tem `provider` fixo em `workers-ai` e teto diário ≤ 10.000 neurônios, e nunca sai na rota pública. A auditoria `settings.updated` guarda chave, versão e idiomas, nunca os valores.
 - **Projetos** (F07-T1): o autor de um projeto é quem o criou (`created_by`), para os escopos 🟡. A ordem manual (`PUT /api/admin/projects/order`) muda a posição de projetos de outras pessoas no site, por isso exige `project:publish`.
 - **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.
 - **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
