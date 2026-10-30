@@ -103,7 +103,8 @@
   "admin": {
     "common": {
       "signOut": "Sair",
-      "unexpectedError": "Algo deu errado. Tente de novo."
+      "unexpectedError": "Algo deu errado. Tente de novo.",
+      "confirmCancel": "Cancelar"
     },
     "login": {
       "title": "Entrar no admin",
@@ -149,7 +150,9 @@
       "passkeys": "Passkeys",
       "sessions": "Sessões",
       "signedInAs": "Conectado como {name}",
-      "media": "Mídia"
+      "media": "Mídia",
+      "articles": "Artigos",
+      "tags": "Temas"
     },
     "dashboard": {
       "title": "Painel",
@@ -481,6 +484,150 @@
         "posterRequired": "Escolha uma imagem de capa da biblioteca.",
         "insert": "Incorporar"
       }
+    },
+    "articles": {
+      "title": "Artigos",
+      "intro": "Rascunhos e artigos publicados, do mais recente para o mais antigo.",
+      "create": {
+        "title": "Novo artigo",
+        "label": "Título do novo artigo",
+        "submit": "Criar e abrir",
+        "failed": "Não foi possível criar o artigo."
+      },
+      "filters": {
+        "legend": "Filtros dos artigos",
+        "status": "Status",
+        "anyStatus": "Qualquer status",
+        "locale": "Idioma",
+        "anyLocale": "Qualquer idioma",
+        "translation": "Tradução",
+        "anyTranslation": "Qualquer estado",
+        "apply": "Filtrar"
+      },
+      "statuses": {
+        "draft": "Rascunho",
+        "scheduled": "Agendado",
+        "published": "Publicado",
+        "unpublished": "Despublicado"
+      },
+      "translationStates": {
+        "source": "Original",
+        "missing": "Sem tradução",
+        "machine": "Traduzido por IA",
+        "in_review": "Em revisão",
+        "approved": "Aprovado",
+        "outdated": "Desatualizado"
+      },
+      "locales": {
+        "pt-BR": "Português",
+        "en": "Inglês",
+        "es": "Espanhol",
+        "de": "Alemão",
+        "fr": "Francês"
+      },
+      "table": {
+        "caption": "Artigos",
+        "title": "Título",
+        "status": "Status",
+        "locales": "Idiomas",
+        "author": "Autoria",
+        "updated": "Atualizado em"
+      },
+      "untitled": "(sem título)",
+      "empty": "Nenhum artigo para estes filtros.",
+      "more": "Carregar mais",
+      "edit": {
+        "back": "Voltar para os artigos",
+        "notFound": "Artigo não encontrado. Ele pode ter sido excluído.",
+        "meta": "{status} · versão {version} · {words} palavras · atualizado em {date}",
+        "content": "Conteúdo",
+        "titleField": "Título",
+        "slug": "Endereço (slug)",
+        "slugHint": "Aparece no endereço do artigo: /blog/{slug}. Só letras minúsculas, números e hífens.",
+        "slugFollows": "O endereço acompanha o título enquanto você não o editar.",
+        "slugFromTitle": "Gerar do título",
+        "excerpt": "Resumo",
+        "excerptHint": "Mostrado nas listas e usado como descrição quando a descrição SEO está vazia. Até {max} caracteres.",
+        "body": "Corpo do artigo",
+        "cover": "Capa",
+        "coverNone": "Sem capa.",
+        "chooseCover": "Escolher capa",
+        "changeCover": "Trocar capa",
+        "removeCover": "Remover capa",
+        "topics": "Temas",
+        "featured": "Destacar na página inicial",
+        "seo": "Busca e compartilhamento",
+        "seoTitle": "Título SEO",
+        "seoTitleHint": "Vazio usa o título do artigo.",
+        "seoDescription": "Descrição SEO",
+        "seoDescriptionHint": "Vazio usa o resumo.",
+        "ogImage": "Imagem de compartilhamento",
+        "ogImageNone": "Sem imagem própria: usa a capa.",
+        "chooseOgImage": "Escolher imagem",
+        "removeOgImage": "Remover imagem",
+        "noindex": "Pedir aos buscadores para não indexar este artigo",
+        "save": "Salvar",
+        "saving": "Salvando…",
+        "saved": "Alterações salvas.",
+        "unsaved": "Há alterações não salvas.",
+        "invalid": "Corrija os campos marcados antes de salvar.",
+        "slugTaken": "Já existe um artigo com este endereço. Escolha outro.",
+        "stale": "O artigo foi salvo em outra aba ou por outra pessoa. Recarregue para ver a versão atual; suas alterações nesta aba não foram salvas.",
+        "reload": "Recarregar",
+        "forbidden": "Você não tem permissão para alterar este artigo.",
+        "failed": "Não foi possível salvar. Tente de novo.",
+        "delete": "Excluir artigo",
+        "deleteTitle": "Excluir este artigo?",
+        "deleteText": "O artigo some da lista e o endereço fica livre. Esta ação não pode ser desfeita pelo admin.",
+        "deleteConfirm": "Excluir",
+        "deletePublished": "Despublique o artigo antes de excluí-lo.",
+        "deleteForbidden": "Você só pode excluir os seus próprios rascunhos.",
+        "titleRequired": "Informe o título.",
+        "slugInvalid": "Use só letras minúsculas sem acento, números e hífens simples, até 80 caracteres.",
+        "mediaNotReady": "Escolha uma imagem pronta da biblioteca.",
+        "bodyInvalid": "O corpo cita uma mídia que não existe mais. Remova o bloco e insira de novo.",
+        "topicMissing": "Um dos temas marcados não existe mais. Recarregue a página.",
+        "fieldInvalid": "Valor inválido."
+      }
+    },
+    "serp": {
+      "title": "Prévia no resultado de busca",
+      "intro": "Aproximação de como o artigo aparece no Google.",
+      "titleCount": "Título: {count} de até {max} caracteres",
+      "titleLong": "O título passa de {max} caracteres e pode ser cortado.",
+      "descriptionCount": "Descrição: {count} caracteres (recomendado de {min} a {max})",
+      "descriptionShort": "A descrição tem menos de {min} caracteres; o buscador pode escolher outro trecho.",
+      "descriptionLong": "A descrição passa de {max} caracteres e pode ser cortada.",
+      "noindex": "Com “não indexar”, o artigo não aparece nos resultados."
+    },
+    "tags": {
+      "title": "Temas",
+      "intro": "Temas agrupam artigos no blog. Renomear um tema muda todos os artigos que o usam.",
+      "create": "Novo tema",
+      "name": "Nome do tema",
+      "add": "Adicionar tema",
+      "created": "Tema “{name}” criado.",
+      "slugTaken": "Já existe um tema com este endereço.",
+      "invalidName": "O nome precisa de pelo menos uma letra ou número.",
+      "table": {
+        "caption": "Temas",
+        "name": "Nome",
+        "slug": "Endereço",
+        "uses": "Artigos",
+        "actions": "Ações"
+      },
+      "rename": "Renomear {name}",
+      "renameSave": "Salvar nome",
+      "renamed": "Tema renomeado.",
+      "delete": "Excluir {name}",
+      "deleted": "Tema excluído.",
+      "inUse": "Este tema está em {count} artigo; tire-o desse artigo antes de excluir. | Este tema está em {count} artigos; tire-o desses artigos antes de excluir.",
+      "forbidden": "Você não tem permissão para esta ação.",
+      "empty": "Nenhum tema ainda.",
+      "pickerLegend": "Temas do artigo",
+      "pickerEmpty": "Nenhum tema ainda. Crie um abaixo.",
+      "pickerNew": "Criar tema",
+      "pickerAdd": "Criar e marcar"
     }
   }
 }
