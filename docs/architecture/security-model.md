@@ -37,7 +37,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 |---|---|---|
 | **S**poofing | Roubo de sessão; login por conta GitHub alheia | Cookies `HttpOnly/Secure/SameSite=Lax`; allowlist por ID numérico; passkey resistente a phishing |
 | **T**ampering | Alterar conteúdo via CSRF; payload malicioso no documento | Origem + JSON + SameSite; schema estrito; revisões imutáveis |
-| **R**epudiation | Ação administrativa sem rastro | `audit_log` em toda mutação, com ator, ação, entidade e hash de IP |
+| **R**epudiation | Ação administrativa sem rastro | `audit_log` em toda mutação, com ator, ação, entidade e hash de IP; o autosave de conteúdo é registrado pela própria revisão (autor e hora), não pelo `audit_log` (F06-T2) |
 | **I**nformation disclosure | Vazamento de rascunho, segredo ou stack trace | Público lê só snapshots publicados; erros genéricos; segredos fora do cliente; logs sem PII |
 | **D**enial of service | Abuso do formulário, do login ou de traduções esgotando cotas | Rate limits, Turnstile, guarda de custo de IA, cache de borda |
 | **E**levation of privilege | Papel `author` publicando; rota admin sem checagem | `requirePermission` por handler + meta-teste de cobertura; checagem de propriedade |

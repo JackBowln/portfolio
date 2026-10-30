@@ -132,7 +132,7 @@ O mesmo padrão vale para artigos, projetos e páginas:
 
 **Índices:** `UNIQUE(localization_id, number)`; `(localization_id, created_at DESC)`.
 
-**Retenção:** `manual`, `publish`, `restore` e `ai` são permanentes. Para `autosave`, ficam no máximo as 10 mais recentes por localização, e nenhuma com mais de 14 dias; a poda é feita pelo cron.
+**Retenção:** `manual`, `publish`, `restore` e `ai` são permanentes. Para `autosave`, ficam no máximo as 10 mais recentes por localização, e nenhuma com mais de 14 dias; a poda é feita pelo cron (§4.10). Um autosave apontado como publicado ou como origem de tradução nunca é podado.
 
 ### 4.4 Temas na versão publicada: `article_tags`
 
@@ -179,7 +179,7 @@ O mesmo padrão vale para artigos, projetos e páginas:
 - **Páginas:** `page_localizations` não tem título, slug, palavras nem sumário; só `blocks`, SEO e as colunas de publicação. `published_snapshot` basta para a leitura pública.
 - **Snapshot:** `{ entity, localization }` (`shared/content/snapshot.ts`, zod `strict`). Artigo: capa e temas + título, slug, resumo, corpo e SEO. Projeto: capa, galeria, tecnologias, período e URLs + título, slug, resumo, papel, corpo, destaques e SEO. Página: só `blocks` e SEO. `working_hash` é o hash do snapshot da cópia de trabalho, o mesmo de uma revisão com aquele conteúdo.
 - **Schemas provisórios:** `body` só valida a forma externa do documento (`type: 'doc'`) até a F05-T2; `blocks` aceita qualquer JSON até os schemas por `PageKey` da F08.
-- **Deduplicação:** `autosave` e `manual` idênticos à revisão **mais recente** não geram linha (a função devolve a existente). `publish`, `restore` e `ai` sempre geram, porque registram um evento.
+- **Deduplicação:** `autosave` idêntico à revisão **mais recente** não gera linha (a função devolve a existente). `publish`, `restore` e `ai` sempre geram, porque registram um evento. A regra de `manual` mudou na F06-T2 (§4.10).
 - **Número da revisão:** calculado no próprio `INSERT` (subconsulta `max + 1`), com `UNIQUE(localization_id, number)` como rede.
 - **FK circular:** `published_revision_id`/`source_revision_id` → revisões e `localization_id` → localizações; o SQLite aceita, e revisões publicadas nunca são podadas.
 - **CHECKs:** `translation_state = 'source'` ⇔ `locale = 'pt-BR'`; `status = 'scheduled'` exige `scheduled_at`; `published_revision_id`, `published_snapshot` e `published_slug` são nulos juntos; período `YYYY-MM` e URLs `https:` em projetos e temas.
@@ -193,6 +193,14 @@ O mesmo padrão vale para artigos, projetos e páginas:
 - **Excluir:** lógico, na entidade e nas localizações, e os `media_usages` do artigo saem; o slug fica livre (índice parcial). Com uma localização publicada, 409 até despublicar (F06-T4, decisão 2).
 - **Temas:** `topic` com nome e slug em pt-BR; os usos contam artigos não excluídos com o tema em `draft_tag_ids` ou em `article_tags`. Um tema em uso não pode ser excluído (409 com a contagem, decisão 3).
 - **Âncoras:** os títulos usam a mesma transliteração dos slugs (`anchorSlug` chama `slugify`, decisão 5).
+
+### 4.10 Decisões da F06-T2
+
+- **Autosave:** o salvamento da cópia de trabalho (PATCH) grava também uma revisão `autosave` no mesmo `db.batch`, com a mesma guarda de versão (só entra se a cópia foi atualizada) e sem repetir a revisão mais recente. O hash da revisão é o `working_hash`.
+- **`manual` (decisão 3):** deduplica só contra a última `manual` com o mesmo conteúdo **e a mesma nota**. Uma versão nomeada é gravada mesmo quando um autosave já guarda aquele conteúdo; antes, a nota se perdia.
+- **Comandos em batch:** `prepareRevision` faz o gzip e o hash fora do batch (o `CompressionStream` é assíncrono) e `insertRevisionStatement` é um `INSERT … SELECT` com a guarda, a regra de repetição e o número calculado no próprio comando.
+- **Restaurar:** copia título, slug, resumo, corpo, SEO, capa e temas da revisão para a cópia de trabalho, recalcula derivados e usos de mídia e grava uma revisão `restore`, tudo num batch guardado pela versão; nenhuma revisão é apagada. Temas excluídos depois da revisão ficam de fora; um slug que outro artigo tomou dá 409 em `slug`.
+- **Poda:** `pruneAutosaves` apaga, por tipo de conteúdo, autosaves além dos 10 mais recentes da localização (`row_number()` por `localization_id`) ou com mais de 14 dias, menos os apontados por `published_revision_id`/`source_revision_id`, até 500 por execução. A tarefa `content:prune-autosaves` roda no cron de 5 em 5 minutos (environments.md) e só age na janela de 03:00 a 03:05 UTC (`isPruneWindow`), uma vez por dia.
 
 ## 5. Mídia
 

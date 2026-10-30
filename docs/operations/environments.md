@@ -16,7 +16,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | Indexação | — | `noindex` em tudo | permitida (exceto `/admin`, `/api`, `/preview`) |
 | RP ID das passkeys | `localhost` | host do workers.dev | domínio |
 | Turnstile | chaves de teste oficiais | site próprio (Free) | site próprio (Free) |
-| Cron | manual (`nitro task run`) | `*/5 * * * *` | `*/5 * * * *` |
+| Cron | manual (`nitro task run`; `wrangler dev --test-scheduled`) | `*/5 * * * *` | `*/5 * * * *` |
 
 ## 2. Variáveis e segredos por nome
 
@@ -56,7 +56,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `ASSETS` | Static Assets | Gerado pelo Nitro |
 | `cache` | Workers Cache | `{ enabled: true }` em preview e produção (validar no F00-T6) |
 | `observability` | Workers Logs | `enabled: true` |
-| `triggers.crons` | Cron | `["*/5 * * * *"]` |
+| `triggers.crons` | Cron | `["*/5 * * * *"]` em `env.preview` e `env.production` (o local não tem cron). Um só trigger para todas as tarefas (`nuxt.config` `scheduledTasks`); quem precisa de menos frequência decide dentro da tarefa, como a poda diária de autosaves (F06-T2) |
 
 ## 4. Recursos a criar (comandos de referência, executados pelo owner)
 

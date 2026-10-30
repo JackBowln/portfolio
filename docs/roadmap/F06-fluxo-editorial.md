@@ -50,7 +50,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06-T1 | RF-04.7, RF-05.1, RF-05.5, RF-05.6 | `/cms-engineer`, `/test-engineer` |
+| concluída | F06-T1 | RF-04.7, RF-05.1, RF-05.5, RF-05.6 | `/cms-engineer`, `/test-engineer` |
 
 **Objetivo.** Implementar o autosave (debounce de 2 s) com concorrência otimista (`expectedVersion`, que devolve 409 com as duas versões), as revisões manuais com nota, o histórico com diff por bloco e por texto (calculado no navegador), a restauração (gera revisão `restore`) e a poda de autosaves (tarefa do cron).
 
@@ -59,14 +59,23 @@
 **Fora do escopo.** Diff visual lado a lado de tradução (F09-T4).
 
 **Critérios de aceite**
-- [ ] Conflito de versão entre duas abas → 409 e uma interface para escolher a versão; nada é sobrescrito em silêncio.
-- [ ] Restaurar não apaga revisões e cria uma revisão `restore`.
-- [ ] A poda mantém no máximo 10 autosaves por localização e nenhum com mais de 14 dias; revisões `manual`, `publish`, `restore` e `ai` nunca são podadas.
+- [x] Conflito de versão entre duas abas → 409 e uma interface para escolher a versão; nada é sobrescrito em silêncio.
+- [x] Restaurar não apaga revisões e cria uma revisão `restore`.
+- [x] A poda mantém no máximo 10 autosaves por localização e nenhum com mais de 14 dias; revisões `manual`, `publish`, `restore` e `ai` nunca são podadas.
 
 **Testes**
 - Workers: deduplicação, poda e restauração.
 - API: conflito 409.
 - E2E (J-07): editar → salvar versão → editar → restaurar a versão anterior.
+
+**Resultado (30/10/2026).**
+- **Autosave:** 2 s depois da última mudança, com status anunciado e novas tentativas; cada gravação registra uma revisão `autosave` no mesmo batch, sem repetir a anterior.
+- **Conflito:** 409 em `version` → o autosave pausa e um diálogo mostra o diff entre a versão salva e a desta aba, com "Manter a desta aba" e "Usar a versão salva"; nada é sobrescrito em silêncio.
+- **Versões e histórico:** "Salvar versão" com nota; histórico com tipo, nota, autoria e hora, diff por bloco e por palavra calculado no navegador (jsdiff) e restauração com confirmação, que grava uma revisão `restore` sem apagar nada.
+- **Poda:** tarefa `content:prune-autosaves` no cron de 5 em 5 minutos, agindo uma vez por dia (03:00 UTC): até 10 autosaves por localização, nenhum com mais de 14 dias, sem tocar `manual`, `publish`, `restore`, `ai` nem revisões apontadas. Testada pelo handler `scheduled` local (`wrangler dev --test-scheduled`).
+- **Medição:** um autosave de um documento de 40 KB leva mediana de 4 ms (p90 6 ms) no workerd local, D1 incluído.
+- **Decisões:** data-model §4.10, ADR-0006 "Decisões da F06-T2", security-model §3, environments.md.
+- **Testes:** `tests/workers/revisions.test.ts`, `tests/nuxt/document-diff.test.ts`, casos novos em `tests/api/articles.spec.ts`, `tests/e2e/history.spec.ts` (J-07), `tests/e2e/articles.spec.ts` (conflito e slug) e `tests/a11y/admin.spec.ts`.
 
 ---
 

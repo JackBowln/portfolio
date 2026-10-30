@@ -96,6 +96,14 @@
 - **Correção da F05-T4:** a `<figure>` em grid ganhou `grid-template-columns: minmax(0, 1fr)`; sem isso, uma imagem mantinha a largura intrínseca e rolava a página em 360 px.
 
 
+## Decisões da F06-T2
+
+- **Código:** `app/composables/admin/useAutosave.ts`, `app/components/admin/history/` (`HistoryPanel`, `RevisionDiff`, `ConflictDialog`, `SaveVersionDialog`), `app/utils/admin/document-diff.ts`; servidor em `articles.service.ts`, `revisions.repo.ts`, `prune.repo.ts` e `server/tasks/content/prune-autosaves.ts`; rotas `revisions` e `restore` em `server/api/admin/articles/[id]/`.
+- **Autosave:** 2 s depois da última mudança, uma gravação por vez (o que foi digitado durante uma gravação sai logo depois), novas tentativas após 5, 15 e 30 s numa falha de rede ou do servidor, e uma gravação pendente sai antes de deixar a página. Campos inválidos e slug ocupado pausam o autosave até a próxima edição. A concorrência usa o campo `version` da F06-T1 (o "expectedVersion" do roadmap).
+- **Conflito (decisão 2):** o 409 em `version` pausa o autosave; a tela busca a versão salva com `GET` e abre um diálogo que não fecha com Esc, com o diff da versão salva para a desta aba. "Manter a desta aba" salva por cima, agora medindo as mudanças contra a versão salva; "Usar a versão salva" descarta as mudanças locais.
+- **Diff (decisão 1):** `diff` (jsdiff) `~9.0.0`, BSD-3, sem dependências, só no chunk da tela de edição (13,3 KB gz com a tela). Os blocos são casados pelo `id` (adicionado, removido, alterado, movido), com diff por palavra dentro do bloco, e os campos (título, slug, resumo, SEO, capa, temas) por valor. Inserções e remoções têm texto para leitores de tela, além de cor e risco.
+- **Auditoria (decisão 4):** `article.version_saved` e `article.restored` (com o número da revisão); o PATCH do autosave não vai para o `audit_log`, porque a revisão `autosave` já registra autor e hora (security-model §3).
+
 ## Correção de contraste dos temas do Shiki (F05, depois da T5)
 
 - **Problema:** com `github-light`/`github-dark`, os comentários no tema escuro (`#6a737d` sobre `#24292e`, 3,05:1) e os parâmetros e variáveis no claro (`#e36209` sobre `#fff`, 3,49:1) ficavam abaixo do AA (4,5:1, WCAG 1.4.3). O axe não pegava porque o fixture não tinha esses tokens.
