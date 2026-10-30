@@ -18,5 +18,6 @@
 | [0013](0013-testes-e-qualidade.md) | Testes e qualidade | Aceito; gate F00-T7 cumprido; §1 substituído pelo 0015 |
 | [0014](0014-operacao.md) | Operação, CI/CD e backups | Aceito |
 | [0015](0015-vitest-5-e-vitest-plugin.md) | Vitest 5 com `@cloudflare/vitest-plugin` | Aceito |
+| [0016](0016-rotas-do-admin-fora-do-js-publico.md) | Rotas do admin fora do JS público | Aceito |
 
 Para propor um ADR novo, copie o [template](0000-template.md) e siga o [ADR-0001](0001-registro-de-decisoes.md).

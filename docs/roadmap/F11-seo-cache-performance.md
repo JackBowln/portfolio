@@ -134,7 +134,7 @@ Comprovar no preview.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F07-T1 | RNF-01 | `/performance-audit`, `/architecture-guardian` |
+| concluída | F07-T1 | RNF-01 | `/performance-audit`, `/architecture-guardian` |
 
 **Objetivo.** O entry de toda rota pública carrega os registros de rota das telas do admin (caminho, meta e lista de dependências de cada página): medido na F07-T1, 14 rotas = 0,68 kB gz, e cada tela nova soma ≈ 0,05 kB. Tirar esses registros do JS público (por exemplo, uma rota única `/admin/**` que carrega as telas sob demanda) e devolver o limite do R3/R8 a 120 KB (revisão da F07-T1 em performance-budgets §4).
 
@@ -143,11 +143,16 @@ Comprovar no preview.
 **Fora do escopo.** Mudar o comportamento ou as URLs das telas do admin.
 
 **Critérios de aceite**
-- [ ] Nenhum registro de rota do admin no JS das rotas públicas (`check:budgets` procura).
-- [ ] R3/R8 de volta a ≤ 120 KB; as suítes do admin (E2E e a11y) seguem verdes.
+- [x] Nenhum registro de rota do admin no JS das rotas públicas (`check:budgets` procura).
+- [x] R3/R8 de volta a ≤ 120 KB; as suítes do admin (E2E e a11y) seguem verdes.
 
 **Testes**
 - `check:budgets` e a suíte E2E do admin.
+
+**Resultado (30/10/2026, adiantada antes da F08-T1 por decisão do owner).**
+- `modules/admin-routes.ts` tira as páginas de `/admin/**` da tabela pública depois do i18n e da extração da meta, deixa a rota-ponte `admin-bridge` e gera `#build/admin-routes.mjs`; `app/middleware/admin-routes.global.ts` registra as rotas na primeira navegação ao admin, remove a ponte e refaz a navegação (404 quando nenhuma tela casa). Decisão em [ADR-0016](../architecture/adr/0016-rotas-do-admin-fora-do-js-publico.md).
+- Medido: −0,79 kB gz em toda rota pública; R3 120,31 → 119,52, e o limite volta a 120 KB. O `check:budgets` proíbe `admin-artigos` no JS público.
+- Testes: `tests/e2e/admin-routes.spec.ts` (URL profunda e recarregamento, navegação do público para o admin, 404, nenhuma tabela do admin numa página pública) e as suítes do admin, sem mudança.
 
 ---
 
