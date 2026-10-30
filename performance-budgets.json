@@ -20,7 +20,7 @@
       "path": "/blog/x",
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
-      "js": 121,
+      "js": 120,
       "css": 25,
       "lighthouse": false
     },
@@ -59,7 +59,7 @@
       "path": "/de/blog/x",
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
-      "js": 121,
+      "js": 120,
       "css": 25,
       "lighthouse": false
     },
@@ -84,7 +84,8 @@
     "ProseMirror",
     "tiptap",
     "codeToHast",
-    "ZodError"
+    "ZodError",
+    "admin-artigos"
   ],
   "lighthouse": {
     "minScores": {
