@@ -34,3 +34,8 @@ export function createAppError(code: AppErrorCode, message?: string, issues?: Ap
   const data: AppErrorData = issues ? { code, issues } : { code }
   return createError({ statusCode: STATUS[code], statusMessage: message ?? code, data })
 }
+
+/** A D1 unique constraint failure; Drizzle wraps it ("Failed query: …"), with D1's message in the cause */
+export function isUniqueViolation(error: unknown): boolean {
+  return [error, (error as { cause?: unknown } | null)?.cause].some(item => item instanceof Error && item.message.includes('UNIQUE constraint failed'))
+}

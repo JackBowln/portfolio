@@ -210,3 +210,17 @@ export async function findReadyMediaWithText(db: Db, ids: readonly string[]) {
     tracks: at<{ mediaId: string, locale: Locale, kind: MediaTrackKind, label: string, key: string }>(2),
   }
 }
+
+/** Kind and status of the items among `ids` that are not deleted, for checks before saving content (F06-T1) */
+export async function findMediaStates(db: Db, ids: readonly string[]): Promise<Map<string, { kind: MediaKind, status: MediaStatus }>> {
+  const unique = [...new Set(ids)]
+  const found = new Map<string, { kind: MediaKind, status: MediaStatus }>()
+  for (const group of chunked(unique)) {
+    const rows = await db.select({ id: media.id, kind: media.kind, status: media.status }).from(media)
+      .where(and(inArray(media.id, group), ne(media.status, 'deleted')))
+    for (const row of rows) {
+      found.set(row.id, { kind: row.kind, status: row.status })
+    }
+  }
+  return found
+}
