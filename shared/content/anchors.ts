@@ -1,6 +1,8 @@
-// Heading anchors (F05-T4, decision 2): a readable slug of the heading's text, unique in the page. The renderer
-// sets it as the heading's id and the table of contents (F06) links to it, so both call this one function.
-// Headings are top-level blocks only (the schema allows them nowhere else)
+// Heading anchors (F05-T4, decision 2): a readable slug of the heading's text, unique in the page, with the same
+// transliteration as every other slug (F06-T1). The renderer sets it as the heading's id and the table of contents
+// (F06) links to it, so both call this one function. Headings are top-level blocks only (the schema allows them
+// nowhere else)
+import { slugify } from '../utils/slugify.ts'
 import type { DocumentJson } from './document-schema.ts'
 import { inlineText } from './derive.ts'
 
@@ -9,16 +11,9 @@ const MAX_ANCHOR = 64
 const RESERVED = new Set(['main', 'site-menu'])
 const FALLBACK = 'section'
 
-/** "Como funciona? (v2)" → "como-funciona-v2": ASCII letters and digits, accents dropped */
+/** "Como funciona? (v2)" → "como-funciona-v2": the site's slug rules (shared/utils/slugify.ts), at most 64 characters */
 export function anchorSlug(text: string): string {
-  const slug = text
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .slice(0, MAX_ANCHOR)
-    .replace(/^-+|-+$/g, '')
-  return slug === '' ? FALLBACK : slug
+  return slugify(text, MAX_ANCHOR) || FALLBACK
 }
 
 /** Block id → anchor, for every heading in document order; repeats get -2, -3… */

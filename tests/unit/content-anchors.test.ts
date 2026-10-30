@@ -9,11 +9,12 @@ describe('heading anchors', () => {
   it.each([
     ['Como funciona? (v2)', 'como-funciona-v2'],
     ['Ação & Reação', 'acao-reacao'],
-    ['Straße für Übung', 'stra-e-fur-ubung'],
+    ['Straße für Übung', 'strasse-fuer-uebung'],
     ['  --Já!--  ', 'ja'],
     ['日本語', 'section'],
     ['', 'section'],
     ['a'.repeat(100), 'a'.repeat(64)],
+    ['palavra '.repeat(12), 'palavra-palavra-palavra-palavra-palavra-palavra-palavra-palavra'],
   ])('slugs %j as %j', (text, slug) => {
     expect(anchorSlug(text)).toBe(slug)
   })
