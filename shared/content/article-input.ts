@@ -2,7 +2,7 @@
 // limits. Strict at every level: an unknown field is an error. The document body has its own schema
 // (document-schema.ts); the search-result limits are guidance for the SERP preview, not validation
 import { z } from 'zod'
-import { LOCALES, PUBLICATION_STATUSES, TRANSLATION_STATES } from '../types/enums.ts'
+import { LOCALES, PUBLICATION_STATUSES, TAG_KINDS, TRANSLATION_STATES } from '../types/enums.ts'
 import { isUuidv7 } from '../utils/id.ts'
 import { MAX_SLUG_LENGTH, SLUG_PATTERN } from '../utils/slugify.ts'
 import { documentSchema } from './document-schema.ts'
@@ -61,6 +61,12 @@ export const articleListQuerySchema = z.strictObject({
 export const tagCreateSchema = z.strictObject({
   name: z.string().trim().min(1, 'required').max(TAG_NAME_MAX),
   slug: slugField.optional(),
+  /** Topics of articles (the default) or technologies of projects (F07-T1) */
+  kind: z.enum(TAG_KINDS).default('topic'),
+})
+
+export const tagListQuerySchema = z.strictObject({
+  kind: z.enum(TAG_KINDS).default('topic'),
 })
 
 export const tagUpdateSchema = z.strictObject({

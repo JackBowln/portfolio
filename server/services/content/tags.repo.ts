@@ -1,11 +1,12 @@
-// Topic queries (F06-T1, data-model §4.7): a tag and its pt-BR name and slug; translations of names come with the
-// translation flow (F09). Uses count the articles that carry the topic in their working copy or published version
+// Tag queries (F06-T1, data-model §4.7): topics of articles and technologies of projects (F07-T1), a tag and its
+// pt-BR name and slug; translations of names come with the translation flow (F09). Uses count the articles and
+// projects that carry the tag in their working copy or published version
 import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { TagKind } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import type { Db } from '../../db/client.ts'
-import { articleTags, articles } from '../../db/schema/content.ts'
+import { articleTags, articles, projects, projectTechnologies } from '../../db/schema/content.ts'
 import { tagLocalizations, tags } from '../../db/schema/taxonomy.ts'
 
 export interface TagItem {
@@ -14,12 +15,19 @@ export interface TagItem {
   slug: string
 }
 
-// Articles (not deleted) that list the tag in draft_tag_ids, or publish it through article_tags
+// Articles (not deleted) that list the tag in draft_tag_ids or publish it through article_tags, plus projects that
+// list it in draft_technology_ids or publish it through project_technologies
 const usesOf = sql<number>`(
   SELECT count(DISTINCT a.id) FROM ${articles} a
   WHERE a.deleted_at IS NULL AND (
     EXISTS (SELECT 1 FROM json_each(a.draft_tag_ids) j WHERE j.value = ${tags.id})
     OR EXISTS (SELECT 1 FROM ${articleTags} t WHERE t.article_id = a.id AND t.tag_id = ${tags.id})
+  )
+) + (
+  SELECT count(DISTINCT p.id) FROM ${projects} p
+  WHERE p.deleted_at IS NULL AND (
+    EXISTS (SELECT 1 FROM json_each(p.draft_technology_ids) j WHERE j.value = ${tags.id})
+    OR EXISTS (SELECT 1 FROM ${projectTechnologies} t WHERE t.project_id = p.id AND t.tag_id = ${tags.id})
   )
 )`
 
