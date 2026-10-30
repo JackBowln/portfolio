@@ -26,6 +26,8 @@ for (const path of ['/', '/en', '/es', '/de', '/fr']) {
     })
 
     await page.goto(path)
+    // A first visit holds the web fonts until the frame after `load` (shared/design/fonts.ts)
+    await expect(page.locator('html')).not.toHaveClass(/fonts-pending/)
     await page.evaluate(({ pangrams, extra }) => {
       const section = document.createElement('section')
       for (const [index, text] of [...pangrams, extra].entries()) {

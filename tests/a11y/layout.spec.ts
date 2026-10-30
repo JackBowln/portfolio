@@ -2,6 +2,13 @@
 // in pt-BR and de, in both themes; also with the mobile menu open and on the 404 page
 import { expect, test } from '@playwright/test'
 import { expectNoBlockingViolations } from '../support/axe'
+import { ensureBlogFixture } from '../support/blog'
+
+test.beforeAll(async ({ playwright, baseURL }) => {
+  const request = await playwright.request.newContext({ baseURL })
+  await ensureBlogFixture(request)
+  await request.dispose()
+})
 
 const PAGES = ['/', '/sobre', '/de/ueber-mich', '/de/blog/x', '/does-not-exist', '/de/does-not-exist']
 const WIDTHS = [360, 768, 1280]

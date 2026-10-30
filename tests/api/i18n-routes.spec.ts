@@ -1,6 +1,13 @@
 // F02-T2: every route of docs/architecture/i18n-seo.md §2 in the 5 locales, cacheable and cookie-free
 import { readdirSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
+import { ensureBlogFixture } from '../support/blog'
+
+test.beforeAll(async ({ playwright, baseURL }) => {
+  const request = await playwright.request.newContext({ baseURL })
+  await ensureBlogFixture(request)
+  await request.dispose()
+})
 
 const LANGUAGES = { 'pt-BR': '', 'en': '/en', 'es': '/es', 'de': '/de', 'fr': '/fr' } as const
 type Locale = keyof typeof LANGUAGES

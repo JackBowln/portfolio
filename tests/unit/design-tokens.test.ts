@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { customProperties } from '../../shared/design/css-tokens'
-import { BREAKPOINTS, DISPLAY_FROM_STEP, DISTANCES, DURATIONS, EASINGS, fluidSize, TYPE_SCALE } from '../../shared/design/tokens'
+import { BREAKPOINTS, CONTAINERS, DISPLAY_FROM_STEP, DISTANCES, DURATIONS, EASINGS, fluidSize, TYPE_SCALE } from '../../shared/design/tokens'
 
 const MAIN_CSS = readFileSync('app/assets/css/main.css', 'utf8')
 const tokens = customProperties(MAIN_CSS)
@@ -18,6 +18,11 @@ describe('design tokens mirror', () => {
     for (const [name, px] of Object.entries(DISTANCES)) {
       expect(tokens.get(`--distance-${name}`), name).toBe(`${px}px`)
     }
+  })
+
+  it('containers', () => {
+    expect(tokens.get('--container-reading')).toBe(`${CONTAINERS.reading}rem`)
+    expect(tokens.get('--container-max')).toBe(`${CONTAINERS.max * 16}px`)
   })
 
   it('breakpoints', () => {

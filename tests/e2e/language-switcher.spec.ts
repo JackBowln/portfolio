@@ -1,4 +1,11 @@
 import { expect, test } from '@playwright/test'
+import { ensureBlogFixture } from '../support/blog'
+
+test.beforeAll(async ({ playwright, baseURL }) => {
+  const request = await playwright.request.newContext({ baseURL })
+  await ensureBlogFixture(request)
+  await request.dispose()
+})
 
 const ABOUT = { 'pt-BR': '/sobre', 'en': '/en/about', 'es': '/es/sobre-mi', 'de': '/de/ueber-mich', 'fr': '/fr/a-propos' }
 const NAMES = { 'pt-BR': 'Português (Brasil)', 'en': 'English', 'es': 'Español', 'de': 'Deutsch', 'fr': 'Français' }
@@ -54,11 +61,14 @@ test('the switcher works with the keyboard', async ({ page, isMobile }) => {
   await expect(page).toHaveURL('/fr/a-propos')
 })
 
-test('dates are formatted with Intl in the active language', async ({ page }) => {
+test('dates are formatted with Intl in the active language and the site time zone', async ({ page, request }) => {
+  // The fixture article (tests/support/blog.ts); its date is the moment it was first published
+  const { firstPublishedAt } = await (await request.get('/api/public/blog/x?locale=pt-BR')).json() as { firstPublishedAt: string }
+  const date = (language: string) => new Intl.DateTimeFormat(language, { dateStyle: 'long', timeZone: 'America/Sao_Paulo' }).format(new Date(firstPublishedAt))
   const expected = {
-    'pt-BR': 'Data de exemplo: 15 de janeiro de 2026',
-    'en': 'Sample date: January 15, 2026',
-    'de': 'Beispieldatum: 15. Januar 2026',
+    'pt-BR': `Publicado em ${date('pt-BR')}`,
+    'en': `Published on ${date('en')}`,
+    'de': `Veröffentlicht am ${date('de')}`,
   }
   for (const [locale, text] of Object.entries(expected)) {
     await page.goto(`${locale === 'pt-BR' ? '' : `/${locale}`}/blog/x`)

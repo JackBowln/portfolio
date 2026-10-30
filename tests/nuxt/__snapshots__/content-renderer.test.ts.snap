@@ -51,8 +51,8 @@ exports[`ContentRenderer: every node type > renders embed:emb-1 1`] = `
   <figure class="content-figure content-embed">
     <div class="content-embed-frame" data-content-embed="" data-player="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1" data-title="Palestra sobre acessibilidade">
       <picture>
-        <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)">
-        <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+        <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 53rem) 48rem, 100vw">
+        <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 53rem) 48rem, 100vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 53rem) 48rem, 100vw" width="800" height="600" alt="" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
       </picture><button type="button" class="content-embed-play" data-content-play=""><span class="content-embed-icon" aria-hidden="true"></span><span class="sr-only">Reproduzir vídeo: Palestra sobre acessibilidade</span></button>
     </div>
     <figcaption><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" rel="noopener noreferrer">Assistir no YouTube: Palestra sobre acessibilidade</a></figcaption>
@@ -66,8 +66,8 @@ exports[`ContentRenderer: every node type > renders gallery:gal-1 1`] = `
     <ul>
       <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-0" command="show-modal">
           <picture>
-            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
-            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Segunda" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 53rem) 16rem, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 53rem) 16rem, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 53rem) 16rem, 50vw" width="800" height="600" alt="Segunda" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
           </picture><span class="sr-only">Ampliar imagem 1 de 3</span>
         </button>
         <dialog id="v-0-0-0-0" class="content-gallery-dialog" aria-label="Imagem 1 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-0" command="close">Fechar</button>
@@ -82,8 +82,8 @@ exports[`ContentRenderer: every node type > renders gallery:gal-1 1`] = `
       </li>
       <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-1" command="show-modal">
           <picture>
-            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
-            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Terceira" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 53rem) 16rem, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 53rem) 16rem, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 53rem) 16rem, 50vw" width="800" height="600" alt="Terceira" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
           </picture><span class="sr-only">Ampliar imagem 2 de 3</span>
         </button>
         <dialog id="v-0-0-0-1" class="content-gallery-dialog" aria-label="Imagem 2 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-1" command="close">Fechar</button>
@@ -98,8 +98,8 @@ exports[`ContentRenderer: every node type > renders gallery:gal-1 1`] = `
       </li>
       <li><button type="button" class="content-gallery-open" aria-haspopup="dialog" commandfor="v-0-0-0-2" command="show-modal">
           <picture>
-            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 22ch, 50vw">
-            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 22ch, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 22ch, 50vw" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
+            <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 53rem) 16rem, 50vw">
+            <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 53rem) 16rem, 50vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 53rem) 16rem, 50vw" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block size-full object-cover" style="object-position: 50% 50%;">
           </picture><span class="sr-only">Ampliar imagem 3 de 3</span>
         </button>
         <dialog id="v-0-0-0-2" class="content-gallery-dialog" aria-label="Imagem 3 de 3"><button type="button" class="content-gallery-close" commandfor="v-0-0-0-2" command="close">Fechar</button>
@@ -145,8 +145,8 @@ exports[`ContentRenderer: every node type > renders image:img-1 1`] = `
 "<div class="ui-prose content">
   <figure class="content-figure">
     <picture>
-      <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)">
-      <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
+      <source type="image/avif" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/avif-320.avif 320w" sizes="(min-width: 53rem) 48rem, 100vw">
+      <source type="image/webp" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/webp-320.webp 320w" sizes="(min-width: 53rem) 48rem, 100vw"><img src="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg" srcset="http://localhost:3000/media/cd/cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd/jpeg-320.jpg 320w" sizes="(min-width: 53rem) 48rem, 100vw" width="800" height="600" alt="Uma foto" loading="lazy" decoding="async" class="block h-auto max-w-full" style="object-position: 50% 50%;">
     </picture>
     <figcaption>Legenda da foto
       <!--v-if-->

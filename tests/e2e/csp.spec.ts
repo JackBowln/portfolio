@@ -2,6 +2,13 @@
 // Every violation is recorded from the first byte, before any page script runs
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { ensureBlogFixture } from '../support/blog'
+
+test.beforeAll(async ({ playwright, baseURL }) => {
+  const request = await playwright.request.newContext({ baseURL })
+  await ensureBlogFixture(request)
+  await request.dispose()
+})
 
 const ROUTES = [
   '/',

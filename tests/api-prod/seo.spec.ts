@@ -67,14 +67,23 @@ test('the sitemap is valid XML with absolute URLs, alternates and x-default', as
   expect(response.headers()['content-type']).toContain('application/xml')
   expect(response.headers()['cache-tag']).toBe('sitemap')
 
+  // The blog index and articles (F06-T5) are listed only where published, so they depend on the instance's data:
+  // empty in CI, whatever was copied locally
   const urls = await sitemapUrls(request, page)
-  expect(urls.map(url => url.loc).sort()).toEqual([
+  const isBlog = (loc: string) => /^\/(?:[a-z]{2}\/)?blog(?:\/|$)/.test(new URL(loc).pathname)
+  expect(urls.filter(url => !isBlog(url.loc)).map(url => url.loc).sort()).toEqual([
     ...Object.values(ABOUT).map(path => `${SITE}${path}`),
     `${SITE}/`, `${SITE}/de`, `${SITE}/en`, `${SITE}/es`, `${SITE}/fr`,
   ].sort())
   for (const url of urls) {
-    expect(Object.keys(url.alternates).sort(), url.loc).toEqual(['de', 'en', 'es', 'fr', 'pt-BR', 'x-default'])
-    expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en)
+    if (isBlog(url.loc)) {
+      expect(Object.values(url.alternates), url.loc).toContain(url.loc)
+      expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en ?? url.alternates['pt-BR'])
+    }
+    else {
+      expect(Object.keys(url.alternates).sort(), url.loc).toEqual(['de', 'en', 'es', 'fr', 'pt-BR', 'x-default'])
+      expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en)
+    }
     expect(Object.values(url.alternates).every(href => href?.startsWith(`${SITE}/`)), url.loc).toBe(true)
   }
 })
@@ -101,8 +110,10 @@ test('the about page has the right head in every locale', async ({ page }) => {
   }
 })
 
-test('noindex skeletons have a canonical but no hreflang', async ({ page }) => {
-  for (const path of ['/projetos', '/en/blog', '/de/projekte/x', '/fr/contact']) {
+test('noindex skeletons have a canonical but no hreflang', async ({ page, request }) => {
+  // The blog index is noindex only while it has no article in the locale (F06-T5)
+  const blogIsEmpty = (await (await request.get('/api/public/blog?locale=en')).json() as { total: number }).total === 0
+  for (const path of ['/projetos', ...(blogIsEmpty ? ['/en/blog'] : []), '/de/projekte/x', '/fr/contact']) {
     const head = await readHead(page, path)
 
     expect(head.robots, path).toBe('noindex')

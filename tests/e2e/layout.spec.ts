@@ -1,6 +1,13 @@
 // F01-T5: public frame (skip link, header, footer) and the mobile menu as a modal dialog (WAI-ARIA APG)
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { ensureBlogFixture } from '../support/blog'
+
+test.beforeAll(async ({ playwright, baseURL }) => {
+  const request = await playwright.request.newContext({ baseURL })
+  await ensureBlogFixture(request)
+  await request.dispose()
+})
 
 const MOBILE = { width: 390, height: 844 }
 
