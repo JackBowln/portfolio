@@ -85,7 +85,7 @@ export default defineNuxtConfig({
     // production (wrangler.jsonc, environments.md); a task that needs less often decides inside itself (F06-T2)
     experimental: { tasks: true },
     scheduledTasks: {
-      '*/5 * * * *': ['content:prune-autosaves'],
+      '*/5 * * * *': ['content:publish-due', 'content:prune-autosaves'],
     },
   },
 

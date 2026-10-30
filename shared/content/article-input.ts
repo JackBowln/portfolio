@@ -88,3 +88,20 @@ export const PREVIEW_HOURS = [1, 8, 24] as const
 export const previewLinkSchema = z.strictObject({
   hours: z.int().min(1).max(24),
 })
+
+/** Publish now (F06-T4); the version is the one the editor read */
+export const articlePublishSchema = z.strictObject({
+  locale: z.enum(LOCALES),
+  version: z.int().min(1),
+})
+
+export const articleLocaleSchema = z.strictObject({
+  locale: z.enum(LOCALES),
+})
+
+/** Schedule for an instant (ISO 8601 with an offset); the admin sends it from the site's time zone */
+export const articleScheduleSchema = z.strictObject({
+  locale: z.enum(LOCALES),
+  version: z.int().min(1),
+  at: z.iso.datetime({ offset: true }),
+})
