@@ -8,10 +8,10 @@ import { describe, expect, it } from 'vitest'
 import { createDb } from '../../server/db/client'
 import { articleLocalizations, articles, mediaUsages, users } from '../../server/db/schema'
 import type { media } from '../../server/db/schema'
-import { saveArticleStatements } from '../../server/services/content/articles.repo'
 import { createArticle, deleteArticle, getArticle, listArticles, updateArticle } from '../../server/services/content/articles.service'
 import { createRevision } from '../../server/services/content/revisions.repo'
 import { createTopic, deleteTopic, listTopics, updateTopic } from '../../server/services/content/tags.service'
+import { saveStatements } from '../../server/services/content/working-copy.repo'
 import { insertMedia, markReady } from '../../server/services/media/media.repo'
 import { contentHash } from '../../shared/content/canonical-json'
 import type { DocumentJson } from '../../shared/content/document-schema'
@@ -141,8 +141,8 @@ describe('saving', () => {
     const copy = ptBR(article)
     await updateArticle(db, userId, article, { version: 1, title: 'Venceu' })
     // The loser's batch, built from version 1 after the winner's check had passed
-    const [updated] = await db.batch(saveArticleStatements(db, {
-      articleId: article.id,
+    const [updated] = await db.batch(saveStatements(db, 'article', {
+      entityId: article.id,
       localizationId: copy.id,
       version: 1,
       workingHash: 'loser',

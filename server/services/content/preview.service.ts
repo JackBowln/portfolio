@@ -4,7 +4,8 @@
 import type { ArticlePreview } from '../../../shared/content/preview.ts'
 import type { Db } from '../../db/client.ts'
 import type { PreviewClaims } from '../../utils/preview-token.ts'
-import { findArticle, findArticleLocalizations } from './articles.repo.ts'
+import { findArticle } from './articles.repo.ts'
+import { findLocalizations } from './working-copy.repo.ts'
 import { resolveDocumentMedia } from './document-media.ts'
 
 export async function articlePreview(db: Db, claims: PreviewClaims): Promise<ArticlePreview | null> {
@@ -12,7 +13,7 @@ export async function articlePreview(db: Db, claims: PreviewClaims): Promise<Art
   if (!article) {
     return null
   }
-  const [copy] = (await findArticleLocalizations(db, [article.id])).filter(item => item.locale === claims.locale)
+  const [copy] = (await findLocalizations(db, 'article', [article.id])).filter(item => item.locale === claims.locale)
   if (!copy) {
     return null
   }
