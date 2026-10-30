@@ -4,6 +4,7 @@
 // (utils/content/enhance.ts). Without JS the button stays hidden and the caption links to the video on its site.
 // URLs are built from an id the provider's pattern accepts, or the block renders nothing
 import { EMBED_PROVIDER_NAMES, embedPlayerUrl, embedWatchUrl, isEmbedId } from '#shared/content/embeds'
+import { IMAGE_SIZES } from '#shared/design/tokens'
 import ResponsiveImage from '~/components/media/ResponsiveImage.vue'
 import { useContentContext } from '../context'
 
@@ -43,7 +44,7 @@ const embed = computed(() => {
       <ResponsiveImage
         v-if="embed.poster"
         :image="embed.poster"
-        sizes="(min-width: 48rem) 68ch, calc(100vw - 2rem)"
+        :sizes="IMAGE_SIZES.reading"
         fit="cover"
       />
       <button

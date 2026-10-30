@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Horizontal frame with the fluid gutter: `reading` keeps lines at 68ch, `default` caps at 1440 px, `full` only pads
+// Horizontal frame with the fluid gutter: `reading` keeps lines at the reading measure (~68 characters), `default` caps at 1440 px, `full` only pads
 withDefaults(defineProps<{
   size?: 'reading' | 'default' | 'full'
   as?: string

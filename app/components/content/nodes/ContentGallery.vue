@@ -2,6 +2,7 @@
 // A gallery block: thumbnails in a grid or a stack, each a button that opens its image in a modal <dialog>.
 // The `command` attributes open and close the dialogs with no JS (invoker commands); the enhancement script covers
 // browsers without them. Each enlarged image is lazy inside its closed dialog, so it loads only when opened
+import { IMAGE_SIZES } from '#shared/design/tokens'
 import ResponsiveImage from '~/components/media/ResponsiveImage.vue'
 import type { PublicImage } from '#shared/media/public'
 import { useContentContext } from '../context'
@@ -38,7 +39,7 @@ const layout = computed(() => (props.node.layout === 'stack' ? 'stack' : 'grid')
         >
           <ResponsiveImage
             :image="image"
-            :sizes="layout === 'grid' ? '(min-width: 48rem) 22ch, 50vw' : '(min-width: 48rem) 68ch, calc(100vw - 2rem)'"
+            :sizes="layout === 'grid' ? IMAGE_SIZES.readingThird : IMAGE_SIZES.reading"
             :fit="layout === 'grid' ? 'cover' : undefined"
           />
           <span class="sr-only">{{ t('content.gallery.open', { n: index + 1, total: images.length }) }}</span>

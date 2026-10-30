@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // The level is the document outline; the size is the look, so a section can keep a correct h2 at any size.
-// Display type (Fraunces) is the default from step 3 up (DISPLAY_FROM_STEP)
+// Display type (Fraunces) is the default from step 3 up (DISPLAY_FROM_STEP). A word longer than the line (a CMS title,
+// a German compound) breaks instead of widening the grid it sits in (wrap-anywhere lowers the min-content width)
 import { DISPLAY_FROM_STEP } from '#shared/design/tokens'
 
 type Level = 1 | 2 | 3 | 4 | 5 | 6
@@ -33,7 +34,7 @@ const display = computed(() => (props.font ?? (step.value >= DISPLAY_FROM_STEP ?
 <template>
   <component
     :is="`h${level}`"
-    class="text-balance"
+    class="text-balance wrap-anywhere"
     :class="[SIZE_CLASS[step], display ? 'font-display font-regular' : 'font-sans font-strong']"
   >
     <slot />

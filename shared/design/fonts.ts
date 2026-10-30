@@ -81,8 +81,9 @@ export const FONT_PENDING_CSS = `:root.${PENDING_CLASS}{${FONT_FAMILIES
   .join(';')}}`
 
 /**
- * Runs inline in <head>. First visit: hold the web fonts until `load`, then let them in and remember they are
- * cached (one frame after `load`, once the font requests have started). Without JS nothing is held and the fonts
- * load like any other. Static, for the CSP hash (F03-T4).
+ * Runs inline in <head>. First visit: hold the web fonts until the first frame after `load` has painted (an image
+ * that finished loading with the page, such as a list's LCP cover, paints before the font requests compete with it;
+ * F06-T5), then let them in and remember they are cached (one frame later, once the font requests have started).
+ * Without JS nothing is held and the fonts load like any other. Static, for the CSP hash (F03-T4).
  */
-export const FONT_LOADING_SCRIPT = `try{if(!localStorage.getItem(${JSON.stringify(FONTS_STORAGE_KEY)})){var d=document.documentElement;d.classList.add(${JSON.stringify(PENDING_CLASS)});addEventListener("load",function(){d.classList.remove(${JSON.stringify(PENDING_CLASS)});requestAnimationFrame(function(){document.fonts.ready.then(function(){try{localStorage.setItem(${JSON.stringify(FONTS_STORAGE_KEY)},"1")}catch(e){}})})})}}catch(e){}`
+export const FONT_LOADING_SCRIPT = `try{if(!localStorage.getItem(${JSON.stringify(FONTS_STORAGE_KEY)})){var d=document.documentElement;d.classList.add(${JSON.stringify(PENDING_CLASS)});addEventListener("load",function(){requestAnimationFrame(function(){setTimeout(function(){d.classList.remove(${JSON.stringify(PENDING_CLASS)});requestAnimationFrame(function(){document.fonts.ready.then(function(){try{localStorage.setItem(${JSON.stringify(FONTS_STORAGE_KEY)},"1")}catch(e){}})})})})})}}catch(e){}`

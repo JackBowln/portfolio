@@ -105,7 +105,9 @@
   --spacing-section: clamp(4rem, 2.6667rem + 5.9259vw, 8rem);
 
   /* Layout */
-  --container-reading: 68ch;
+  /* ~68 characters of body text at its largest size, in rem: a ch measure changed when the web font replaced the
+     fallback (800 → 847 px, a layout shift on every article) */
+  --container-reading: 53rem;
   --container-max: 1440px;
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;

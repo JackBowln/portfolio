@@ -19,6 +19,20 @@ export const EASINGS = {
 /** px */
 export const DISTANCES = { sm: 8, md: 24 } as const
 
+/** rem, --container-reading (the reading measure) and --container-max (1440 px) */
+export const CONTAINERS = { reading: 53, max: 90 } as const
+
+/**
+ * `sizes` for images across the reading measure, a third of it (grid gallery), or the default container, minus the
+ * gutter at its largest (2.5rem). Always rem: inside `sizes`, ch resolves against the browser's initial font, not
+ * the page's, and asks for an image too small
+ */
+export const IMAGE_SIZES = {
+  reading: '(min-width: 53rem) 48rem, 100vw',
+  readingThird: '(min-width: 53rem) 16rem, 50vw',
+  wide: '(min-width: 90rem) 85rem, 100vw',
+} as const
+
 /** px, min-width */
 export const BREAKPOINTS = { 'sm': 640, 'md': 768, 'lg': 1024, 'xl': 1280, '2xl': 1536 } as const
 
