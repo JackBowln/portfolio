@@ -26,7 +26,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | Upload de mídia | Autenticada | Magic bytes, allowlist de MIME, limites, chaves geradas pelo servidor, SVG bloqueado, `nosniff`; desde a F04-T1: marcação (HTML, SVG, XML, PHP) recusada nos primeiros 64 KB, `Content-Length` igual ao declarado no manifesto, só quem criou o item envia arquivos e finaliza, rejeições auditadas |
 | Entrega de mídia (`/media/**` em local e preview; domínio do bucket em produção) | Anônima | Só chaves de arquivos entregues (variantes, vídeo, legendas) passam pelo padrão; `originals/` não tem URL (em produção, regra de WAF); `Content-Type` gravado pelo servidor no upload; `nosniff`, `inline`, CSP `default-src 'none'`; cache `immutable`; sem `Set-Cookie` (F04-T3) |
 | Editor e conteúdo (embeds, links, código) | Autenticada → público | Schema estrito, protocolos de URL, allowlist de embeds, HAST com allowlist |
-| `/preview/{token}` | Quem tiver o link | HMAC, expiração ≤ 24 h, `noindex`, `private, no-store` |
+| `/preview/{token}` | Quem tiver o link | HMAC comparado em tempo constante, expiração ≤ 24 h, 404 único para qualquer falha, `noindex`, `private, no-store`, sem `Cache-Tag`; gerar exige `article:update` e é auditado (F06-T3) |
 | Cron e tarefas | Interna | Sem entrada externa; idempotente; poucos itens por execução |
 | Tradução por IA | Saída do provedor | Saída tratada como dado: schema, tags inline validadas, nada executado |
 | CI/CD e repositório | Desenvolvedores | Token Cloudflare com escopo mínimo, secrets do GitHub, sem segredos no repositório, deploy só manual |

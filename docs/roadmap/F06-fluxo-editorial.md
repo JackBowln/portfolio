@@ -83,7 +83,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06-T1, F05-T4 | RF-05.3 | `/security-audit`, `/cms-engineer` |
+| concluída | F06-T1, F05-T4 | RF-05.3 | `/security-audit`, `/cms-engineer` |
 
 **Objetivo.** Gerar um token HMAC (`PREVIEW_TOKEN_SECRET`, `exp` ≤ 24 h, com a validade escolhida pelo editor) e criar a rota `/preview/[token]`, que renderiza a cópia de trabalho com o layout real, mais o botão "copiar link de preview".
 
@@ -92,13 +92,21 @@
 **Fora do escopo.** Preview de projetos e páginas (reaproveitado nas F07 e F08).
 
 **Critérios de aceite**
-- [ ] Token expirado, adulterado ou de outra entidade → 404 sem detalhes.
-- [ ] A resposta tem `private, no-store`, `noindex`, nenhum `Cache-Tag` e uma faixa visível "Pré-visualização".
-- [ ] A comparação do token é feita em tempo constante.
+- [x] Token expirado, adulterado ou de outra entidade → 404 sem detalhes.
+- [x] A resposta tem `private, no-store`, `noindex`, nenhum `Cache-Tag` e uma faixa visível "Pré-visualização".
+- [x] A comparação do token é feita em tempo constante.
 
 **Testes**
 - Unit: assinar e verificar (expiração, adulteração).
 - API: headers e status para token válido, expirado e adulterado.
+
+**Resultado (30/10/2026).**
+- **Token:** `server/utils/preview-token.ts` (HMAC-SHA256, 1–24 h, comparação em tempo constante, segredo que falha fechado fora do local).
+- **Rotas:** `POST /api/admin/articles/[id]/preview-link` (`article:update`, auditada) e `GET /api/preview/[token]` (pública); página `/preview/[token]` com o layout de leitura, a faixa "Pré-visualização" e o `ArticleView`, que a F06-T5 vai reaproveitar.
+- **Admin:** "Gerar link de pré-visualização" com validade de 1, 8 ou 24 h, copiar e abrir; salva o pendente antes.
+- **Medição:** com um documento de 40 KB, a página leva cerca de 11 ms (tempo total local) e um token inválido 4 ms. JS público +0,93 kB (R1 116,34, R3 116,42); a página evita o `useAsyncData`, que custaria cerca de 4,8 kB em todas as rotas (perf-log).
+- **Decisões:** ADR-0006 "Decisões da F06-T3", security-model §2, environments.md.
+- **Testes:** `tests/workers/preview-token.test.ts`, `tests/api/preview.spec.ts`, `tests/e2e/preview.spec.ts` (com axe da página nos dois temas).
 
 ---
 

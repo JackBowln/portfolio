@@ -104,6 +104,15 @@
 - **Diff (decisão 1):** `diff` (jsdiff) `~9.0.0`, BSD-3, sem dependências, só no chunk da tela de edição (13,3 KB gz com a tela). Os blocos são casados pelo `id` (adicionado, removido, alterado, movido), com diff por palavra dentro do bloco, e os campos (título, slug, resumo, SEO, capa, temas) por valor. Inserções e remoções têm texto para leitores de tela, além de cor e risco.
 - **Auditoria (decisão 4):** `article.version_saved` e `article.restored` (com o número da revisão); o PATCH do autosave não vai para o `audit_log`, porque a revisão `autosave` já registra autor e hora (security-model §3).
 
+## Decisões da F06-T3
+
+- **Código:** `server/utils/preview-token.ts`, `server/services/content/preview.service.ts`, `server/api/admin/articles/[id]/preview-link.post.ts`, `server/api/preview/[token].get.ts`, `app/pages/preview/[token].vue`, `app/components/content/ArticleView.vue` (o artigo como o leitor vê; a página pública da F06-T5 reaproveita) e `app/components/admin/articles/PreviewLink.vue`.
+- **Token:** `base64url(payload).base64url(HMAC-SHA256)` com `{ t, id, l, exp }`; validade de 1 a 24 h inteiras (a tela oferece 1, 8 e 24 h, decisão 2). A verificação compara a assinatura em tempo constante (`crypto.subtle.timingSafeEqual` do workerd) e confere formato, tipo, idioma e validade. Qualquer falha, ou artigo inexistente/excluído, dá o mesmo 404. Sem lista de revogação: trocar o segredo invalida todos os links (decisão 4). Pré-visualizar uma revisão específica fica para depois; o campo `t` permite isso sem invalidar links (decisão 5).
+- **Segredo (decisão 3):** `PREVIEW_TOKEN_SECRET` exigido em preview e produção (≥ 32 caracteres, falha fechada); no local, sem o segredo, um valor aleatório por isolate.
+- **Quem gera (decisão 1):** `article:update` (o `author` só nos próprios artigos), auditado como `article.preview_link_created` com a validade. A tela salva o pendente antes de gerar, e o link mostra sempre a cópia de trabalho mais recente.
+- **Resposta:** `/preview/**` e `/api/preview/**` com `private, no-store` e `X-Robots-Tag: noindex, nofollow` (routeRules); `/preview/` entra nos prefixos que nunca são públicos, então não há `Cache-Tag` nem cache. A página tem uma faixa "Pré-visualização" com a validade em UTC (o fuso do site, Q-06, ainda não foi decidido).
+- **Dados sem `useAsyncData`:** a página usa `useState` e um fetch no SSR. O primeiro uso de `useAsyncData` numa página pública de produção acrescentava cerca de 4,8 kB ao JS inicial de **todas** as rotas e levava o R3 a 120,8/120 (perf-log). A F06-T5 deve seguir o mesmo padrão ou rever o orçamento.
+
 ## Correção de contraste dos temas do Shiki (F05, depois da T5)
 
 - **Problema:** com `github-light`/`github-dark`, os comentários no tema escuro (`#6a737d` sobre `#24292e`, 3,05:1) e os parâmetros e variáveis no claro (`#e36209` sobre `#fff`, 3,49:1) ficavam abaixo do AA (4,5:1, WCAG 1.4.3). O axe não pegava porque o fixture não tinha esses tokens.
