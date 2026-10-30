@@ -182,7 +182,9 @@
       "signedInAs": "Conectado como {name}",
       "media": "Mídia",
       "articles": "Artigos",
-      "tags": "Temas"
+      "tags": "Temas",
+      "projects": "Projetos",
+      "technologies": "Tecnologias"
     },
     "dashboard": {
       "title": "Painel",
@@ -641,7 +643,7 @@
       "name": "Nome do tema",
       "add": "Adicionar tema",
       "created": "Tema “{name}” criado.",
-      "slugTaken": "Já existe um tema com este endereço.",
+      "slugTaken": "Já existe um tema ou uma tecnologia com este endereço.",
       "invalidName": "O nome precisa de pelo menos uma letra ou número.",
       "table": {
         "caption": "Temas",
@@ -661,7 +663,9 @@
       "pickerLegend": "Temas do artigo",
       "pickerEmpty": "Nenhum tema ainda. Crie um abaixo.",
       "pickerNew": "Criar tema",
-      "pickerAdd": "Criar e marcar"
+      "pickerAdd": "Criar e marcar",
+      "caption": "Temas",
+      "uses": "Artigos"
     },
     "history": {
       "title": "Histórico",
@@ -719,7 +723,16 @@
         "noindex": "Não indexar",
         "coverMediaId": "Capa",
         "ogImageMediaId": "Imagem de compartilhamento",
-        "tagIds": "Temas"
+        "tagIds": "Temas",
+        "summary": "Resumo",
+        "role": "Papel",
+        "highlights": "Resultados",
+        "periodStart": "Início",
+        "periodEnd": "Fim",
+        "repoUrl": "Link do GitHub",
+        "demoUrl": "Link da demo",
+        "technologyIds": "Tecnologias",
+        "galleryMediaIds": "Galeria"
       },
       "diff": {
         "identical": "Nenhuma diferença.",
@@ -733,7 +746,8 @@
         "yes": "sim",
         "no": "não",
         "image": "outra imagem",
-        "deletedTopic": "(tema excluído)"
+        "deletedTopic": "(tema excluído)",
+        "images": "{count} imagem | {count} imagens"
       },
       "version": {
         "button": "Salvar versão",
@@ -796,6 +810,105 @@
         "unavailable": "O artigo usa uma imagem que não está mais disponível. Troque ou remova a imagem.",
         "slugTaken": "Outro artigo já está no site com este endereço. Mude o endereço antes de publicar.",
         "translation": "Esta tradução só pode ser publicada aprovada e depois do original em português."
+      },
+      "project": {
+        "unpublishTitle": "Tirar este projeto do site?",
+        "unpublishText": "O projeto deixa de aparecer na lista de projetos, na home e no sitemap, assim como as traduções publicadas. O texto e o histórico continuam no admin, e você pode publicar de novo.",
+        "published": "Projeto publicado.",
+        "unpublished": "Projeto fora do site.",
+        "unavailable": "O projeto usa uma imagem que não está mais disponível. Troque ou remova a imagem.",
+        "slugTaken": "Outro projeto já está no site com este endereço. Mude o endereço antes de publicar."
+      }
+    },
+    "technologies": {
+      "title": "Tecnologias",
+      "intro": "Tecnologias aparecem nos projetos e servem de filtro na lista pública. Renomear uma tecnologia muda todos os projetos que a usam.",
+      "create": "Nova tecnologia",
+      "empty": "Nenhuma tecnologia ainda.",
+      "caption": "Tecnologias",
+      "uses": "Projetos",
+      "inUse": "Esta tecnologia está em {count} projeto; tire-a desse projeto antes de excluir. | Esta tecnologia está em {count} projetos; tire-a desses projetos antes de excluir.",
+      "pickerLegend": "Tecnologias do projeto",
+      "pickerEmpty": "Nenhuma tecnologia ainda. Crie uma abaixo.",
+      "pickerNew": "Criar tecnologia",
+      "name": "Nome da tecnologia",
+      "add": "Adicionar tecnologia"
+    },
+    "projects": {
+      "title": "Projetos",
+      "intro": "Estudos de caso, na ordem em que aparecem no site. Use “Subir” e “Descer” para mudar a ordem.",
+      "empty": "Nenhum projeto ainda.",
+      "featuredBadge": "Destaque na home",
+      "meta": "{author} · alterado em {date}",
+      "create": {
+        "title": "Novo projeto",
+        "label": "Título do novo projeto",
+        "submit": "Criar e abrir",
+        "failed": "Não foi possível criar o projeto."
+      },
+      "order": {
+        "label": "Projetos na ordem do site",
+        "up": "Subir",
+        "down": "Descer",
+        "upLabel": "Subir “{title}”",
+        "downLabel": "Descer “{title}”",
+        "moved": "“{title}” agora está na posição {position}.",
+        "stale": "A lista mudou enquanto você a via. Ela foi recarregada; tente de novo.",
+        "forbidden": "Só editores e acima mudam a ordem dos projetos."
+      },
+      "highlights": {
+        "title": "Resultados",
+        "legend": "Resultados do projeto",
+        "verifiable": "Use apenas resultados verificáveis: algo que você mediu e pode mostrar. Nunca invente métricas, clientes ou depoimentos.",
+        "empty": "Nenhum resultado ainda.",
+        "label": "Rótulo do resultado {number}",
+        "value": "Valor do resultado {number}",
+        "note": "Como foi medido (resultado {number})",
+        "noteHint": "Opcional: a fonte ou o método da medição.",
+        "remove": "Remover o resultado {number}",
+        "add": "Adicionar resultado",
+        "required": "Preencha o rótulo e o valor."
+      },
+      "gallery": {
+        "label": "Galeria",
+        "empty": "Nenhuma imagem na galeria.",
+        "item": "Imagem {number}: {name}",
+        "up": "Subir {name}",
+        "down": "Descer {name}",
+        "remove": "Remover {name} da galeria",
+        "removeShort": "Remover",
+        "add": "Adicionar imagem"
+      },
+      "edit": {
+        "back": "Voltar para os projetos",
+        "notFound": "Projeto não encontrado. Ele pode ter sido excluído.",
+        "content": "Estudo de caso",
+        "slugHint": "Aparece no endereço do projeto: /projetos/{slug}. Só letras minúsculas, números e hífens.",
+        "summary": "Resumo",
+        "summaryHint": "Mostrado nas listas e usado como descrição quando a descrição SEO está vazia. Até {max} caracteres.",
+        "role": "Papel",
+        "roleHint": "O que você fez no projeto, por exemplo “Desenvolvedor front-end”.",
+        "periodStart": "Início",
+        "periodEnd": "Fim",
+        "periodHint": "Mês e ano.",
+        "periodEndHint": "Mês e ano; vazio para um projeto em andamento.",
+        "repoUrl": "Link do GitHub",
+        "demoUrl": "Link da demo",
+        "urlHint": "Só links https://.",
+        "httpsOnly": "Use um link que comece com https://.",
+        "periodInvalid": "Use mês e ano.",
+        "periodOrder": "O fim não pode ser antes do início.",
+        "technologyMissing": "Uma das tecnologias não existe mais.",
+        "forbidden": "Você não tem permissão para alterar este projeto.",
+        "body": "Narrativa",
+        "bodyHint": "Comece pelas seções Contexto, Desafio, Solução e Resultados.",
+        "presentation": "Capa, galeria e tecnologias",
+        "featured": "Destacar na home",
+        "delete": "Excluir projeto",
+        "deleteTitle": "Excluir este projeto?",
+        "deleteText": "O projeto some da lista e o endereço fica livre. Esta ação não pode ser desfeita pelo admin.",
+        "deletePublished": "Despublique o projeto antes de excluí-lo.",
+        "deleteForbidden": "Você só pode excluir os seus próprios rascunhos."
       }
     }
   }

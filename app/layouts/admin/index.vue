@@ -12,6 +12,8 @@ const links = computed(() => [
   { to: '/admin', label: 'admin.layout.dashboard' },
   { to: '/admin/artigos', label: 'admin.layout.articles' },
   { to: '/admin/temas', label: 'admin.layout.tags' },
+  { to: '/admin/projetos', label: 'admin.layout.projects' },
+  { to: '/admin/tecnologias', label: 'admin.layout.technologies' },
   { to: '/admin/midia', label: 'admin.layout.media' },
   ...(canReadAudit.value ? [{ to: '/admin/auditoria', label: 'admin.layout.audit' }] : []),
   { to: '/admin/conta/passkeys', label: 'admin.layout.passkeys' },
