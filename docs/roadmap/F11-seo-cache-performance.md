@@ -130,6 +130,27 @@ Comprovar no preview.
 
 ---
 
+### F11-T6 — Tirar as rotas do admin do JS público
+
+| Status | Depende de | Requisitos | Skills |
+|---|---|---|---|
+| pendente | F07-T1 | RNF-01 | `/performance-audit`, `/architecture-guardian` |
+
+**Objetivo.** O entry de toda rota pública carrega os registros de rota das telas do admin (caminho, meta e lista de dependências de cada página): medido na F07-T1, 14 rotas = 0,68 kB gz, e cada tela nova soma ≈ 0,05 kB. Tirar esses registros do JS público (por exemplo, uma rota única `/admin/**` que carrega as telas sob demanda) e devolver o limite do R3/R8 a 120 KB (revisão da F07-T1 em performance-budgets §4).
+
+**Arquivos prováveis.** `app/pages/admin/**`, `nuxt.config.ts`, `performance-budgets.json`.
+
+**Fora do escopo.** Mudar o comportamento ou as URLs das telas do admin.
+
+**Critérios de aceite**
+- [ ] Nenhum registro de rota do admin no JS das rotas públicas (`check:budgets` procura).
+- [ ] R3/R8 de volta a ≤ 120 KB; as suítes do admin (E2E e a11y) seguem verdes.
+
+**Testes**
+- `check:budgets` e a suíte E2E do admin.
+
+---
+
 ## Prompt da fase
 
 ```text

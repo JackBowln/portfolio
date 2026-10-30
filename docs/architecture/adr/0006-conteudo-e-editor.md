@@ -113,6 +113,12 @@
 - **Resposta:** `/preview/**` e `/api/preview/**` com `private, no-store` e `X-Robots-Tag: noindex, nofollow` (routeRules); `/preview/` entra nos prefixos que nunca são públicos, então não há `Cache-Tag` nem cache. A página tem uma faixa "Pré-visualização" com a validade em UTC (o fuso do site, Q-06, ainda não foi decidido).
 - **Dados sem `useAsyncData`:** a página usa `useState` e um fetch no SSR. O primeiro uso de `useAsyncData` numa página pública de produção acrescentava cerca de 4,8 kB ao JS inicial de **todas** as rotas e levava o R3 a 120,8/120 (perf-log). A F06-T5 deve seguir o mesmo padrão ou rever o orçamento.
 
+## Decisões da F07-T1
+
+- **Um núcleo para artigos e projetos:** a cópia de trabalho (salvar com versão, autosave e revisão no mesmo `db.batch`, versões nomeadas, restaurar, slug livre) fica em `server/services/content/working-copy.{ts,repo.ts}`, escrita uma vez sobre `contentTables`. Publicar e despublicar usam um `PublishModel` por tipo (`publishing.service.ts`): o que muda entre artigo e projeto (entidade do snapshot, imagens que exigem alt, colunas `published_*`, relações publicadas, caminho público, tags de purge, ações de auditoria) é dado pelo modelo, e o batch protegido é o mesmo. Agendamento e cron continuam só para artigos.
+- **Projetos:** o autor é o `created_by` (a tabela não tem `author_id`); `project_technologies` guarda a ordem escolhida em `position`; a galeria registra usos `gallery` e exige alt para publicar; o corpo de um projeto novo vem com as seções Contexto, Desafio, Solução e Resultados.
+- **Admin:** histórico, diff e conflito recebem a lista de campos do tipo (`PROJECT_DIFF_FIELDS`), e o painel de publicação recebe a base da API e o recurso.
+
 ## Correção de contraste dos temas do Shiki (F05, depois da T5)
 
 - **Problema:** com `github-light`/`github-dark`, os comentários no tema escuro (`#6a737d` sobre `#24292e`, 3,05:1) e os parâmetros e variáveis no claro (`#e36209` sobre `#fff`, 3,49:1) ficavam abaixo do AA (4,5:1, WCAG 1.4.3). O axe não pegava porque o fixture não tinha esses tokens.

@@ -70,7 +70,8 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
-- **Temas** (`tag`, F06-T1): ler segue `article:read`; o `author` cria temas para marcar o próprio artigo, mas renomear e excluir afetam todos os artigos, por isso ficam com `editor` para cima.
+- **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
+- **Projetos** (F07-T1): o autor de um projeto é quem o criou (`created_by`), para os escopos 🟡. A ordem manual (`PUT /api/admin/projects/order`) muda a posição de projetos de outras pessoas no site, por isso exige `project:publish`.
 - **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.
 - **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
 - **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).

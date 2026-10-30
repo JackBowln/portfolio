@@ -47,11 +47,13 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 
 **Revisão na F02-T2 (owner, 26/10/2026):** o `@nuxtjs/i18n` (vue-i18n + runtime do módulo) acrescenta ~33 KB gz em toda rota pública, e o R3 esqueleto chegou a 102,2 kB, acima dos 100 KB iniciais. O owner manteve o módulo (ADR-0008) e os limites de JS inicial passaram para **R3 ≤ 120 KB** e **demais ≤ 125 KB**. Os limites voltam a ser revistos quando as rotas reais existirem (F06/F07). A fonte que o `pnpm check:budgets` lê é o `performance-budgets.json`.
 
+**Revisão na F07-T1 (owner, 30/10/2026):** R3 e R8 passam a **≤ 121 KB**. Medido: os registros de rota das telas do admin vão no entry de toda rota pública (14 rotas = 0,68 kB gz; cada tela nova ≈ 0,05 kB), e as 3 telas da F07-T1 levaram o R3 a 120,07 kB. A F11-T6 tira essas rotas do entry público e devolve o limite a 120 KB.
+
 **F01-T5 (29/10/2026):** o JS inicial de cada rota soma o entry, o chunk da página **e o do layout** (`layout` no JSON), com os imports estáticos. O layout é um chunk dinâmico, mas toda página o carrega antes de pintar. O E404 não tem chunk de página, porque o `app/error.vue` vai no entry.
 
 | Recurso | R3 (artigo) | R1 (home) | Demais públicas |
 |---|---|---|---|
-| JS inicial (gzip, carregado até o `load`) | ≤ 120 KB | ≤ 125 KB | ≤ 125 KB |
+| JS inicial (gzip, carregado até o `load`) | ≤ 121 KB (F07-T1; volta a 120 com a F11-T6) | ≤ 125 KB | ≤ 125 KB |
 | JS adiado de motion (após o LCP) | 0 | ≤ 60 KB | ≤ 60 KB (estudo de caso) |
 | CSS (gzip) | ≤ 25 KB | ≤ 30 KB | ≤ 30 KB |
 | Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB no caminho crítico (desde a F01-T3: 0, porque no primeiro acesso as fontes entram depois do `load`) | idem | idem |

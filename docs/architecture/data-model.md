@@ -151,7 +151,9 @@ O mesmo padrão vale para artigos, projetos e páginas:
 - `body`: narrativa do estudo de caso. O editor sugere as seções H2 Contexto, Desafio, Solução e Resultados;
 - `highlights` (json `{ label, value, note? }[]`): resultados **verificáveis**. Nunca preencher com métricas inventadas.
 
-`project_revisions` é idêntica a `article_revisions`. `project_technologies(project_id, tag_id, position)` reflete as tecnologias publicadas (tags `technology`).
+`project_revisions` é idêntica a `article_revisions`. `project_technologies(project_id, tag_id, position)` reflete as tecnologias publicadas (tags `technology`), na ordem escolhida.
+
+Desde a F07-T1: o autor de um projeto, para as permissões 🟡, é o `created_by`; `sort_order` é a posição na ordem manual (0 = primeiro), regravada para a lista inteira num `db.batch`; `featured` marca o destaque na home (quantos aparecem é configuração da F08); a galeria registra usos `gallery` em `media_usages`.
 
 ### 4.6 Páginas: `pages`, `page_localizations`, `page_revisions`
 

@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06 (gate) | RF-09.1, RF-09.2, RF-05.4 | `/cms-engineer`, `/architecture-guardian` |
+| concluída | F06 (gate) | RF-09.1, RF-09.2, RF-05.4 | `/cms-engineer`, `/architecture-guardian` |
 
 **Objetivo.** Criar a API e as telas de projetos com os campos do data-model:
 - `summary`, `role`, período, `repo_url`, `demo_url`, capa, galeria, tecnologias (tags `technology` com CRUD), `highlights` verificáveis, ordenação e destaque;
@@ -27,14 +27,23 @@ Os serviços de revisão e publicação da F06 são reaproveitados de forma gen�
 **Fora do escopo.** Filtros públicos (T2).
 
 **Critérios de aceite**
-- [ ] A generalização dos serviços da F06 não muda o comportamento dos artigos (todos os testes da F06 continuam verdes).
-- [ ] `repo_url` e `demo_url` só com `https:`; `highlights` exige rótulo e valor, e a interface avisa: "use apenas resultados verificáveis".
-- [ ] A ordenação manual persiste; o destaque na home é configurável.
-- [ ] Permissões e auditoria aplicadas.
+- [x] A generalização dos serviços da F06 não muda o comportamento dos artigos (todos os testes da F06 continuam verdes).
+- [x] `repo_url` e `demo_url` só com `https:`; `highlights` exige rótulo e valor, e a interface avisa: "use apenas resultados verificáveis".
+- [x] A ordenação manual persiste; o destaque na home é configurável.
+- [x] Permissões e auditoria aplicadas.
 
 **Testes**
 - Workers e API: CRUD, publicação e restauração de projeto.
 - Toda a suíte da F06 é reexecutada (regressão).
+
+**Resultado (30/10/2026).**
+- **Generalização (etapa 1, sem mudar os artigos):** `server/services/content/working-copy.{ts,repo.ts}` (salvar com versão, versões nomeadas, restaurar, slug livre, checagem de mídia) e um `PublishModel` por tipo em `publishing.service.ts` (entidade do snapshot, imagens que exigem alt, colunas `published_*`, relações publicadas, caminho público, purge, auditoria); `articles.service.ts` virou um invólucro fino. A suíte da F06 rodou verde antes de qualquer código de projeto e de novo no fim.
+- **Projetos:** `server/services/content/projects.{service,repo}.ts`, rotas em `server/api/admin/projects/**` (CRUD, revisões, restauração, publicar, despublicar e `PUT /order`), `shared/content/project-input.ts` (limites, `https:` só, highlights com rótulo e valor, período `YYYY-MM` com fim ≥ início, modelo do corpo com Contexto, Desafio, Solução e Resultados). Publicar refaz `project_technologies` na ordem escolhida e exige alt também na galeria; um slug publicado que muda deixa 301 do caminho traduzido (`/projetos`, `/en/projects`…).
+- **Tecnologias:** o CRUD de tags passou a aceitar `kind` (`topic` por padrão, `technology`); o uso de uma tag conta artigos e projetos; temas e tecnologias compartilham os endereços.
+- **Admin:** `/admin/projetos` (ordem manual com "Subir"/"Descer" e destaque), `/admin/projetos/[id]` (o editor dos artigos com os campos do estudo de caso e o aviso "use apenas resultados verificáveis") e `/admin/tecnologias`; `PublishPanel`, `HistoryPanel`, `ConflictDialog` e `RevisionDiff` receberam o tipo.
+- **Decisões:** generalização por descritor (1); sem agendamento nem link de preview para projetos, que chegam com a F07-T2 se preciso (2); ordem por botões, salva para a lista inteira num `db.batch` e exigindo `project:publish` (3); destaque por flag, quantos aparecem na home fica para a F08 (4); até 6 highlights, rótulo ≤ 60, valor ≤ 40, nota ≤ 200 (5).
+- **Orçamento:** os registros de rota das telas do admin vão no JS de toda rota pública (14 rotas = 0,68 kB gz) e levaram o R3 a 120,07 kB; o owner subiu o limite do R3/R8 para 121 KB, e a F11-T6 tira essas rotas do JS público.
+- **Testes:** `tests/workers/projects.test.ts`, `tests/api/projects.spec.ts`, `tests/e2e/projects.spec.ts`, as telas novas em `tests/a11y/admin.spec.ts`; `tests/api/articles.spec.ts` passou a esperar o `kind` válido.
 
 ---
 
