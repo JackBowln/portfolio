@@ -45,7 +45,7 @@ const yearMonth = z.string().regex(YEAR_MONTH, 'must be YYYY-MM').nullable()
 export const highlightSchema = z.strictObject({
   label: z.string().trim().min(1, 'required').max(PROJECT_LIMITS.highlightLabel),
   value: z.string().trim().min(1, 'required').max(PROJECT_LIMITS.highlightValue),
-  note: z.string().trim().max(PROJECT_LIMITS.highlightNote).optional().transform(value => (value ? value : undefined)),
+  note: z.string().trim().max(PROJECT_LIMITS.highlightNote).transform(value => (value ? value : undefined)).optional(),
 })
 
 export type ProjectHighlight = z.output<typeof highlightSchema>
