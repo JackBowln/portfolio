@@ -185,6 +185,15 @@ O mesmo padrão vale para artigos, projetos e páginas:
 - **CHECKs:** `translation_state = 'source'` ⇔ `locale = 'pt-BR'`; `status = 'scheduled'` exige `scheduled_at`; `published_revision_id`, `published_snapshot` e `published_slug` são nulos juntos; período `YYYY-MM` e URLs `https:` em projetos e temas.
 - **Cursor das listas:** `base64url("{published_at}:{id}")` (`shared/content/cursor.ts`), com o `id` como desempate de `published_at` repetido.
 
+### 4.9 Decisões da F06-T1
+
+- **Criar:** só com o título (decisão 4); o artigo nasce `draft` com a localização pt-BR, corpo vazio (`content: []`) e o slug do título (`shared/utils/slugify.ts`), com `-2`, `-3`… quando ocupado. Sem letra ou número no título, o slug é `artigo`. A busca de slugs ocupados usa uma faixa (`slug = base` ou entre `base-` e `base.`), porque o D1 recusa padrões de `LIKE` com mais de 50 bytes.
+- **Salvar:** um `db.batch` (`saveArticleStatements`). A cópia de trabalho é atualizada só se a `version` for a lida (concorrência otimista); a entidade (capa, `draft_tag_ids`, `featured`) e os `media_usages` do artigo (substituídos inteiros: corpo, galeria e poster por idioma, capa sem idioma, OG por idioma) só mudam se a cópia agora tem `version + 1` e o `working_hash` desta gravação. Uma gravação desatualizada não muda nada e responde 409 com `path: "version"`.
+- **Validação ao salvar:** corpo pelo `document-schema`; capa e imagem de OG precisam ser imagens prontas; toda mídia citada no corpo precisa existir (qualquer status não excluído); temas precisam existir e ser `topic`; até 12 temas.
+- **Excluir:** lógico, na entidade e nas localizações, e os `media_usages` do artigo saem; o slug fica livre (índice parcial). Com uma localização publicada, 409 até despublicar (F06-T4, decisão 2).
+- **Temas:** `topic` com nome e slug em pt-BR; os usos contam artigos não excluídos com o tema em `draft_tag_ids` ou em `article_tags`. Um tema em uso não pode ser excluído (409 com a contagem, decisão 3).
+- **Âncoras:** os títulos usam a mesma transliteração dos slugs (`anchorSlug` chama `slugify`, decisão 5).
+
 ## 5. Mídia
 
 | Tabela | Colunas | Notas |

@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F05 (gate) | RF-04.7, RF-07.1, RF-07.4 | `/cms-engineer`, `/frontend-design` |
+| concluída | F05 (gate) | RF-04.7, RF-07.1, RF-07.4 | `/cms-engineer`, `/frontend-design` |
 
 **Objetivo.** Implementar a API para listar, criar, ler, atualizar e excluir (lógico) artigos e a localização pt-BR. No admin:
 - lista com filtros por status, idioma e estado de tradução;
@@ -25,15 +25,24 @@
 **Fora do escopo.** Autosave e revisões (T2); publicação (T4).
 
 **Critérios de aceite**
-- [ ] Permissões aplicadas (`article:*`, com `author` restrito ao próprio conteúdo).
-- [ ] Slug único por idioma, com erro claro em caso de conflito; transliteração (ü→ue, ß→ss, ç→c, acentos).
-- [ ] A prévia do resultado de busca mostra os limites recomendados (título ≤ 60, descrição 120–160).
-- [ ] Toda mutação é auditada.
+- [x] Permissões aplicadas (`article:*`, com `author` restrito ao próprio conteúdo).
+- [x] Slug único por idioma, com erro claro em caso de conflito; transliteração (ü→ue, ß→ss, ç→c, acentos).
+- [x] A prévia do resultado de busca mostra os limites recomendados (título ≤ 60, descrição 120–160).
+- [x] Toda mutação é auditada.
 
 **Testes**
 - Unit: `slugify` com casos pt, es, de e fr.
 - API: permissões e validação do CRUD.
 - E2E: criar e editar um artigo.
+
+**Resultado (30/10/2026).**
+- **API:** `server/api/admin/articles/**` (lista com filtros e cursor, criar só com o título, ler, salvar e excluir) e `server/api/admin/tags/**`, todas com `defineAdminHandler`; serviços e repositórios em `server/services/content/{articles,tags}.{service,repo}.ts`; entrada em `shared/content/article-input.ts`; `shared/utils/slugify.ts`.
+- **Gravação:** um `db.batch` com a cópia de trabalho guardada pela `version`, os derivados, os campos da entidade e os usos de mídia; uma gravação desatualizada não muda nada e responde 409 no campo `version`. Slug repetido responde 409 no campo `slug`.
+- **Admin:** `/admin/artigos` (lista e "novo artigo"), `/admin/artigos/[id]` (edição com `SerpPreview`, `MediaField` e `TopicPicker`) e `/admin/temas`.
+- **Permissões:** recurso `tag` na matriz (security-model §4); `author` só os próprios artigos e só exclui os próprios rascunhos.
+- **Correções encontradas no caminho:** o editor emitia um documento sem `content` quando vazio (o schema recusaria a gravação) e o D1 recusa padrões de `LIKE` com mais de 50 bytes (slugs longos davam 500 ao criar).
+- **Decisões:** data-model §4.9.
+- **Testes:** `tests/unit/slugify.test.ts`, `tests/workers/articles.test.ts`, `tests/api/articles.spec.ts`, `tests/e2e/articles.spec.ts`, `tests/nuxt/content-editor.test.ts` e casos novos em `tests/a11y/admin.spec.ts`.
 
 ---
 
