@@ -44,7 +44,8 @@ for (const [name, paths] of Object.entries(ROUTES)) {
 }
 
 test('skeleton pages are noindex; the home and about are indexable (F02-T3)', async ({ request }) => {
-  expect(await (await request.get('/en/projects')).text()).toContain('<meta name="robots" content="noindex">')
+  // The projects are real since F07-T2; contact is still a skeleton
+  expect(await (await request.get('/en/contact')).text()).toContain('<meta name="robots" content="noindex">')
   for (const path of ['/en', '/en/about']) {
     expect(await (await request.get(path)).text(), path).not.toContain('<meta name="robots"')
   }

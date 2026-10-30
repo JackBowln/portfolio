@@ -111,9 +111,10 @@ test('the about page has the right head in every locale', async ({ page }) => {
 })
 
 test('noindex skeletons have a canonical but no hreflang', async ({ page, request }) => {
-  // The blog index is noindex only while it has no article in the locale (F06-T5)
+  // The blog and projects indexes are noindex only while they have nothing published in the locale (F06-T5, F07-T2)
   const blogIsEmpty = (await (await request.get('/api/public/blog?locale=en')).json() as { total: number }).total === 0
-  for (const path of ['/projetos', ...(blogIsEmpty ? ['/en/blog'] : []), '/de/projekte/x', '/fr/contact']) {
+  const projectsAreEmpty = (await (await request.get('/api/public/projects?locale=pt-BR')).json() as { items: unknown[] }).items.length === 0
+  for (const path of [...(projectsAreEmpty ? ['/projetos'] : []), ...(blogIsEmpty ? ['/en/blog'] : []), '/fr/contact', '/de/kontakt']) {
     const head = await readHead(page, path)
 
     expect(head.robots, path).toBe('noindex')

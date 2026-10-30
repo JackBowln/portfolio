@@ -44,7 +44,8 @@ test('dynamic routes keep their parameter when switching', async ({ page }) => {
   await page.getByRole('link', { name: 'Deutsch' }).click()
 
   await expect(page).toHaveURL('/de/projekte/x')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projekt')
+  // The case study is real since F07-T2: the fixture's German title
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Example project (de) [PLACEHOLDER]')
 })
 
 test('the switcher works with the keyboard', async ({ page, isMobile }) => {
