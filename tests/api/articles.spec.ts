@@ -170,7 +170,7 @@ test.describe('history (F06-T2)', () => {
     expect((await patch(owner.request, id, { version: 2, title: 'Versão ruim' })).status()).toBe(200)
     for (const [name, data, code] of [
       ['stale version', { version: 2, revisionId: revision.id }, 409],
-      ['revision of another article', { version: 3, revisionId: list.items[1]!.id.replace(/.$/, '0') }, 404],
+      ['revision that is not this article\'s', { version: 3, revisionId: '01a18000-0000-7000-8000-000000000999' }, 404],
       ['not an id', { version: 3, revisionId: 'x' }, 400],
     ] as const) {
       expect((await owner.request.post(`/api/admin/articles/${id}/restore`, { headers: ORIGIN, data })).status(), name).toBe(code)
