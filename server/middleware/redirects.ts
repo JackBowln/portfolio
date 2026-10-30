@@ -1,7 +1,7 @@
-// Redirects of old article paths (data-model §9.4, ADR-0003 §3, F06-T4): a published slug that changed leaves a
-// 301 from the old path. Only GET/HEAD on paths shaped like an article reach D1; the answer is cached at the edge
-// with the `redirects` tag, which every redirect change purges
-import { ARTICLE_PATH } from '#shared/content/paths'
+// Redirects of old article and project paths (data-model §9.4, ADR-0003 §3, F06-T4, F07-T1): a published slug that
+// changed leaves a 301 from the old path. Only GET/HEAD on paths shaped like an article or a project reach D1; the
+// answer is cached at the edge with the `redirects` tag, which every redirect change purges
+import { ARTICLE_PATH, PROJECT_PATH } from '#shared/content/paths'
 import { cacheTags } from '#shared/cache/tags'
 import { findRedirect } from '../services/content/publishing.repo.ts'
 
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     return
   }
   const path = event.path.split('?')[0] ?? event.path
-  if (!ARTICLE_PATH.test(path)) {
+  if (!ARTICLE_PATH.test(path) && !PROJECT_PATH.test(path)) {
     return
   }
   const redirect = await findRedirect(useDb(event), path)

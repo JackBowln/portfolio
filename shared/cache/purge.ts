@@ -23,3 +23,23 @@ export function articlePurgeTags(event: ArticleEvent): string[] {
     ...(event.redirect ? [cacheTags.redirects()] : []),
   ])]
 }
+
+export interface ProjectEvent {
+  id: string
+  locale: Locale
+  /** Technologies before and after the event: a technology filter lists the project or stops listing it */
+  tagIds: readonly string[]
+  redirect?: boolean
+}
+
+/** Publish or unpublish of one project localization (F07-T1); the home lists featured projects */
+export function projectPurgeTags(event: ProjectEvent): string[] {
+  return [...new Set([
+    cacheTags.projectLocale(event.id, event.locale),
+    cacheTags.projectList(event.locale),
+    cacheTags.page('home', event.locale),
+    cacheTags.sitemap(),
+    ...event.tagIds.map(cacheTags.tag),
+    ...(event.redirect ? [cacheTags.redirects()] : []),
+  ])]
+}
