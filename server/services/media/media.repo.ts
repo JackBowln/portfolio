@@ -1,5 +1,5 @@
 // Media queries (data-model §5). Deleted rows stay in the table (soft delete) and are hidden from every read here
-import { and, desc, eq, exists, gte, inArray, like, lt, ne, notExists, sql } from 'drizzle-orm'
+import { and, desc, eq, exists, gte, inArray, lt, ne, notExists, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
 import type { Locale, MediaKind, MediaStatus, MediaTrackKind, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
@@ -120,10 +120,6 @@ export interface MediaFilters {
 }
 
 /** LIKE treats % and _ as wildcards; the search is a plain substring */
-function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, char => `\\${char}`)
-}
-
 export async function listMedia(db: Db, filters: MediaFilters, limit: number) {
   const sourceAlt = db.select({ one: sql`1` }).from(mediaLocalizations).where(and(
     eq(mediaLocalizations.mediaId, media.id),
@@ -138,7 +134,9 @@ export async function listMedia(db: Db, filters: MediaFilters, limit: number) {
     conditions.push(eq(media.status, filters.status))
   }
   if (filters.search) {
-    conditions.push(sql`${like(media.originalFilename, `%${escapeLike(filters.search)}%`)} ESCAPE '\\'`)
+    // A literal substring, ASCII case ignored like LIKE did; instr() has no pattern, so no wildcard escaping and no
+    // limit (D1 refuses LIKE patterns over 50 bytes, and searches go up to 100 characters)
+    conditions.push(sql`instr(lower(${media.originalFilename}), lower(${filters.search})) > 0`)
   }
   if (filters.missingAlt) {
     conditions.push(eq(media.kind, 'image'), eq(media.decorative, false), notExists(sourceAlt))

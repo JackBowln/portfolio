@@ -107,6 +107,16 @@ describe('media repository', () => {
     expect(await listMedia(db, { search: `${tag}_` }, 100)).toEqual([])
   })
 
+  // D1 refuses LIKE patterns over 50 bytes; the admin accepts searches of up to 100 characters
+  it('searches with a long term, ignoring ASCII case', async () => {
+    const name = `${sha().slice(0, 8)}-${'fotografia-da-praia-ao-entardecer-'.repeat(2)}final.jpg`
+    const item = row({ originalFilename: name })
+    await insertMedia(db, item, [])
+    const term = name.slice(0, 90).toUpperCase()
+    expect(term.length).toBeGreaterThan(50)
+    expect((await listMedia(db, { search: term }, 100)).map(entry => entry.id)).toEqual([item.id])
+  })
+
   it('upserts localizations and cascades them with the row', async () => {
     const item = row()
     await insertMedia(db, item, [])
