@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // Static header (not fixed, so it never covers the focused element): site name, sections and theme. Below md the
-// sections move into the mobile menu; the language switcher lives in the footer, once per page
+// sections move into the mobile menu; the language switcher lives in the footer, once per page. The name comes from
+// the settings (F08-T1)
+const settings = useSiteSettings()
 </script>
 
 <template>
@@ -10,7 +12,7 @@
         to="/"
         class="inline-flex min-h-(--target-comfortable) items-center font-display text-step-1 no-underline hover:text-accent"
       >
-        {{ $t('seo.siteName') }}
+        {{ settings.identity.name }}
       </UiLocalizedLink>
       <div class="flex items-center gap-6">
         <LayoutSiteNav

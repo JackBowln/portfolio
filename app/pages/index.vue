@@ -2,22 +2,23 @@
 import type { Locale } from '#shared/types/enums'
 import { person, serializeJsonLd, website } from '#shared/seo/jsonld'
 
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 const { siteUrl } = useRuntimeConfig().public
+const settings = useSiteSettings()
 
 usePageSeo({
-  title: () => t('seo.siteName'),
-  description: () => t('seo.defaultDescription'),
+  title: () => settings.value.identity.name,
+  description: () => settings.value.seo.description,
   titleTemplate: '%s',
 })
 
-// WebSite + Person (i18n-seo §5); the name stays [PLACEHOLDER] until the identity settings exist
+// WebSite + Person (i18n-seo §5), named by the identity settings (F08-T1)
 useHead({
   script: [{
     type: 'application/ld+json',
     innerHTML: () => serializeJsonLd([
-      website({ siteUrl, name: t('seo.siteName'), locale: locale.value as Locale }),
-      person({ siteUrl, name: t('seo.siteName') }),
+      website({ siteUrl, name: settings.value.identity.name, locale: locale.value as Locale }),
+      person({ siteUrl, name: settings.value.identity.name }),
     ]),
   }],
 })

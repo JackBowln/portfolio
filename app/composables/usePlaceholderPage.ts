@@ -2,9 +2,10 @@
 // is listed as indexable in shared/i18n/routes.ts (also what the sitemap includes)
 export function usePlaceholderPage(titleKey: string, options: { indexable?: boolean } = {}) {
   const { t } = useI18n()
+  const settings = useSiteSettings()
   usePageSeo({
     title: () => t(titleKey),
-    description: () => t('seo.defaultDescription'),
+    description: () => settings.value.seo.description,
     noindex: !options.indexable,
   })
 }

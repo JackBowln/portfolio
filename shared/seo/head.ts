@@ -21,6 +21,10 @@ export interface SeoInput {
   /** Articles: ISO dates for article:published_time / article:modified_time */
   publishedTime?: string
   modifiedTime?: string
+  /** og:site_name, from the identity settings (F08-T1) */
+  siteName?: string
+  /** og:image and twitter:image: the page's, or the default of the SEO settings (F08-T1) */
+  image?: { url: string, width: number, height: number, alt: string }
 }
 
 export interface SeoHead {
@@ -51,6 +55,18 @@ export function buildSeoHead(input: SeoInput): SeoHead {
     ...published.filter(locale => locale !== input.locale).map(locale => ({ property: 'og:locale:alternate', content: OG_LOCALES[locale] })),
     { name: 'twitter:card', content: 'summary_large_image' },
   ]
+  if (input.siteName) {
+    meta.push({ property: 'og:site_name', content: input.siteName })
+  }
+  if (input.image) {
+    meta.push(
+      { property: 'og:image', content: input.image.url },
+      { property: 'og:image:width', content: String(input.image.width) },
+      { property: 'og:image:height', content: String(input.image.height) },
+      { property: 'og:image:alt', content: input.image.alt },
+      { name: 'twitter:image', content: input.image.url },
+    )
+  }
   if (input.publishedTime) {
     meta.push({ property: 'article:published_time', content: input.publishedTime })
   }

@@ -34,7 +34,9 @@ export default defineNitroPlugin((nitroApp) => {
       setCachePolicy(event, CACHEABLE_METHODS.has(event.method) && isHtml ? 'public' : 'none')
     }
 
+    // A private response carries no tags, whatever the page added (the layout's settings tag on a preview, F08-T1)
     if (!String(getResponseHeader(event, 'cache-control')).includes('public')) {
+      removeResponseHeader(event, 'cache-tag')
       return
     }
     if (getResponseHeader(event, 'set-cookie')) {

@@ -22,7 +22,17 @@
     "footer": {
       "nav": "Footer navigation",
       "privacy": "Privacy",
-      "copyright": "© {year} {name}"
+      "copyright": "© {year} {name}",
+      "social": "Social links and e-mail"
+    },
+    "social": {
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "mastodon": "Mastodon",
+      "bluesky": "Bluesky",
+      "x": "X",
+      "youtube": "YouTube",
+      "website": "Website"
     }
   },
   "errors": {
@@ -144,10 +154,5 @@
   },
   "common": {
     "sampleDate": "Sample date: {date}"
-  },
-  "seo": {
-    "siteName": "[PLACEHOLDER]",
-    "titleTemplate": "%s — [PLACEHOLDER]",
-    "defaultDescription": "[PLACEHOLDER]"
   }
 }

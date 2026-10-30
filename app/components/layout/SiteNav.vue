@@ -1,20 +1,25 @@
 <script setup lang="ts">
-// Section links shared by the header, the mobile menu and the footer. `to` is the pt-BR path (UiLocalizedLink);
-// NuxtLink marks the current page with aria-current, which the styles reuse
+// Section links shared by the header, the mobile menu and the footer, in the order and selection of the navigation
+// settings (F08-T1). `to` is the pt-BR path (UiLocalizedLink); NuxtLink marks the current page with aria-current,
+// which the styles reuse
 const props = withDefaults(defineProps<{
   label: string
   layout?: 'row' | 'column'
   withPrivacy?: boolean
 }>(), { layout: 'row', withPrivacy: false })
 
-const LINKS = [
-  { to: '/projetos', label: 'layout.nav.projects' },
-  { to: '/blog', label: 'layout.nav.blog' },
-  { to: '/sobre', label: 'layout.nav.about' },
-  { to: '/contato', label: 'layout.nav.contact' },
-] as const
+const LINKS = {
+  projects: { to: '/projetos', label: 'layout.nav.projects' },
+  blog: { to: '/blog', label: 'layout.nav.blog' },
+  about: { to: '/sobre', label: 'layout.nav.about' },
+  contact: { to: '/contato', label: 'layout.nav.contact' },
+} as const
 
-const links = computed(() => props.withPrivacy ? [...LINKS, { to: '/privacidade', label: 'layout.footer.privacy' }] : LINKS)
+const settings = useSiteSettings()
+const links = computed(() => {
+  const pages = settings.value.navigation.map(page => LINKS[page])
+  return props.withPrivacy ? [...pages, { to: '/privacidade', label: 'layout.footer.privacy' }] : pages
+})
 
 const LAYOUTS = {
   row: { list: 'flex flex-wrap gap-x-6 gap-y-2', link: 'min-h-(--target-min)' },

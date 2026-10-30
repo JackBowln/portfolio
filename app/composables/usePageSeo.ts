@@ -1,5 +1,6 @@
 // Head SEO of every public page (ADR-0008 §4), built by shared/seo/head.ts. hreflang lists only the locales where
-// the page is published; useLocaleHead is not used because it would emit alternates for untranslated locales
+// the page is published; useLocaleHead is not used because it would emit alternates for untranslated locales. The
+// title template, site name and default share image come from the settings (F08-T1)
 import { LOCALES } from '#shared/types/enums'
 import type { Locale } from '#shared/types/enums'
 import { buildSeoHead } from '#shared/seo/head'
@@ -10,7 +11,7 @@ export interface PageSeoOptions {
   description: MaybeRefOrGetter<string>
   /** Locales where this page is published; static pages default to all, content passes its approved translations */
   published?: MaybeRefOrGetter<readonly Locale[]>
-  /** Defaults to the locale's `seo.titleTemplate`; the home passes '%s' */
+  /** Defaults to the locale's template in the SEO settings; the home passes '%s' */
   titleTemplate?: string
   type?: SeoInput['type']
   noindex?: MaybeRefOrGetter<boolean>
@@ -21,19 +22,23 @@ export interface PageSeoOptions {
 }
 
 export function usePageSeo(options: PageSeoOptions) {
-  const { locale, t } = useI18n()
+  const { locale } = useI18n()
   const route = useRoute()
+  const settings = useSiteSettings()
   const switchLocalePath = useSwitchLocalePath()
   const { siteUrl } = useRuntimeConfig().public
 
   const head = computed(() => {
     const published = toValue(options.published) ?? LOCALES
+    const { seo, identity } = settings.value
     return buildSeoHead({
       siteUrl,
       locale: locale.value as Locale,
       path: route.path,
       title: toValue(options.title),
-      titleTemplate: options.titleTemplate ?? t('seo.titleTemplate'),
+      titleTemplate: options.titleTemplate ?? seo.titleTemplate,
+      siteName: identity.name,
+      ...(seo.ogImage ? { image: seo.ogImage } : {}),
       description: toValue(options.description),
       alternates: Object.fromEntries(published.map(code => [code, switchLocalePath(code)])),
       noindex: toValue(options.noindex) ?? false,
