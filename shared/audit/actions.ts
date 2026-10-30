@@ -13,6 +13,12 @@ export const AUDIT_ACTIONS = [
   'media.updated',
   'media.deleted',
   'media.upload_rejected',
+  'article.created',
+  'article.updated',
+  'article.deleted',
+  'tag.created',
+  'tag.updated',
+  'tag.deleted',
 ] as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number]

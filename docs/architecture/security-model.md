@@ -54,6 +54,8 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `article/project/page:delete` | ✅ | ✅ | ✅ | 🟡 (rascunho) | — | — |
 | `article/project/page:publish`, `:schedule` | ✅ | ✅ | ✅ | — | — | — |
 | `article/project/page:restore` | ✅ | ✅ | ✅ | 🟡 | — | — |
+| `tag:create` | ✅ | ✅ | ✅ | ✅ | — | — |
+| `tag:update/delete` | ✅ | ✅ | ✅ | — | — | — |
 | `media:read` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `media:create/update` | ✅ | ✅ | ✅ | ✅ | — | — |
 | `media:delete` | ✅ | ✅ | ✅ | 🟡 | — | — |
@@ -68,6 +70,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
+- **Temas** (`tag`, F06-T1): ler segue `article:read`; o `author` cria temas para marcar o próprio artigo, mas renomear e excluir afetam todos os artigos, por isso ficam com `editor` para cima.
 - **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.
 - **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
 - **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).

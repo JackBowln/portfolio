@@ -10,6 +10,8 @@ export const STATEMENTS = {
   article: ['create', ...CONTENT_ACTIONS],
   project: ['create', ...CONTENT_ACTIONS],
   page: CONTENT_ACTIONS,
+  // Topics (F06-T1); reading them follows article:read
+  tag: ['create', 'update', 'delete'],
   media: ['create', 'read', 'update', 'delete'],
   translation: ['run', 'review', 'approve'],
   settings: ['read', 'update'],
@@ -57,6 +59,7 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
     article: grant('article', 'any'),
     project: grant('project', 'any'),
     page: grant('page', 'any'),
+    tag: grant('tag', 'any'),
     media: grant('media', 'any'),
     translation: grant('translation', 'any'),
     settings: grant('settings', 'any', ['read']),
@@ -66,6 +69,8 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
     article: authorContent('article'),
     project: authorContent('project'),
     page: authorContent('page'),
+    // Tagging their own article may need a new topic; renaming or deleting one changes every article
+    tag: grant('tag', 'any', ['create']),
     media: { ...grant('media', 'any', ['create', 'read', 'update']), ...grant('media', 'own', ['delete']) },
     ...ownSessions,
   },
