@@ -741,6 +741,38 @@
       "copyFailed": "Não foi possível copiar. Selecione o link e copie.",
       "open": "Abrir em outra aba",
       "unsaved": "Salve as alterações antes de gerar o link: há campos a corrigir ou um conflito a resolver."
+    },
+    "publish": {
+      "title": "Publicação",
+      "status": {
+        "draft": "Rascunho: ainda não está no site.",
+        "published": "No site desde {date}.",
+        "scheduled": "Agendado para {date}.",
+        "unpublished": "Fora do site (despublicado)."
+      },
+      "changed": "Há alterações salvas que ainda não estão no site.",
+      "publish": "Publicar agora",
+      "publishChanges": "Publicar alterações",
+      "unpublish": "Despublicar",
+      "unpublishTitle": "Tirar este artigo do site?",
+      "unpublishText": "O artigo deixa de aparecer no blog, no RSS e no sitemap, assim como as traduções publicadas. O texto e o histórico continuam no admin, e você pode publicar de novo.",
+      "at": "Data e hora ({zone})",
+      "schedule": "Agendar",
+      "unschedule": "Cancelar agendamento",
+      "notAllowed": "Seu papel não publica nem agenda; peça a quem edita.",
+      "done": {
+        "published": "Artigo publicado.",
+        "unpublished": "Artigo fora do site.",
+        "scheduled": "Agendado para {date}.",
+        "unscheduled": "Agendamento cancelado."
+      },
+      "errors": {
+        "when": "Escolha uma data e hora futuras, dentro de um ano.",
+        "missingAlt": "{count} imagem precisa de texto alternativo antes de publicar. Preencha na biblioteca de mídia ou marque como decorativa. | {count} imagens precisam de texto alternativo antes de publicar. Preencha na biblioteca de mídia ou marque como decorativas.",
+        "unavailable": "O artigo usa uma imagem que não está mais disponível. Troque ou remova a imagem.",
+        "slugTaken": "Outro artigo já está no site com este endereço. Mude o endereço antes de publicar.",
+        "translation": "Esta tradução só pode ser publicada aprovada e depois do original em português."
+      }
     }
   }
 }

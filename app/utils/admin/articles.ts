@@ -21,6 +21,12 @@ export interface ArticleLocalization {
   version: number
   updatedAt: string
   publishedAt: string | null
+  scheduledAt: string | null
+  publishedSlug: string | null
+  publishedSnapshot: {
+    entity: { coverMediaId: string | null, tagIds: string[] }
+    localization: { title: string, slug: string, excerpt: string, body: DocumentJson, seoTitle: string | null, seoDescription: string | null, ogImageMediaId: string | null, noindex: boolean }
+  } | null
 }
 
 export interface ArticleDetail {

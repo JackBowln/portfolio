@@ -3,6 +3,7 @@
 // copy or open it. The page saves pending changes first (`beforeCreate`), so the link shows the current text.
 // Anyone with the link sees the draft until it expires
 import { PREVIEW_HOURS } from '#shared/content/article-input'
+import { formatInZone } from '#shared/utils/time-zone'
 import { apiError } from '~/utils/admin/articles'
 import { adminFetch } from '~/utils/admin/session'
 
@@ -15,9 +16,7 @@ const message = ref<{ tone: 'success' | 'danger', text: string }>()
 const hoursId = useId()
 const urlId = useId()
 
-const expires = computed(() => link.value
-  ? new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(new Date(link.value.expiresAt))
-  : '')
+const expires = computed(() => (link.value ? formatInZone(link.value.expiresAt, 'pt-BR') : ''))
 
 async function create() {
   message.value = undefined

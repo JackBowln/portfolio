@@ -3,6 +3,7 @@
 // that says until when the link works. Never cached nor indexed (routeRules, meta robots); any bad or stale link is
 // a plain 404
 import type { ArticlePreview } from '#shared/content/preview'
+import { formatInZone } from '#shared/utils/time-zone'
 import ArticleView from '~/components/content/ArticleView.vue'
 
 definePageMeta({ i18n: false, layout: 'reading' })
@@ -21,10 +22,8 @@ if (!data.value) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found', fatal: true })
 }
 
-// No site time zone yet (PRD Q-06): the expiry is shown in UTC, and says so
-const expires = computed(() => data.value
-  ? new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(new Date(data.value.expiresAt * 1000))
-  : '')
+// In the site's time zone (Q-06), with its name
+const expires = computed(() => (data.value ? formatInZone(data.value.expiresAt * 1000, 'pt-BR') : ''))
 
 useHead({
   title: () => t('preview.title', { title: data.value?.title ?? '' }),

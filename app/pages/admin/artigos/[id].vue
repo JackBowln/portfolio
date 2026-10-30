@@ -13,6 +13,7 @@ import { SOURCE_LOCALE } from '#shared/types/enums'
 import { MAX_SLUG_LENGTH, SLUG_PATTERN, slugify } from '#shared/utils/slugify'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
 import PreviewLink from '~/components/admin/articles/PreviewLink.vue'
+import PublishPanel from '~/components/admin/articles/PublishPanel.vue'
 import TopicPicker from '~/components/admin/articles/TopicPicker.vue'
 import ConflictDialog from '~/components/admin/history/ConflictDialog.vue'
 import HistoryPanel from '~/components/admin/history/HistoryPanel.vue'
@@ -24,6 +25,7 @@ import type { SaveOutcome } from '~/composables/admin/useAutosave'
 import type { ArticleDetail, TopicItem } from '~/utils/admin/articles'
 import { apiError, hasIssue } from '~/utils/admin/articles'
 import type { VersionFields } from '~/utils/admin/document-diff'
+import { diffVersions } from '~/utils/admin/document-diff'
 import { formatDateTime } from '~/utils/admin/format'
 import type { RevisionItem } from '~/utils/admin/revisions'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
@@ -291,6 +293,24 @@ async function saveNow() {
   }
   autosave.resume()
   await autosave.flush()
+}
+
+/** Saved changes that are not on the site: the server's working copy against the published snapshot */
+const unpublishedChanges = computed(() => {
+  const published = copy.value?.publishedSnapshot
+  if (!published || !copy.value || !article.value) {
+    return false
+  }
+  const working = copy.value
+  return !diffVersions(
+    { ...published.localization, coverMediaId: published.entity.coverMediaId, tagIds: published.entity.tagIds },
+    { ...working, coverMediaId: article.value.coverMediaId, tagIds: article.value.tagIds },
+  ).identical
+})
+
+/** After a publish action: the server's view of the article; the draft (the same text) stays as typed */
+function published(detail: ArticleDetail) {
+  article.value = detail
 }
 
 /** The link shows the saved text: what is pending is saved first, and nothing is generated while it cannot be */
@@ -638,6 +658,27 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :description="draft.seoDescription.trim() || draft.excerpt"
           :path="`/blog/${draft.slug}`"
           :noindex="draft.noindex"
+        />
+      </section>
+
+      <section
+        class="grid max-w-3xl gap-4"
+        aria-labelledby="article-publish"
+      >
+        <UiHeading
+          id="article-publish"
+          :level="2"
+          :size="3"
+        >
+          {{ $t('admin.publish.title') }}
+        </UiHeading>
+        <PublishPanel
+          :article="article"
+          :copy="copy"
+          :changed="unpublishedChanges"
+          :before-action="saveBeforePreview"
+          @updated="published"
+          @conflict="openConflict"
         />
       </section>
 
