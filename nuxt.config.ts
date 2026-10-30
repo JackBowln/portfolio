@@ -78,6 +78,12 @@ export default defineNuxtConfig({
       deployConfig: true,
       nodeCompat: true,
     },
+    // Cron jobs run as Nitro tasks from the Worker's scheduled handler. One trigger every 5 minutes in preview and
+    // production (wrangler.jsonc, environments.md); a task that needs less often decides inside itself (F06-T2)
+    experimental: { tasks: true },
+    scheduledTasks: {
+      '*/5 * * * *': ['content:prune-autosaves'],
+    },
   },
 
   vite: {
