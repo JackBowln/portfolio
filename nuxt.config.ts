@@ -112,15 +112,18 @@ export default defineNuxtConfig({
   },
 
   hooks: {
-    // The content renderer never hydrates (StaticContent, F05-T4), so a first visit must not fetch its chunk, not
-    // even as an idle prefetch. Nuxt drops hints for never-hydrated modules only when it renders from the client
+    // Never-hydrated components (StaticContent, F05-T4; the article body, F06-T5): a first visit must not fetch their
+    // chunks, not even as an idle prefetch. Nuxt drops hints for never-hydrated modules only when it renders from the client
     // manifest, and production renders from precomputed dependencies, so the chunk is unflagged here instead.
     // A client-side navigation still loads it on demand
     'build:manifest': (manifest) => {
-      const renderer = manifest['components/content/ContentRenderer.vue']
-      if (renderer) {
-        renderer.prefetch = false
-        renderer.preload = false
+      // Never-hydrated components: the content renderer (F05-T4) and the article body (F06-T5)
+      for (const key of ['components/content/ContentRenderer.vue', 'components/blog/BlogArticleBody.vue']) {
+        const chunk = manifest[key]
+        if (chunk) {
+          chunk.prefetch = false
+          chunk.preload = false
+        }
       }
     },
   },
