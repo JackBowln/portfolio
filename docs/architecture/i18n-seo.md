@@ -42,7 +42,7 @@ Os caminhos não incluem o prefixo; o módulo aplica `/en`, `/es`, `/de` e `/fr`
 | Situação | Comportamento |
 |---|---|
 | Artigo publicado em pt-BR, sem `en` aprovado | Não aparece em `/en/blog`, no sitemap `en` nem no hreflang. `/en/blog/<slug-pt>` → 404 |
-| Usuário em `/de/blog/artikel` troca para `es`, sem tradução `es` | `<SwitchLocalePathLink>` leva a `/es/blog` (índice da seção) |
+| Usuário em `/de/blog/artikel` troca para `es`, sem tradução `es` | O seletor leva a `/es/blog` (índice da seção): a página declara os idiomas em que existe (`useLocaleFallback`), e o servidor reescreve os links depois do render (`plugins/locale-switch.server.ts`). Páginas de tema fazem o mesmo para os outros idiomas, até os temas terem slugs traduzidos (F09) |
 | Tradução `outdated` | A versão `approved` anterior continua no ar até a nova aprovação (a revisão publicada não muda) |
 | Página institucional (sobre, contato) sem tradução aprovada | O conteúdo da página usa o fallback pt-BR com o aviso "conteúdo disponível em português", e a página leva `noindex` naquele idioma até ser traduzida. A interface (menu, rodapé) segue traduzida |
 
@@ -75,7 +75,7 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 
 ## 6. Sitemap e feeds
 
-- `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008).
+- `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008). Desde a F06-T5, lista o índice do blog nos idiomas com artigo e cada artigo publicado, com os alternates dos idiomas publicados e `lastmod` da versão publicada.
 - **Entram:** home, índices, artigos, projetos, temas com pelo menos 1 artigo publicado no idioma, sobre, contato e privacidade.
 - `lastmod`: `published_at` da revisão publicada; para índices, o mais recente dos itens.
 - **Não entram:** `/admin`, `/api`, `/preview`, páginas com `noindex`, paginação além da página 1.

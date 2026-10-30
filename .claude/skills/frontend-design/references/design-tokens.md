@@ -10,7 +10,7 @@ Os valores finais estão em `app/assets/css/main.css` (`@theme static`, desde a 
 | Tema | Semânticos em `light-dark(<claro>, <escuro>)`; `color-scheme` (sistema ou `[data-theme]`) escolhe o lado | — | Nada de `dark:` espalhado. Para fixar um trecho num tema, use `color-scheme` nele |
 | Tipografia | `--font-display`, `--font-sans`, `--font-mono`; `--text-*` (escala) | `--text-step--1` … `--text-step-7` (utilitários `text-step-N`) | Tamanhos com `clamp()`; cada passo tem `--text-step-N--line-height`, e os de display (3+) `--letter-spacing` |
 | Espaço | `--spacing` (base 4 px) + fluidos | `--spacing-section`, `--spacing-gutter` (`py-section`, `px-gutter`) | Seções usam os fluidos; componentes usam a escala base |
-| Layout | `--container-*`, `--breakpoint-*` | `--container-reading: 68ch`, `--container-max: 1440px` | Breakpoints: 640, 768, 1024, 1280, 1536 |
+| Layout | `--container-*`, `--breakpoint-*` | `--container-reading: 53rem` (~68ch do corpo; rem para não mudar na troca de fonte), `IMAGE_SIZES` em `shared/design/tokens.ts` para `sizes`, `--container-max: 1440px` | Breakpoints: 640, 768, 1024, 1280, 1536 |
 | Forma | `--radius-*`, `--shadow-*` | `--radius-control/card/chip` (0: cantos retos), `--radius-full`, `--shadow-raised` | Sombras mínimas; editorial usa linhas (hairlines) |
 | Camadas | `--z-*` | `--z-header`, `--z-overlay`, `--z-toast` (em `:root`; `z-(--z-header)`) | Nunca `z-index` numérico solto |
 | Motion | `--dur-*`, `--ease-*` | ver `docs/design/motion-principles.md` §2 | O GSAP lê do espelho TS |

@@ -70,7 +70,7 @@
 - **Sem preload; fontes depois do `load` no primeiro acesso.** Isso substitui o preload de Fraunces + Inter previsto na design-direction §9.
   - Medido no Lighthouse mobile (perf-log): com os 2 preloads, a nota caiu de 99 para 94 e o LCP subiu de 1,81 para 2,86 s; com preload só da Inter, ficou em 96 e 2,41 s; sem preload, em 95 e 2,41 s.
   - O script inline `FONT_LOADING_SCRIPT` marca `html.fonts-pending`. Enquanto a classe existe, o CSS inline `FONT_PENDING_CSS` faz os tokens `--font-*` apontarem só para os fallbacks.
-  - No `load`, a classe sai: as fontes baixam e entram sem deslocar o layout (CLS 0,000), e `localStorage.fonts` faz os acessos seguintes usarem as fontes desde a primeira pintura.
+  - No primeiro frame depois do `load` (F06-T5; antes, no próprio `load`), a classe sai: as fontes baixam e entram sem deslocar o layout (CLS 0,000), e `localStorage.fonts` faz os acessos seguintes usarem as fontes desde a primeira pintura. O frame a mais deixa pintar antes uma imagem que terminou junto com a página (a capa LCP da lista do blog): sem ele, a simulação do Lighthouse contava as fontes no LCP (R2 mobile 89 → 95).
   - Sem JS, nada é segurado, e as fontes carregam como qualquer outra.
   - Custo aceito: no primeiro acesso, a troca de fonte é visível depois do carregamento.
 

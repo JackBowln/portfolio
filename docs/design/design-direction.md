@@ -38,7 +38,7 @@ Preload da primeira tela (teto: 2 arquivos e 120 KB): o par A soma 112,8 KB com 
 **Regras:**
 - **Arquivos:** WOFF2 self-hosted via `@nuxt/fonts`; no máximo **2 arquivos com preload** (display e texto, subset `latin`). O `latin-ext` carrega via `unicode-range` só quando necessário (por exemplo, "œ" em francês).
 - **Escala fluida** com `clamp()`, de −1 (legendas) a 7 (hero). Exemplo de alvo para o corpo: 18–20 px em telas grandes, 17 px no mobile; `line-height` de 1,6 a 1,7.
-- **Medida de leitura:** 60–75 caracteres (`max-width: 68ch`).
+- **Medida de leitura:** 60–75 caracteres (`--container-reading: 53rem`, cerca de 68 caracteres do corpo no tamanho máximo; era `68ch`, que mudava de largura na troca de fonte e deslocava o artigo, F06-T5).
 - **Detalhes:** números tabulares em dados e estatísticas (`font-variant-numeric: tabular-nums`); `text-wrap: balance` em títulos e `pretty` em parágrafos.
 
 ## 4. Cor (OKLCH; valores finais na F01-T2)
@@ -57,7 +57,7 @@ Todo par texto/fundo passa pelo script de contraste da F01-T2. O tema padrão (c
 
 ## 5. Layout e grid
 
-- **Grid:** 12 colunas no desktop (≥ 1024 px), 8 no tablet, 4 no mobile; gutter fluido; container máximo de 1440 px, com largura de leitura de 68ch.
+- **Grid:** 12 colunas no desktop (≥ 1024 px), 8 no tablet, 4 no mobile; gutter fluido; container máximo de 1440 px, com largura de leitura de 53rem (~68 caracteres).
 - **Composições editoriais:** assimetria controlada, títulos que invadem colunas, legendas na margem, números grandes, linhas finas (hairlines) como estrutura.
 - **Ritmo vertical:** espaçamentos de seção fluidos (`clamp(4rem, 10vw, 10rem)`).
 - **Container queries** para cards e blocos que aparecem em larguras diferentes.

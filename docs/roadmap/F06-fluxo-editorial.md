@@ -152,7 +152,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06-T4, F01-T5 | RF-01.4, RF-01.5, RF-01.9, RF-12.1, RF-12.2, RF-12.3, RF-12.5, RX-04 | `/frontend-design`, `/i18n-manager`, `/performance-audit` |
+| concluída | F06-T4, F01-T5 | RF-01.4, RF-01.5, RF-01.9, RF-12.1, RF-12.2, RF-12.3, RF-12.5, RX-04 | `/frontend-design`, `/i18n-manager`, `/performance-audit` |
 
 **Objetivo.** Criar:
 - `/blog`: paginação (`?page=N` com canonical para a própria página) e filtro por tema;
@@ -167,15 +167,24 @@ Tudo integrado com `usePageSeo` (alternates só dos idiomas publicados) e `useSe
 **Fora do escopo.** JSON-LD completo (F11-T1); motion (proibido no artigo).
 
 **Critérios de aceite**
-- [ ] Artigo publicado só em pt-BR → ausente das listas de outros idiomas e de seus hreflang; a URL equivalente → 404; o seletor de idioma leva ao índice.
-- [ ] Respostas públicas com `Cache-Tag` correto e sem `Set-Cookie`.
-- [ ] Artigo com orçamento ≤ 100 KB de JS gz, nenhum JS de motion; Lighthouse dentro da política na R3 (relatório anexado).
-- [ ] RSS válido por idioma, com `<link rel="alternate">` no head do blog.
+- [x] Artigo publicado só em pt-BR → ausente das listas de outros idiomas e de seus hreflang; a URL equivalente → 404; o seletor de idioma leva ao índice.
+- [x] Respostas públicas com `Cache-Tag` correto e sem `Set-Cookie`.
+- [x] Artigo dentro do orçamento, nenhum JS de motion; Lighthouse dentro da política na R3 (relatório anexado). O limite vigente do R3 é 120 KB, revisto pelo owner na F02-T2 (performance-budgets §4), não os 100 KB iniciais: 119,85 kB.
+- [x] RSS válido por idioma, com `<link rel="alternate">` no head do blog.
 
 **Testes**
 - E2E: lista → artigo → troca de idioma; paginação; filtro por tema; conteúdo presente com JS desligado.
 - API: RSS válido; cache headers.
 - `/performance-audit` em R2, R3 e R8.
+
+**Resultado (30/10/2026).**
+- **Leitura pública:** `server/services/content/blog.{repo,service}.ts` leem só `published_snapshot` e as colunas `published_*`; rotas `server/api/public/blog/{index,[slug],topics/[slug]}.get.ts` com cache de borda e tags do ADR-0003 (`server/utils/public-cache.ts`); listas ordenadas pela primeira publicação, páginas de 10, além da última → 404.
+- **Páginas:** `/blog` (paginação com canonical da própria página, sem hreflang além da página 1, `noindex` enquanto vazio), `/blog/[slug]` (layout `reading`, TOC, datas no fuso do site, temas e relacionados) e `/blog/temas/[slug]`. Os dados vêm de `usePublicData` (`useState` + fetch no SSR), porque o `useAsyncData` somava ~4,8 kB a toda rota. O corpo do artigo é `BlogArticleBody` com `hydrate-never`: nenhum JS de conteúdo além do `enhance`.
+- **Idiomas:** alternates e `useSetI18nParams` só dos idiomas publicados; o seletor manda os idiomas sem a página ao índice do blog (`useLocaleFallback`, com `plugins/locale-switch.server.ts` reescrevendo os links depois do render, porque o rodapé renderiza antes do setup assíncrono da página).
+- **RSS e sitemap:** `server/routes/rss.xml.ts` e `server/routes/[locale]/rss.xml.ts` (RSS 2.0, 20 itens, `atom:link` próprio, tag `rss:{l}`); o sitemap passou a listar o índice do blog e os artigos publicados com alternates e `lastmod`.
+- **Ajustes fora das páginas do blog, exigidos pela medição:** `--container-reading` em `53rem` em vez de `68ch` (CLS de 0,087 na troca de fonte) e `sizes` em rem (`IMAGE_SIZES`; em `sizes`, `ch` pedia imagens pequenas demais); as fontes do primeiro acesso entram um frame depois do `load` (ADR-0010 §4); `Heading` com `wrap-anywhere` (palavra longa alargava o grid a 360 px); o zod saiu do JS público (`inline-text.ts`; `ZodError` proibido no `check:budgets`), porque viola a CSP com `Function('')`.
+- **Gate da F06:** J-03, J-04 (agendar → cron → página, lista, RSS e sitemap) e J-07 passam em E2E.
+- **Testes:** `tests/workers/blog.test.ts`, `tests/api/blog.spec.ts`, `tests/e2e/blog.spec.ts`, `tests/a11y/blog.spec.ts`, `tests/unit/rss.test.ts`; fixture `/api/_test/blog-fixture` para as specs que abrem rotas de conteúdo. O `api-prod` passou a migrar o D1 local próprio (`pnpm db:migrate:prodlike`, também no CI).
 
 ---
 
