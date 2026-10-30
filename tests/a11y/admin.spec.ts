@@ -1,4 +1,4 @@
-// F03-T5 (+ F04-T4, F05-T3): the admin screens meet WCAG 2.2 AA (no serious or critical axe violations), in both themes
+// F03-T5 (+ F04-T4, F05-T3, F06-T1): the admin screens meet WCAG 2.2 AA (no serious or critical axe violations), in both themes
 import { expect, test } from '@playwright/test'
 import { SITE_ORIGIN } from '../support/auth'
 import { expectNoBlockingViolations } from '../support/axe'
@@ -10,6 +10,8 @@ const SCREENS = [
   { path: '/admin/auditoria', heading: 'Auditoria' },
   { path: '/admin/conta/passkeys', heading: 'Passkeys' },
   { path: '/admin/midia', heading: 'Mídia' },
+  { path: '/admin/artigos', heading: 'Artigos' },
+  { path: '/admin/temas', heading: 'Temas' },
 ]
 
 for (const colorScheme of ['light', 'dark'] as const) {
@@ -95,6 +97,28 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await text.click()
     await page.keyboard.press('ControlOrMeta+k')
     await expect(page.getByRole('dialog', { name: 'Link' })).toBeVisible()
+    await expectNoBlockingViolations(page)
+  })
+}
+
+// F06-T1: the article editor with a cover, a topic and SEO warnings showing, and its delete dialog open
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`article editor and its delete dialog have no serious or critical axe violations (${colorScheme})`, async ({ page, context }) => {
+    const request = context.request
+    expect((await request.post('/api/_test/session?role=owner', { headers: { origin: SITE_ORIGIN } })).status()).toBe(200)
+    const created = await (await request.post('/api/admin/articles', { headers: { origin: SITE_ORIGIN }, data: { title: `Acessível ${uniqueName('a', 'x')}` } })).json()
+    const cover = await readyImage(request, uniqueName('capa', 'jpg'))
+    const topic = await (await request.post('/api/admin/tags', { headers: { origin: SITE_ORIGIN }, data: { name: `Tema ${uniqueName('t', 'x')}` } })).json()
+    expect((await request.patch(`/api/admin/articles/${created.id}`, { headers: { origin: SITE_ORIGIN }, data: { version: 1, coverMediaId: cover, tagIds: [topic.id], excerpt: 'Curto' } })).status()).toBe(200)
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+
+    await page.goto(`/admin/artigos/${created.id}`)
+    await expect(page.getByRole('textbox', { name: 'Corpo do artigo' })).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await expectNoBlockingViolations(page)
+
+    await page.getByRole('button', { name: 'Excluir artigo' }).click()
+    await expect(page.getByRole('alertdialog')).toBeVisible()
     await expectNoBlockingViolations(page)
   })
 }
