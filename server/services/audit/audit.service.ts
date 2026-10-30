@@ -5,6 +5,7 @@ import type { Db } from '../../db/client.ts'
 import { hashIp } from '../../utils/ip-hash.ts'
 import { logger } from '../../utils/logger.ts'
 import { insertAuditEntry, listAuditActors, listAuditEntries } from './audit.repo.ts'
+import type { AuditRow } from './audit.repo.ts'
 
 export { AUDIT_ACTIONS } from '../../../shared/audit/actions.ts'
 export type { AuditAction } from '../../../shared/audit/actions.ts'
@@ -33,6 +34,19 @@ export async function recordAudit(db: Db, event: AuditEvent, ipHashSalt: string 
   }
   catch (error) {
     logger.error('audit.write_failed', { action: event.action, message: error instanceof Error ? error.message.slice(0, 200) : 'unknown' })
+  }
+}
+
+/** The row of an event, IP hashed, for a statement in the caller's batch (auditEntryStatement) */
+export async function prepareAudit(event: AuditEvent & { locale?: AuditRow['locale'] }, ipHashSalt: string | undefined): Promise<AuditRow> {
+  return {
+    action: event.action,
+    actorUserId: event.actorUserId ?? null,
+    entityType: event.entityType ?? null,
+    entityId: event.entityId ?? null,
+    locale: event.locale ?? null,
+    metadata: event.metadata ?? null,
+    ipHash: await hashIp(event.ip, ipHashSalt),
   }
 }
 

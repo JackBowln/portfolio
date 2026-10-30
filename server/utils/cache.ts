@@ -31,9 +31,14 @@ export function setCacheTags(event: H3Event, tags: readonly string[]): void {
 
 /** Purges Workers Cache entries by tag; a no-op where the cache does not exist (local dev, tests) */
 export async function purgeCacheTags(event: H3Event, tags: readonly string[]): Promise<void> {
-  assertValidCacheTags(tags)
   // Nitro types the context with an older workers-types; the generated ExecutionContext has `cache`
-  const cache = (event.context.cloudflare?.context as ExecutionContext | undefined)?.cache
+  await purgeCacheTagsIn(event.context.cloudflare?.context as ExecutionContext | undefined, tags)
+}
+
+/** The same purge from a Worker context without a request, such as the cron's scheduled handler (F06-T4) */
+export async function purgeCacheTagsIn(context: ExecutionContext | undefined, tags: readonly string[]): Promise<void> {
+  assertValidCacheTags(tags)
+  const cache = context?.cache
   if (!cache) {
     logger.info('cache.purge.skipped', { reason: 'no workers cache', tags: tags.join(',') })
     return
