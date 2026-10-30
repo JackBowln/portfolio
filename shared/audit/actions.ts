@@ -31,6 +31,7 @@ export const AUDIT_ACTIONS = [
   'project.unpublished',
   'project.deleted',
   'project.reordered',
+  'settings.updated',
   'tag.created',
   'tag.updated',
   'tag.deleted',
