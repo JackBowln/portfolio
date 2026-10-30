@@ -20,14 +20,15 @@ function expectBaseSecurityHeaders(headers: Record<string, string>) {
 }
 
 test.describe('public pages', () => {
-  test('are cached at the edge with the site tag and no cookies', async ({ request }) => {
+  test('are cached at the edge with the layout settings tag and no cookies', async ({ request }) => {
     for (const method of ['get', 'head'] as const) {
       const response = await request[method]('/', { headers: HTML })
       const headers = response.headers()
 
       expect(response.status(), method).toBe(200)
       expect(headers['cache-control'], method).toBe(PUBLIC_POLICY)
-      expect(headers['cache-tag'], method).toBe('site')
+      // The layout's settings (F08-T1); `site` is the default only for a page with no tags at all
+      expect(headers['cache-tag'], method).toBe('settings')
       expect(headers['set-cookie'], method).toBeUndefined()
       expectBaseSecurityHeaders(headers)
     }
