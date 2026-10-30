@@ -64,7 +64,13 @@
     "embed": {
       "play": "Reproduzir vídeo: {title}",
       "watch": "Assistir no {provider}: {title}"
-    }
+    },
+    "readingTime": "{minutes} min de leitura"
+  },
+  "preview": {
+    "label": "Pré-visualização",
+    "notice": "Rascunho ainda não publicado. Este link vale até {date}.",
+    "title": "Pré-visualização: {title}"
   },
   "pages": {
     "about": {
@@ -722,6 +728,19 @@
         "keepMine": "Manter a desta aba",
         "useTheirs": "Usar a versão salva"
       }
+    },
+    "preview": {
+      "title": "Pré-visualização",
+      "intro": "Um link para ver o rascunho como ele vai ficar no site. Quem tiver o link vê o texto até ele expirar; o link mostra sempre o texto salvo mais recente.",
+      "hours": "Validade do link",
+      "hoursOption": "{hours} hora | {hours} horas",
+      "create": "Gerar link de pré-visualização",
+      "link": "Link de pré-visualização (vale até {date})",
+      "copy": "Copiar link",
+      "copied": "Link copiado.",
+      "copyFailed": "Não foi possível copiar. Selecione o link e copie.",
+      "open": "Abrir em outra aba",
+      "unsaved": "Salve as alterações antes de gerar o link: há campos a corrigir ou um conflito a resolver."
     }
   }
 }

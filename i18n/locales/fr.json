@@ -64,7 +64,13 @@
     "embed": {
       "play": "Lire la vidéo : {title}",
       "watch": "Regarder sur {provider} : {title}"
-    }
+    },
+    "readingTime": "{minutes} min de lecture"
+  },
+  "preview": {
+    "label": "Aperçu",
+    "notice": "Brouillon pas encore publié. Ce lien est valable jusqu’au {date}.",
+    "title": "Aperçu : {title}"
   },
   "pages": {
     "about": {

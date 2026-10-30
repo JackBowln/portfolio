@@ -64,7 +64,13 @@
     "embed": {
       "play": "Reproducir vídeo: {title}",
       "watch": "Ver en {provider}: {title}"
-    }
+    },
+    "readingTime": "{minutes} min de lectura"
+  },
+  "preview": {
+    "label": "Vista previa",
+    "notice": "Borrador aún no publicado. Este enlace vale hasta {date}.",
+    "title": "Vista previa: {title}"
   },
   "pages": {
     "about": {

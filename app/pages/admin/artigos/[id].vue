@@ -12,6 +12,7 @@ import type { DocumentJson } from '#shared/content/document-schema'
 import { SOURCE_LOCALE } from '#shared/types/enums'
 import { MAX_SLUG_LENGTH, SLUG_PATTERN, slugify } from '#shared/utils/slugify'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
+import PreviewLink from '~/components/admin/articles/PreviewLink.vue'
 import TopicPicker from '~/components/admin/articles/TopicPicker.vue'
 import ConflictDialog from '~/components/admin/history/ConflictDialog.vue'
 import HistoryPanel from '~/components/admin/history/HistoryPanel.vue'
@@ -290,6 +291,12 @@ async function saveNow() {
   }
   autosave.resume()
   await autosave.flush()
+}
+
+/** The link shows the saved text: what is pending is saved first, and nothing is generated while it cannot be */
+async function saveBeforePreview(): Promise<boolean> {
+  await saveNow()
+  return !conflict.value && !dirty.value
 }
 
 async function openConflict() {
@@ -631,6 +638,23 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :description="draft.seoDescription.trim() || draft.excerpt"
           :path="`/blog/${draft.slug}`"
           :noindex="draft.noindex"
+        />
+      </section>
+
+      <section
+        class="grid max-w-3xl gap-4"
+        aria-labelledby="article-preview"
+      >
+        <UiHeading
+          id="article-preview"
+          :level="2"
+          :size="3"
+        >
+          {{ $t('admin.preview.title') }}
+        </UiHeading>
+        <PreviewLink
+          :article-id="article.id"
+          :before-create="saveBeforePreview"
         />
       </section>
 

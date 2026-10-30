@@ -64,7 +64,13 @@
     "embed": {
       "play": "Video abspielen: {title}",
       "watch": "Auf {provider} ansehen: {title}"
-    }
+    },
+    "readingTime": "{minutes} Min. Lesezeit"
+  },
+  "preview": {
+    "label": "Vorschau",
+    "notice": "Entwurf, noch nicht veröffentlicht. Dieser Link gilt bis {date}.",
+    "title": "Vorschau: {title}"
   },
   "pages": {
     "about": {
