@@ -7,6 +7,8 @@ import type { Db } from '../../db/client.ts'
 import { users } from '../../db/schema/auth.ts'
 import { articleLocalizations, articles } from '../../db/schema/content.ts'
 import { mediaUsages } from '../../db/schema/media.ts'
+import type { PreparedRevision } from './revisions.repo.ts'
+import { insertRevisionStatement } from './revisions.repo.ts'
 
 export type ArticleRow = typeof articles.$inferSelect
 export type ArticleLocalizationRow = typeof articleLocalizations.$inferSelect
@@ -88,6 +90,12 @@ export function insertArticleStatements(db: Db, article: typeof articles.$inferI
   return [db.insert(articles).values(article), db.insert(articleLocalizations).values(localization)] as const
 }
 
+/** SQL true while the localization still has this version: a write based on it is not stale */
+export function copyAtVersion(db: Db, localizationId: string, version: number): SQL {
+  return exists(db.select({ one: sql`1` }).from(articleLocalizations)
+    .where(and(eq(articleLocalizations.id, localizationId), eq(articleLocalizations.version, version), isNull(articleLocalizations.deletedAt))))
+}
+
 export interface ArticleSave {
   articleId: string
   localizationId: string
@@ -97,13 +105,15 @@ export interface ArticleSave {
   localization: Partial<typeof articleLocalizations.$inferInsert>
   entity: Partial<typeof articles.$inferInsert>
   uses: { mediaId: string, locale: Locale | null, context: MediaUsageContext }[]
+  /** The revision this save records (autosave or restore, F06-T2), under the same guard */
+  revision?: PreparedRevision | undefined
 }
 
 /**
  * One save as a batch: the working copy update guarded by the version (it changes no row when someone saved in
  * between), then the entity and the media uses (replaced as a whole, data-model §5), each guarded by "the working
- * copy now has version + 1 and this content", so a stale save changes nothing. The first result is the updated
- * localization, empty on a conflict
+ * copy now has version + 1 and this content", so a stale save changes nothing; the revision of the save too, when
+ * given. The first result is the updated localization, empty on a conflict
  */
 export function saveArticleStatements(db: Db, save: ArticleSave) {
   const saved = exists(db.select({ one: sql`1` }).from(articleLocalizations).where(and(
@@ -125,6 +135,7 @@ export function saveArticleStatements(db: Db, save: ArticleSave) {
       locale: sql<Locale | null>`json_extract(value, '$.locale')`.as('locale'),
       context: sql<MediaUsageContext>`json_extract(value, '$.context')`.as('context'),
     }).from(sql`json_each(${JSON.stringify(save.uses)})`).where(saved)),
+    ...(save.revision ? [insertRevisionStatement(db, 'article', save.revision, saved)] : []),
   ] as const
 }
 

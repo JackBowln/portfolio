@@ -67,3 +67,17 @@ export const tagUpdateSchema = z.strictObject({
   name: z.string().trim().min(1, 'required').max(TAG_NAME_MAX).optional(),
   slug: slugField.optional(),
 }).refine(input => Object.keys(input).length > 0, 'nothing to update')
+
+export const VERSION_NOTE_MAX = 200
+
+/** A named version of the working copy (F06-T2) */
+export const articleVersionSchema = z.strictObject({
+  version: z.int().min(1),
+  note: optionalText(VERSION_NOTE_MAX).optional(),
+})
+
+/** Back to an older revision; the version is the one the editor read */
+export const articleRestoreSchema = z.strictObject({
+  version: z.int().min(1),
+  revisionId: entityId,
+})
