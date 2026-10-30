@@ -25,6 +25,9 @@ import type { DialogAction, ToolbarGroup } from './toolbar-actions'
 
 const props = withDefaults(defineProps<{ label: string, locale?: Locale }>(), { locale: 'pt-BR' })
 const model = defineModel<DocumentJson | undefined>()
+// `edit`: the document changed by the user's hand. Opening a document also updates the model (UniqueID assigns
+// missing ids in transactions kept out of history), which a form must not count as unsaved changes
+const emit = defineEmits<{ edit: [] }>()
 const { t } = useI18n()
 
 const toolbar = useTemplateRef<InstanceType<typeof EditorToolbar>>('toolbar')
@@ -38,8 +41,11 @@ const videoPicker = useTemplateRef<InstanceType<typeof MediaPicker>>('videoPicke
 const withView = (node: Node, view: Component) => node.extend({ addNodeView: () => VueNodeViewRenderer(view) })
 
 const json = shallowRef<DocumentJson | undefined>(model.value)
+// ProseMirror leaves `content` out of an empty node's JSON; the schema (and everything reading a document) wants
+// the array, so a document emptied by the user still saves
 const emitJson = (editor: Editor) => {
-  json.value = editor.getJSON() as DocumentJson
+  const doc = editor.getJSON() as DocumentJson
+  json.value = { ...doc, content: doc.content ?? [] }
   model.value = json.value
 }
 
@@ -54,7 +60,8 @@ const editor = useEditor({
       embed: withView(EmbedNode, MediaNodeView),
     },
   }),
-  content: (model.value ?? { type: 'doc', content: [{ type: 'paragraph' }] }) as JSONContent,
+  // A new article's body has no block yet: the editor opens on an empty paragraph to type in
+  content: (model.value?.content.length ? model.value : { ...model.value, type: 'doc', content: [{ type: 'paragraph' }] }) as JSONContent,
   injectCSS: false,
   editorProps: {
     attributes: {
@@ -83,7 +90,12 @@ const editor = useEditor({
   },
   // UniqueID fills the ids on create, so the first emitted JSON already has them
   onCreate: ({ editor }) => emitJson(editor),
-  onUpdate: ({ editor }) => emitJson(editor),
+  onUpdate: ({ editor, transaction }) => {
+    emitJson(editor)
+    if (transaction.getMeta('addToHistory') !== false) {
+      emit('edit')
+    }
+  },
 })
 
 const contextGroups = shallowRef<ToolbarGroup[]>([])
