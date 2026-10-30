@@ -16,6 +16,7 @@ export const AUDIT_ACTIONS = [
   'article.created',
   'article.version_saved',
   'article.restored',
+  'article.preview_link_created',
   'article.deleted',
   'tag.created',
   'tag.updated',

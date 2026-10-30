@@ -9,8 +9,12 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { findReadyMediaWithText } from '../media/media.repo.ts'
 
-export async function resolveDocumentMedia(db: Db, doc: DocumentJson, locale: Locale): Promise<PublicMediaMap> {
-  const ids = deriveDocument(doc, locale).mediaUsages.map(use => use.mediaId)
+export async function resolveDocumentMedia(db: Db, doc: DocumentJson, locale: Locale, extraIds: readonly string[] = []): Promise<PublicMediaMap> {
+  return resolveMedia(db, [...new Set([...deriveDocument(doc, locale).mediaUsages.map(use => use.mediaId), ...extraIds])], locale)
+}
+
+/** Media by id, in the public shape; ready items only */
+export async function resolveMedia(db: Db, ids: readonly string[], locale: Locale): Promise<PublicMediaMap> {
   const found = await findReadyMediaWithText(db, ids)
   const posterIds = found.rows.flatMap(row => (row.kind === 'video' && row.posterMediaId && !ids.includes(row.posterMediaId) ? [row.posterMediaId] : []))
   const posters = await findReadyMediaWithText(db, posterIds)

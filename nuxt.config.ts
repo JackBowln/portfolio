@@ -54,6 +54,9 @@ export default defineNuxtConfig({
     '/api/admin/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     // Admin SPA (F03-T5): the HTML is a shell with no data; everything comes from /api/admin after sign-in
     '/admin/**': { ssr: false, headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
+    // Preview links (F06-T3): a working copy for whoever has the link, never stored by a cache nor indexed
+    '/preview/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
+    '/api/preview/**': { headers: { 'cache-control': 'private, no-store', 'x-robots-tag': 'noindex, nofollow' } },
     // Prerendered i18n messages: the path carries a hash of the locale files, so a change means a new URL
     '/_i18n/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } },
     // Font files live under a versioned path (shared/design/fonts.ts), so they never change in place

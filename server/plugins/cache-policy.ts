@@ -4,7 +4,8 @@
 import { cacheTags } from '#shared/cache/tags'
 
 const CACHEABLE_METHODS = new Set(['GET', 'HEAD'])
-const NEVER_PUBLIC_PREFIXES = ['/api/', '/admin', '/__nuxt_error']
+// Previews (F06-T3) show drafts: never public, so never tagged nor stored
+const NEVER_PUBLIC_PREFIXES = ['/api/', '/admin', '/__nuxt_error', '/preview/']
 // @nuxtjs/i18n messages are prerendered static assets; the Worker only sees unknown hashes, answered with the
 // current messages and cached at the edge like a page so they cannot pile up Worker invocations
 const I18N_MESSAGES_PREFIX = '/_i18n/'

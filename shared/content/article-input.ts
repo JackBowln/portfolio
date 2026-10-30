@@ -81,3 +81,10 @@ export const articleRestoreSchema = z.strictObject({
   version: z.int().min(1),
   revisionId: entityId,
 })
+
+/** Lifetimes the admin offers for a preview link (F06-T3); the server accepts any whole hour up to 24 */
+export const PREVIEW_HOURS = [1, 8, 24] as const
+
+export const previewLinkSchema = z.strictObject({
+  hours: z.int().min(1).max(24),
+})
