@@ -2,20 +2,12 @@
 // published alternates plus x-default
 import type { Locale } from '../types/enums.ts'
 import { xDefaultLocale } from '../i18n/locales.ts'
+import { escapeXml } from './xml.ts'
 
 export interface SitemapEntry {
   /** Absolute URL per published locale */
   urls: Partial<Record<Locale, string>>
   lastmod?: string
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
 }
 
 export function buildSitemap(entries: readonly SitemapEntry[]): string {

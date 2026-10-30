@@ -14,6 +14,10 @@ export interface PageSeoOptions {
   titleTemplate?: string
   type?: SeoInput['type']
   noindex?: MaybeRefOrGetter<boolean>
+  /** List pages after the first keep ?page=N in the canonical (F06-T5) */
+  page?: MaybeRefOrGetter<number>
+  publishedTime?: MaybeRefOrGetter<string | undefined>
+  modifiedTime?: MaybeRefOrGetter<string | undefined>
 }
 
 export function usePageSeo(options: PageSeoOptions) {
@@ -34,6 +38,9 @@ export function usePageSeo(options: PageSeoOptions) {
       alternates: Object.fromEntries(published.map(code => [code, switchLocalePath(code)])),
       noindex: toValue(options.noindex) ?? false,
       ...(options.type ? { type: options.type } : {}),
+      ...(options.page ? { page: toValue(options.page) } : {}),
+      ...(toValue(options.publishedTime) ? { publishedTime: toValue(options.publishedTime)! } : {}),
+      ...(toValue(options.modifiedTime) ? { modifiedTime: toValue(options.modifiedTime)! } : {}),
     })
   })
 

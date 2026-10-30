@@ -16,6 +16,11 @@ export interface SeoInput {
   alternates: Partial<Record<Locale, string>>
   type?: 'website' | 'article' | 'profile'
   noindex?: boolean
+  /** A list page after the first (F06-T5): canonical keeps `?page=N`; no hreflang, since pages differ per locale */
+  page?: number
+  /** Articles: ISO dates for article:published_time / article:modified_time */
+  publishedTime?: string
+  modifiedTime?: string
 }
 
 export interface SeoHead {
@@ -30,7 +35,8 @@ export function absoluteUrl(siteUrl: string, path: string): string {
 }
 
 export function buildSeoHead(input: SeoInput): SeoHead {
-  const url = absoluteUrl(input.siteUrl, input.path)
+  const paged = input.page !== undefined && input.page > 1
+  const url = absoluteUrl(input.siteUrl, input.path) + (paged ? `?page=${input.page}` : '')
   const title = input.titleTemplate.replace('%s', input.title)
   const published = LOCALES.filter(locale => input.alternates[locale] !== undefined)
   const alternates = published.map(locale => ({ locale, href: absoluteUrl(input.siteUrl, input.alternates[locale] ?? '/') }))
@@ -45,13 +51,19 @@ export function buildSeoHead(input: SeoInput): SeoHead {
     ...published.filter(locale => locale !== input.locale).map(locale => ({ property: 'og:locale:alternate', content: OG_LOCALES[locale] })),
     { name: 'twitter:card', content: 'summary_large_image' },
   ]
+  if (input.publishedTime) {
+    meta.push({ property: 'article:published_time', content: input.publishedTime })
+  }
+  if (input.modifiedTime) {
+    meta.push({ property: 'article:modified_time', content: input.modifiedTime })
+  }
   if (input.noindex) {
     meta.push({ name: 'robots', content: 'noindex' })
   }
 
   const link: SeoHead['link'] = [{ rel: 'canonical', href: url }]
   // hreflang only makes sense for indexable pages with more than the original language
-  if (!input.noindex && alternates.length > 0) {
+  if (!input.noindex && !paged && alternates.length > 0) {
     link.push(...alternates.map(({ locale, href }) => ({ rel: 'alternate' as const, hreflang: locale, href })))
     const fallback = alternates.find(({ locale }) => locale === xDefaultLocale(published))
     if (fallback) {
