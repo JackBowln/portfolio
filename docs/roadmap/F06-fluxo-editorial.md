@@ -114,7 +114,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F06-T2 | RF-05.2, RF-05.4, RF-05.7, RF-07.3, RNF-05 | `/cms-engineer`, `/test-engineer` |
+| concluída | F06-T2 | RF-05.2, RF-05.4, RF-05.7, RF-07.3, RNF-05 | `/cms-engineer`, `/test-engineer` |
 
 **Objetivo.** Implementar:
 - a máquina de estados de publicação com as guardas do data-model §8;
@@ -128,16 +128,23 @@
 **Fora do escopo.** Imagem OG gerada (F11-T2: por enquanto, a OG padrão).
 
 **Critérios de aceite**
-- [ ] Publicar é atômico (uma falha simulada no meio não deixa estado parcial).
-- [ ] Mudar o slug publicado cria um 301; o middleware de redirects responde com cache e com a tag `redirects`.
-- [ ] O agendamento dispara em até 5 min depois do horário (testado com relógio falso); executar o cron duas vezes não duplica nada.
-- [ ] O purge recebe exatamente as tags do ADR-0003.
-- [ ] Localização ≠ pt-BR sem `approved` não publica (guarda testada).
+- [x] Publicar é atômico (uma falha simulada no meio não deixa estado parcial).
+- [x] Mudar o slug publicado cria um 301; o middleware de redirects responde com cache e com a tag `redirects`.
+- [x] O agendamento dispara em até 5 min depois do horário (testado com relógio falso); executar o cron duas vezes não duplica nada.
+- [x] O purge recebe exatamente as tags do ADR-0003.
+- [x] Localização ≠ pt-BR sem `approved` não publica (guarda testada).
 
 **Testes**
 - Workers: transições, guardas e atomicidade.
 - Unit: o cálculo das tags.
 - E2E (J-04): agendar → avançar o relógio do cron em teste → página pública atualizada, RSS e sitemap incluídos.
+
+**Resultado (30/10/2026).**
+- **Serviço e repositório:** `server/services/content/publishing.{service,repo}.ts`; rotas `publish`, `unpublish`, `schedule` e `unschedule` em `server/api/admin/articles/[id]/`; tarefa `server/tasks/content/publish-due.ts` no cron de 5 minutos; `server/middleware/redirects.ts`; tags em `shared/cache/purge.ts`; fuso em `shared/utils/time-zone.ts` (Q-06: `America/Sao_Paulo`).
+- **Admin:** painel "Publicação" na tela do artigo (status, publicar agora ou as alterações, despublicar com confirmação, agendar no fuso do site, cancelar) com as razões de recusa; o preview passou a mostrar a validade no mesmo fuso.
+- **J-04:** agendar, avançar o relógio do cron (rota de teste `/api/_test/run-task`, com os artigos a processar) e ver publicado está em E2E; a página pública, o RSS e o sitemap entram na F06-T5, que fecha o gate da fase.
+- **Decisões:** data-model §4.11, ADR-0003 §3, PRD Q-06, environments.md.
+- **Testes:** `tests/unit/purge-tags.test.ts`, `tests/unit/time-zone.test.ts`, `tests/workers/publishing.test.ts`, `tests/api/publishing.spec.ts`, `tests/e2e/publishing.spec.ts`.
 
 ---
 

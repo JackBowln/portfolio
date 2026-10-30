@@ -202,6 +202,16 @@ O mesmo padrão vale para artigos, projetos e páginas:
 - **Restaurar:** copia título, slug, resumo, corpo, SEO, capa e temas da revisão para a cópia de trabalho, recalcula derivados e usos de mídia e grava uma revisão `restore`, tudo num batch guardado pela versão; nenhuma revisão é apagada. Temas excluídos depois da revisão ficam de fora; um slug que outro artigo tomou dá 409 em `slug`.
 - **Poda:** `pruneAutosaves` apaga, por tipo de conteúdo, autosaves além dos 10 mais recentes da localização (`row_number()` por `localization_id`) ou com mais de 14 dias, menos os apontados por `published_revision_id`/`source_revision_id`, até 500 por execução. A tarefa `content:prune-autosaves` roda no cron de 5 em 5 minutos (environments.md) e só age na janela de 03:00 a 03:05 UTC (`isPruneWindow`), uma vez por dia.
 
+### 4.11 Decisões da F06-T4
+
+- **Publicar:** um `db.batch` (`publishing.repo.ts`): a revisão `publish` primeiro (o ponteiro tem FK para ela); a localização (status, `published_*`, `published_snapshot`, `published_at`, sem `scheduled_at`) só se ainda tem a `version` e o status lidos; e, só se a localização agora aponta para a revisão nova, `first_published_at`, `article_tags` (pt-BR, a partir de `draft_tag_ids`), os redirects e a linha de `audit_log`. Uma falha em qualquer comando desfaz tudo (testado com um `published_slug` que outro artigo usa). Publicar não muda a `version` da cópia de trabalho, então um editor aberto não entra em conflito.
+- **Guardas:** uma tradução só publica `approved` (`outdated` bloqueia) e com a pt-BR publicada (publicar as duas juntas fica para a F09); imagens informativas (capa, imagens do corpo sem `altOverride`, itens de galeria) precisam de `alt` no idioma ou no pt-BR, e mídia indisponível bloqueia (decisão 3).
+- **Redirects:** quando o `published_slug` muda, `redirects` recebe o caminho antigo → o novo (`/blog/{slug}` ou `/{l}/blog/{slug}`, `shared/content/paths.ts`). O que apontava para o caminho antigo passa a apontar para o novo (sem cadeias) e um redirect a partir do caminho novo é removido (sem laços). O middleware `server/middleware/redirects.ts` só consulta o D1 para caminhos de artigo e responde 301 com cache público e a tag `redirects`.
+- **Despublicar:** limpa as colunas publicadas (as revisões ficam); a pt-BR leva as traduções publicadas junto e apaga `article_tags` (decisão 4).
+- **Agendar:** de `draft` ou `unpublished`, para um instante futuro de até 1 ano; cancelar volta a `draft`. O instante é digitado no fuso do site (Q-06: `America/Sao_Paulo`) e guardado em UTC.
+- **Cron `content:publish-due`:** no trigger de 5 minutos, até 10 localizações vencidas por execução, publicando o texto do momento (decisão 2), só enquanto ainda estão `scheduled` (idempotente). Uma que falha numa guarda volta a `draft` com `article.schedule_failed` na auditoria; uma desatualizada (salva no meio) tenta de novo na execução seguinte.
+- **Purge:** depois do batch, com as tags de `shared/cache/purge.ts` (ADR-0003 §3); falhar o purge não desfaz a publicação (fica no log).
+
 ## 5. Mídia
 
 | Tabela | Colunas | Notas |

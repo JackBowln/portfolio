@@ -37,6 +37,7 @@
    | Cron de agendamento | as mesmas tags da publicação |
 
    Os demais casos seguem o mesmo padrão.
+   As tags de artigo são calculadas em `shared/cache/purge.ts` (F06-T4), para a publicação, a despublicação e o cron purgarem o mesmo conjunto; o purge do cron usa o `ExecutionContext` do handler `scheduled` (`purgeCacheTagsIn`).
 4. **Disciplina de cookies:** nenhuma resposta pública emite `Set-Cookie`.
    - O i18n roda com `detectBrowserLanguage: false`.
    - A preferência de tema e de movimento reduzido fica em `localStorage`.

@@ -272,7 +272,7 @@ Rotas sem idioma: `/sitemap.xml` (índice), `/robots.txt`, `/admin/**` (interfac
 | Q-03 | Tema claro, escuro ou ambos (e qual é o padrão) | F01-T1 |
 | Q-04 | Conteúdo real: bio, foto, projetos, artigos iniciais | F06 / F07 |
 | Q-05 | E-mail de contato verificado no Email Routing | F08-T3 |
-| Q-06 | Fuso horário padrão para agendamentos | F06-T4 |
+| Q-06 | Fuso horário padrão para agendamentos | F06-T4. **Respondida em 2026-10-30: `America/Sao_Paulo`** (`shared/utils/time-zone.ts`; o banco guarda UTC) |
 | Q-07 | Repositório público ou privado (afeta minutos de CI) | F00-T5. **Respondida em 2026-10-26: público** ([JackBowln/portfolio](https://github.com/JackBowln/portfolio)) |
 | Q-08 | Analytics: nenhum ou Cloudflare Web Analytics (sem cookies) | F12 |
 
