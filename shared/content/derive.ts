@@ -3,7 +3,8 @@
 // are never words nor segments (ADR-0009 §3)
 import type { Locale, MediaUsageContext } from '../types/enums.ts'
 import { contentHash } from './canonical-json.ts'
-import type { BlockNode, DocumentJson, InlineNode } from './document-schema.ts'
+import { inlineText } from './inline-text.ts'
+import type { BlockNode, DocumentJson } from './document-schema.ts'
 
 export const WORDS_PER_MINUTE = 220
 
@@ -32,10 +33,7 @@ interface AnyNode {
   content?: unknown[] | undefined
 }
 
-/** The text of inline content, a hard break counting as a space */
-export function inlineText(content: InlineNode[] | undefined): string {
-  return (content ?? []).map(node => (node.type === 'text' ? node.text : ' ')).join('')
-}
+export { inlineText }
 
 /** Every block in document order, nested ones included */
 function* blocks(nodes: readonly AnyNode[]): Generator<AnyNode> {

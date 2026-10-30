@@ -4,7 +4,7 @@
 // nowhere else)
 import { slugify } from '../utils/slugify.ts'
 import type { DocumentJson } from './document-schema.ts'
-import { inlineText } from './derive.ts'
+import { inlineText } from './inline-text.ts'
 
 const MAX_ANCHOR = 64
 /** Ids the page frame already uses (skip link target, mobile menu) */

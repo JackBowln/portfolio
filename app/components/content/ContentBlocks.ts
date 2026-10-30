@@ -5,7 +5,7 @@
 import { defineComponent, h } from 'vue'
 import type { PropType, VNode, VNodeChild } from 'vue'
 import { CALLOUT_TONES, HEADING_LEVELS } from '#shared/content/document-schema'
-import { inlineText } from '#shared/content/derive'
+import { inlineText } from '#shared/content/inline-text'
 import { contentHref, linkRel } from '#shared/content/url'
 import { useContentContext } from './context'
 import type { ContentContext } from './context'

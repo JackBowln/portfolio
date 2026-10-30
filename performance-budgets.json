@@ -83,7 +83,8 @@
   "forbiddenContentInPublicRoutes": [
     "ProseMirror",
     "tiptap",
-    "codeToHast"
+    "codeToHast",
+    "ZodError"
   ],
   "lighthouse": {
     "minScores": {
