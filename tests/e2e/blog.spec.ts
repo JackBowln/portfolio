@@ -85,6 +85,8 @@ test('a topic in pages of 10, with previous and next links', async ({ page }) =>
   await expect(list).toHaveCount(10)
   const pagination = page.getByRole('navigation', { name: 'Paginação' })
   await expect(pagination).toContainText('Página 1 de 2')
+  // A click during hydration can be lost on a slow (mobile) run
+  await expect.poll(() => page.evaluate(() => Boolean((document.querySelector('#__nuxt') as { __vue_app__?: unknown } | null)?.__vue_app__))).toBe(true)
   await pagination.getByRole('link', { name: 'Próxima página' }).click()
   await expect(page).toHaveURL(new RegExp(`/blog/temas/${topic.slug}\\?page=2$`))
   await expect(list).toHaveCount(1)
