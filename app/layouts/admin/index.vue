@@ -8,6 +8,7 @@ const user = useAdminUser()
 // Hides the link only; /api/admin/audit checks audit:read itself
 const canReadAudit = computed(() => can(user.value?.role ?? '', { audit: ['read'] }))
 const canReadSettings = computed(() => can(user.value?.role ?? '', { settings: ['read'] }))
+const canReadContact = computed(() => can(user.value?.role ?? '', { contact: ['read'] }))
 
 const links = computed(() => [
   { to: '/admin', label: 'admin.layout.dashboard' },
@@ -17,6 +18,7 @@ const links = computed(() => [
   { to: '/admin/paginas', label: 'admin.layout.pages' },
   { to: '/admin/tecnologias', label: 'admin.layout.technologies' },
   { to: '/admin/midia', label: 'admin.layout.media' },
+  ...(canReadContact.value ? [{ to: '/admin/mensagens', label: 'admin.layout.contact' }] : []),
   ...(canReadSettings.value ? [{ to: '/admin/configuracoes', label: 'admin.layout.settings' }] : []),
   ...(canReadAudit.value ? [{ to: '/admin/auditoria', label: 'admin.layout.audit' }] : []),
   { to: '/admin/conta/passkeys', label: 'admin.layout.passkeys' },
