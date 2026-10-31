@@ -1,5 +1,6 @@
 // Media library rules (ADR-0007 §3, §8): manifest → uploads → finalize, metadata per locale and soft delete.
 // Only the admin who created a pending item may upload to it or finalize it; R2 keys come from shared/media/keys.ts
+import { fieldSegments } from '../../../shared/content/segment-hash.ts'
 import { expectedUploads, imageVariantName } from '../../../shared/media/keys.ts'
 import type { ExpectedUpload } from '../../../shared/media/keys.ts'
 import type { MediaManifest } from '../../../shared/media/schemas.ts'
@@ -21,7 +22,8 @@ import {
   softDeleteMedia,
   updateMedia,
 } from './media.repo.ts'
-import type { MediaFilters, MediaRow } from './media.repo.ts'
+import type { LocalizationInput, MediaFilters, MediaRow } from './media.repo.ts'
+import { approvalMeta, outdatedBySourceChange } from '../translation/state.service.ts'
 import { streamUploadToR2 } from './upload.ts'
 
 type Tracks = Awaited<ReturnType<typeof listTracks>>
@@ -157,11 +159,13 @@ export interface MetadataInput {
 }
 
 /**
- * Focal point, decorative flag and alt/caption/credit per locale; a person typing them makes them approved.
+ * Focal point, decorative flag and alt/caption/credit per locale. A translation typed by someone who may approve
+ * translations is approved (with the source hashes it was approved against); anyone else's waits in review (F09-T1,
+ * decision 2). Changing the pt-BR texts makes the approved translations outdated, field by field.
  * An informative image never goes back to having no pt-BR alt: clearing it, or unmarking decorative without one, is
  * refused. New uploads may still be without alt until publishing, which blocks them (F05/F06)
  */
-export async function updateMediaMetadata(db: Db, userId: string, id: string, input: MetadataInput) {
+export async function updateMediaMetadata(db: Db, userId: string, id: string, input: MetadataInput, canApprove = false) {
   const row = await findMedia(db, id)
   if (!row) {
     throw createAppError('not_found')
@@ -178,11 +182,24 @@ export async function updateMediaMetadata(db: Db, userId: string, id: string, in
       throw createAppError('bad_request', 'Invalid input', [{ path: `localizations.${SOURCE_LOCALE}.alt`, message: 'Add an alt before unmarking decorative' }])
     }
   }
-  const localizations = Object.entries(input.localizations ?? {}).map(([locale, fields]) => ({
-    locale: locale as Locale,
-    ...fields,
-    translationState: locale === SOURCE_LOCALE ? 'source' as const : 'approved' as const,
-  }))
+  const existing = await listLocalizations(db, id)
+  const sourceTexts = (fields: { alt?: string | undefined, caption?: string | null | undefined, credit?: string | null | undefined } | undefined) =>
+    fieldSegments({ alt: fields?.alt, caption: fields?.caption, credit: fields?.credit })
+  const before = existing.find(item => item.locale === SOURCE_LOCALE)
+  const after = sourceTexts({ ...before, ...input.localizations?.[SOURCE_LOCALE] })
+  const meta = await approvalMeta(after)
+  const written = Object.entries(input.localizations ?? {}).map(([locale, fields]): LocalizationInput => {
+    if (locale === SOURCE_LOCALE) {
+      return { locale, ...fields, translationState: 'source' }
+    }
+    return canApprove
+      ? { locale: locale as Locale, ...fields, translationState: 'approved', segmentsMeta: meta }
+      : { locale: locale as Locale, ...fields, translationState: 'in_review' }
+  })
+  const untouched = existing.filter(item => item.locale !== SOURCE_LOCALE && !(item.locale in (input.localizations ?? {})))
+    .map(item => ({ key: item.locale, translationState: item.translationState, segmentsMeta: item.segmentsMeta }))
+  const outdated = await outdatedBySourceChange(sourceTexts(before), after, untouched)
+  const localizations = [...written, ...outdated.map(item => ({ locale: item.key, translationState: 'outdated' as const, segmentsMeta: item.meta }))]
   await updateMedia(db, id, userId, { focalX: input.focalX, focalY: input.focalY, decorative: input.decorative }, localizations)
   return getMediaDetail(db, id)
 }

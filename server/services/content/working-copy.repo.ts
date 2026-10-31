@@ -13,6 +13,9 @@ import type { ContentTables } from './content-tables.ts'
 import type { LocalizationRow } from './localized.repo.ts'
 import type { PreparedRevision } from './revisions.repo.ts'
 import { insertRevisionStatement } from './revisions.repo.ts'
+import type { CopyKey } from '../translation/state.repo.ts'
+import { outdatedStatements } from '../translation/state.repo.ts'
+import type { OutdatedTranslation } from '../translation/state.service.ts'
 
 // The two tables differ only in their entity key (localizationEntityId); the casts stay here
 const tablesOf = (type: ContentType) => contentTables[type] as unknown as ContentTables['article']
@@ -72,6 +75,8 @@ export interface WorkingCopySave {
   uses: MediaUse[]
   /** The revision this save records (autosave or restore, F06-T2), under the same guard */
   revision?: PreparedRevision | undefined
+  /** Translations the change makes outdated (F09-T1), under the same guard */
+  outdated?: readonly OutdatedTranslation<CopyKey>[] | undefined
 }
 
 /**
@@ -102,6 +107,7 @@ export function saveStatements(db: Db, type: SluggedContentType, save: WorkingCo
       context: sql<MediaUsageContext>`json_extract(value, '$.context')`.as('context'),
     }).from(sql`json_each(${JSON.stringify(save.uses)})`).where(saved)),
     ...(save.revision ? [insertRevisionStatement(db, type, save.revision, saved)] : []),
+    ...outdatedStatements(db, type, save.outdated ?? [], saved),
   ] as const
 }
 

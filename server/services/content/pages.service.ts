@@ -28,6 +28,8 @@ import { getRevision, prepareRevision } from './revisions.repo.ts'
 import type { RevisionListItem } from './working-copy.ts'
 import { assertMedia, getSourceRevision, listSourceRevisions, saveSourceVersion, sourceCopyOf, versionConflict } from './working-copy.ts'
 import type { MediaUse } from './working-copy.repo.ts'
+import { contentSegments } from '../translation/state.repo.ts'
+import { outdatedBySourceChange } from '../translation/state.service.ts'
 
 export interface PageDetail {
   id: string
@@ -75,7 +77,11 @@ async function writeCopy(db: Db, userId: string, page: PageDetail, current: Page
   const workingHash = await contentHash(snapshot)
   const uses: MediaUse[] = [...documentUses(page.key, next.blocks), ...(next.ogImageMediaId ? [{ mediaId: next.ogImageMediaId, locale: SOURCE_LOCALE, context: 'og' as const }] : [])]
   const revision = await prepareRevision('page', { localizationId: current.id, entityId: page.id, locale: SOURCE_LOCALE, kind, snapshot, createdBy: userId })
-  const [updated] = await db.batch(savePageStatements(db, { pageId: page.id, localizationId: current.id, version, workingHash, localization: { ...fields, updatedBy: userId }, uses, revision }))
+  // F09-T1: the approved translations whose source segments this write changes (the page detail has them all)
+  const translations = page.localizations.filter(item => item.locale !== SOURCE_LOCALE)
+    .map(item => ({ key: { id: item.id, version: item.version }, translationState: item.translationState, segmentsMeta: item.segmentsMeta }))
+  const outdated = await outdatedBySourceChange(contentSegments('page', current), contentSegments('page', next), translations)
+  const [updated] = await db.batch(savePageStatements(db, { pageId: page.id, localizationId: current.id, version, workingHash, localization: { ...fields, updatedBy: userId }, uses, revision, outdated }))
   if (updated.length === 0) {
     throw versionConflict('page')
   }

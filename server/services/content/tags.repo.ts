@@ -1,13 +1,14 @@
 // Tag queries (F06-T1, data-model §4.7): topics of articles and technologies of projects (F07-T1), a tag and its
 // pt-BR name and slug; translations of names come with the translation flow (F09). Uses count the articles and
 // projects that carry the tag in their working copy or published version
-import { and, asc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
-import type { TagKind } from '../../../shared/types/enums.ts'
+import type { Locale, TagKind } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import type { Db } from '../../db/client.ts'
 import { articleTags, articles, projects, projectTechnologies } from '../../db/schema/content.ts'
 import { tagLocalizations, tags } from '../../db/schema/taxonomy.ts'
+import type { OutdatedTranslation, TrackedTranslation } from '../translation/state.service.ts'
 
 export interface TagItem {
   id: string
@@ -70,11 +71,21 @@ export async function insertTag(db: Db, userId: string, kind: TagKind, name: str
   return { id, name, slug }
 }
 
-export async function updateTag(db: Db, userId: string, id: string, values: { name?: string | undefined, slug?: string | undefined }): Promise<void> {
+/** The tag's names in other locales that follow the pt-BR one (F09-T1) */
+export async function findTagTranslations(db: Db, id: string): Promise<TrackedTranslation<Locale>[]> {
+  const rows = await db.select({ locale: tagLocalizations.locale, translationState: tagLocalizations.translationState, segmentsMeta: tagLocalizations.segmentsMeta })
+    .from(tagLocalizations).where(and(eq(tagLocalizations.tagId, id), ne(tagLocalizations.locale, SOURCE_LOCALE)))
+  return rows.map(row => ({ key: row.locale, translationState: row.translationState, segmentsMeta: row.segmentsMeta }))
+}
+
+export async function updateTag(db: Db, userId: string, id: string, values: { name?: string | undefined, slug?: string | undefined }, outdated: readonly OutdatedTranslation<Locale>[] = []): Promise<void> {
   const changes = Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined))
   await db.batch([
     db.update(tagLocalizations).set(changes).where(and(eq(tagLocalizations.tagId, id), eq(tagLocalizations.locale, SOURCE_LOCALE))),
     db.update(tags).set({ updatedBy: userId }).where(eq(tags.id, id)),
+    // A renamed topic: its translated names wait for a review (F09-T1)
+    ...outdated.map(item => db.update(tagLocalizations).set({ translationState: 'outdated', segmentsMeta: item.meta })
+      .where(and(eq(tagLocalizations.tagId, id), eq(tagLocalizations.locale, item.key)))),
   ])
 }
 

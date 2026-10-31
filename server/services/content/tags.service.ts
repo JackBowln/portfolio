@@ -3,12 +3,14 @@
 // tag that articles or projects use cannot be deleted
 import type { z } from 'zod'
 import type { tagCreateSchema, tagUpdateSchema } from '../../../shared/content/article-input.ts'
+import { fieldSegments } from '../../../shared/content/segment-hash.ts'
 import type { TagKind } from '../../../shared/types/enums.ts'
 import { slugify } from '../../../shared/utils/slugify.ts'
 import type { Db } from '../../db/client.ts'
 import { createAppError, isUniqueViolation } from '../../utils/errors.ts'
 import type { TagItem } from './tags.repo.ts'
-import { deleteTag as deleteTagRow, findTag, insertTag, isTagSlugTaken, listTags, updateTag } from './tags.repo.ts'
+import { outdatedBySourceChange } from '../translation/state.service.ts'
+import { deleteTag as deleteTagRow, findTag, findTagTranslations, insertTag, isTagSlugTaken, listTags, updateTag } from './tags.repo.ts'
 
 const slugConflict = () => createAppError('conflict', 'Slug already used', [{ path: 'slug', message: 'slug_taken' }])
 
@@ -51,7 +53,10 @@ export async function renameTag(db: Db, userId: string, id: string, input: z.out
   if (input.slug !== undefined && input.slug !== tag.slug && await isTagSlugTaken(db, input.slug, id)) {
     throw slugConflict()
   }
-  await updateTag(db, userId, id, input)
+  const outdated = input.name === undefined
+    ? []
+    : await outdatedBySourceChange(fieldSegments({ name: tag.name }), fieldSegments({ name: input.name }), await findTagTranslations(db, id))
+  await updateTag(db, userId, id, input, outdated)
   return { id, kind: tag.kind, name: input.name ?? tag.name, slug: input.slug ?? tag.slug }
 }
 

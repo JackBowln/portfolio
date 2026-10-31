@@ -2,6 +2,7 @@
 // translation, else pt-BR, else the default) and for the admin (every key as stored, with its version), and saved one
 // key at a time. A stored value that no longer fits its schema reads as the default instead of breaking the layout
 import { cacheTags } from '../../../shared/cache/tags.ts'
+import { fieldSegments } from '../../../shared/content/segment-hash.ts'
 import { mediaUrl } from '../../../shared/media/public.ts'
 import type { PublicImage } from '../../../shared/media/public.ts'
 import type { SettingUpdate } from '../../../shared/settings/input.ts'
@@ -16,6 +17,7 @@ import { findMediaStates } from '../media/media.repo.ts'
 import { resolveMedia } from '../content/document-media.ts'
 import type { SettingLocalizationRow, SettingRow } from './settings.repo.ts'
 import { findSettingLocalizations, findSettings, saveSettingStatements } from './settings.repo.ts'
+import { approvalMeta, outdatedBySourceChange } from '../translation/state.service.ts'
 
 const PUBLIC_KEYS = SITE_SETTING_KEYS.filter(key => settingSchemas[key].public)
 
@@ -28,7 +30,9 @@ function globalOf<K extends SiteSettingKey>(key: K, rows: readonly SettingRow[])
 function localizedOf<K extends 'identity' | 'seo_defaults' | 'footer'>(key: K, rows: readonly SettingLocalizationRow[], locale: Locale): SettingLocalized<K> {
   const schema = settingSchemas[key].localized
   for (const candidate of [locale, SOURCE_LOCALE]) {
-    const parsed = schema.safeParse(rows.find(row => row.key === key && row.locale === candidate)?.value)
+    // F09-T1: a translation that is not approved never reaches the site
+    const row = rows.find(item => item.key === key && item.locale === candidate && (item.translationState === 'source' || item.translationState === 'approved'))
+    const parsed = schema.safeParse(row?.value)
     if (parsed.success) {
       return parsed.data as SettingLocalized<K>
     }
@@ -109,14 +113,24 @@ export async function updateSetting(db: Db, userId: string, key: SiteSettingKey,
       throw createAppError('bad_request', 'Invalid input', [{ path: 'value.ogImageMediaId', message: 'must be a ready image' }])
     }
   }
-  const localizations = Object.entries(input.localizations ?? {}).map(([locale, value]) => ({
+  // F09-T1: only owner and admin save settings, and both may approve translations, so what they type is approved
+  // against the pt-BR text it was written for; a pt-BR change makes the other approved translations outdated
+  const stored = settingSchemas[key].localized ? await findSettingLocalizations(db, [key]) : []
+  const before = stored.find(row => row.locale === SOURCE_LOCALE)?.value as Record<string, unknown> | undefined
+  const written = input.localizations ?? {}
+  const after = SOURCE_LOCALE in written ? (written[SOURCE_LOCALE] as Record<string, unknown> | null) ?? undefined : before
+  const meta = await approvalMeta(fieldSegments(after))
+  const localizations = Object.entries(written).map(([locale, value]) => ({
     locale: locale as Locale,
     value: value ?? null,
-    // What the owner writes by hand is reviewed; machine translations come with F09
     state: locale === SOURCE_LOCALE ? 'source' as const : 'approved' as const,
+    meta: locale === SOURCE_LOCALE ? undefined : meta,
   }))
-  const [written] = await db.batch(saveSettingStatements(db, { key, version: input.version, value: input.value, userId, now: new Date(), localizations }))
-  if (written.length === 0) {
+  const untouched = stored.filter(row => row.locale !== SOURCE_LOCALE && !(row.locale in written))
+    .map(row => ({ key: row.locale, translationState: row.translationState, segmentsMeta: row.segmentsMeta }))
+  const outdated = (await outdatedBySourceChange(fieldSegments(before), fieldSegments(after), untouched)).map(item => ({ locale: item.key, meta: item.meta }))
+  const [saved] = await db.batch(saveSettingStatements(db, { key, version: input.version, value: input.value, userId, now: new Date(), localizations, outdated }))
+  if (saved.length === 0) {
     throw createAppError('conflict', 'The settings changed since they were opened', [{ path: 'version', message: 'stale' }])
   }
   return (await adminSettings(db)).find(item => item.key === key)!

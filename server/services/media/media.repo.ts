@@ -3,6 +3,7 @@ import { and, desc, eq, exists, gte, inArray, lt, ne, notExists, sql } from 'dri
 import type { SQL } from 'drizzle-orm'
 import type { Locale, MediaKind, MediaStatus, MediaTrackKind, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
+import type { SegmentsMeta } from '../../../shared/content/segment-hash.ts'
 import type { Db } from '../../db/client.ts'
 import { chunked } from '../../db/in-limit.ts'
 import { media, mediaLocalizations, mediaTracks, mediaUsages } from '../../db/schema/media.ts'
@@ -57,6 +58,8 @@ export interface LocalizationInput {
   caption?: string | null | undefined
   credit?: string | null | undefined
   translationState: TranslationState
+  /** Source hashes at approval (F09-T1) */
+  segmentsMeta?: SegmentsMeta | undefined
 }
 
 export interface MediaChanges {
@@ -102,6 +105,7 @@ export async function listLocalizations(db: Db, mediaId: string) {
     caption: mediaLocalizations.caption,
     credit: mediaLocalizations.credit,
     translationState: mediaLocalizations.translationState,
+    segmentsMeta: mediaLocalizations.segmentsMeta,
   }).from(mediaLocalizations).where(eq(mediaLocalizations.mediaId, mediaId))
 }
 
@@ -186,7 +190,8 @@ export async function findReadyMediaWithText(db: Db, ids: readonly string[]) {
   const queries = groups.flatMap(group => [
     db.select().from(media).where(and(inArray(media.id, group), eq(media.status, 'ready'))),
     db.select({ mediaId: mediaLocalizations.mediaId, locale: mediaLocalizations.locale, alt: mediaLocalizations.alt, caption: mediaLocalizations.caption, credit: mediaLocalizations.credit })
-      .from(mediaLocalizations).where(inArray(mediaLocalizations.mediaId, group)),
+      // F09-T1: only the original and approved translations reach the site; anything else falls back to pt-BR
+      .from(mediaLocalizations).where(and(inArray(mediaLocalizations.mediaId, group), inArray(mediaLocalizations.translationState, ['source', 'approved']))),
     db.select({ mediaId: mediaTracks.mediaId, locale: mediaTracks.locale, kind: mediaTracks.kind, label: mediaTracks.label, key: mediaTracks.key })
       .from(mediaTracks).where(inArray(mediaTracks.mediaId, group)).orderBy(mediaTracks.locale, mediaTracks.kind),
   ] as const)

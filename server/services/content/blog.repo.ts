@@ -85,13 +85,16 @@ export async function findPublishedArticle(db: Db, locale: Locale, slug: string)
   return row ? { ...row, snapshot: row.snapshot! } : undefined
 }
 
+// F09-T1: a topic exists in a locale only with its original or an approved name (i18n-seo §3)
+const namedIn = (locale: Locale): SQL => and(eq(tagLocalizations.locale, locale), inArray(tagLocalizations.translationState, ['source', 'approved']))!
+
 /** Topics with a name in the locale, in the given order */
 export async function topicsIn(db: Db, locale: Locale, tagIds: readonly string[]): Promise<{ id: string, name: string, slug: string }[]> {
   if (tagIds.length === 0) {
     return []
   }
   const rows = await db.select({ id: tagLocalizations.tagId, name: tagLocalizations.name, slug: tagLocalizations.slug }).from(tagLocalizations)
-    .where(and(eq(tagLocalizations.locale, locale), inArray(tagLocalizations.tagId, [...tagIds])))
+    .where(and(namedIn(locale), inArray(tagLocalizations.tagId, [...tagIds])))
   return tagIds.flatMap(id => rows.filter(row => row.id === id))
 }
 
@@ -109,7 +112,7 @@ export async function relatedArticles(db: Db, locale: Locale, articleId: string,
 /** The topic at (locale, slug), if it has a name in the locale */
 export async function findTopic(db: Db, locale: Locale, slug: string): Promise<{ id: string, name: string, slug: string } | undefined> {
   const [row] = await db.select({ id: tagLocalizations.tagId, name: tagLocalizations.name, slug: tagLocalizations.slug }).from(tagLocalizations)
-    .where(and(eq(tagLocalizations.locale, locale), eq(tagLocalizations.slug, slug)))
+    .where(and(namedIn(locale), eq(tagLocalizations.slug, slug)))
   return row
 }
 
@@ -120,7 +123,7 @@ export async function topicsWithArticles(db: Db, locale: Locale): Promise<{ id: 
     .innerJoin(articleTags, eq(articleTags.tagId, tagLocalizations.tagId))
     .innerJoin(articles, eq(articles.id, articleTags.articleId))
     .innerJoin(articleLocalizations, eq(articleLocalizations.articleId, articles.id))
-    .where(and(eq(tagLocalizations.locale, locale), live(locale)))
+    .where(and(namedIn(locale), live(locale)))
     .groupBy(tagLocalizations.tagId, tagLocalizations.name, tagLocalizations.slug)
     .orderBy(tagLocalizations.name)
 }

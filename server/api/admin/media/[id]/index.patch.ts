@@ -1,6 +1,7 @@
 // Metadata only (RF-06.4): focal point, the explicit decorative flag and alt, caption and credit per locale.
 // An empty alt is accepted here; publishing (F05/F06) refuses informative images without one
 import { z } from 'zod'
+import { can } from '#shared/auth/permissions'
 import { LOCALES } from '#shared/types/enums'
 import { updateMediaMetadata } from '../../../../services/media/media.service.ts'
 
@@ -24,7 +25,8 @@ export default defineAdminHandler({
   handler: async (event, auth) => {
     const { id } = getValidatedParamsStrict(event, paramsSchema)
     const body = await readValidatedBodyStrict(event, bodySchema)
-    const media = await updateMediaMetadata(useDb(event), auth.user.id, id, body)
+    // F09-T1: a translation is approved only when its author may approve translations
+    const media = await updateMediaMetadata(useDb(event), auth.user.id, id, body, can(auth.user.role, { translation: ['approve'] }))
     const fields = [
       ...['focalX', 'focalY', 'decorative'].filter(field => field in body),
       ...Object.keys(body.localizations ?? {}).map(locale => `localization:${locale}`),

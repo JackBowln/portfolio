@@ -14,6 +14,8 @@ import { MAX_SLUG_LENGTH, slugify } from '../../../shared/utils/slugify.ts'
 import type { Db } from '../../db/client.ts'
 import { createAppError, isUniqueViolation } from '../../utils/errors.ts'
 import { findMediaStates } from '../media/media.repo.ts'
+import { contentSegments, findTrackedTranslations } from '../translation/state.repo.ts'
+import { outdatedBySourceChange } from '../translation/state.service.ts'
 import type { LocalizationRow } from './localized.repo.ts'
 import type { RevisionMeta } from './revisions.repo.ts'
 import { getRevision, insertRevisionStatement, listRevisions, prepareRevision, userNames } from './revisions.repo.ts'
@@ -111,6 +113,8 @@ export async function writeWorkingCopy<T extends SluggedContentType>(db: Db, typ
     ...(next.ogImageMediaId ? [{ mediaId: next.ogImageMediaId, locale: SOURCE_LOCALE, context: 'og' as const }] : []),
   ]
   const revision = await prepareRevision(type, { localizationId: current.id, entityId, locale: SOURCE_LOCALE, kind: write.kind, snapshot: snapshot as SnapshotInput<T>, createdBy: userId })
+  // F09-T1: the approved translations whose source segments this write changes
+  const outdated = await outdatedBySourceChange(contentSegments(type, current), contentSegments(type, next), await findTrackedTranslations(db, type, entityId))
 
   let updated: { id: string }[]
   try {
@@ -123,6 +127,7 @@ export async function writeWorkingCopy<T extends SluggedContentType>(db: Db, typ
       entity: { ...write.entityColumns, updatedBy: userId },
       uses,
       revision,
+      outdated,
     }))
   }
   catch (error) {

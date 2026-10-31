@@ -14,6 +14,9 @@ import { auditEntryStatement } from '../audit/audit.repo.ts'
 import type { PreparedRevision } from './revisions.repo.ts'
 import { insertRevisionStatement } from './revisions.repo.ts'
 import type { MediaUse } from './working-copy.repo.ts'
+import type { CopyKey } from '../translation/state.repo.ts'
+import { outdatedStatements } from '../translation/state.repo.ts'
+import type { OutdatedTranslation } from '../translation/state.service.ts'
 
 export type PageRow = typeof pages.$inferSelect
 export type PageLocalizationRow = typeof pageLocalizations.$inferSelect
@@ -50,6 +53,8 @@ export interface PageSave {
   localization: Record<string, unknown>
   uses: MediaUse[]
   revision?: PreparedRevision | undefined
+  /** Translations the change makes outdated (F09-T1), under the same guard */
+  outdated?: readonly OutdatedTranslation<CopyKey>[] | undefined
 }
 
 /** One save: the copy guarded by the version, then the media uses and the revision once it took effect */
@@ -72,6 +77,7 @@ export function savePageStatements(db: Db, save: PageSave) {
       context: sql<MediaUsageContext>`json_extract(value, '$.context')`.as('context'),
     }).from(sql`json_each(${JSON.stringify(save.uses)})`).where(saved)),
     ...(save.revision ? [insertRevisionStatement(db, 'page', save.revision, saved)] : []),
+    ...outdatedStatements(db, 'page', save.outdated ?? [], saved),
   ] as const
 }
 
