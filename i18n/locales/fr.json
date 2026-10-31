@@ -173,5 +173,31 @@
   },
   "common": {
     "sampleDate": "Date d’exemple : {date}"
+  },
+  "contact": {
+    "form": {
+      "label": "Formulaire de contact",
+      "name": "Nom",
+      "email": "E-mail",
+      "message": "Message",
+      "messageHint": "De {min} à {max} caractères.",
+      "submit": "Envoyer le message",
+      "sending": "Envoi…"
+    },
+    "notice": "Votre nom, votre e-mail et votre message servent uniquement à répondre à cette prise de contact et sont conservés 12 mois.",
+    "privacyLink": "Politique de confidentialité",
+    "sent": "Message envoyé. Merci pour votre prise de contact !",
+    "disabled": "Le formulaire de contact est désactivé pour le moment.",
+    "errors": {
+      "summary": "Corrigez {count} champ pour envoyer : | Corrigez {count} champs pour envoyer :",
+      "required": "Remplissez ce champ.",
+      "invalidEmail": "Saisissez un e-mail valide, par exemple nom{'@'}exemple.fr.",
+      "tooShort": "Écrivez au moins {min} caractères.",
+      "tooLong": "Utilisez au maximum {max} caractères.",
+      "invalid": "Vérifiez ce champ.",
+      "turnstile": "Nous n’avons pas pu confirmer que vous n’êtes pas un robot. Réessayez.",
+      "rateLimited": "Trop de messages en peu de temps. Attendez une minute et réessayez.",
+      "failed": "Le message n’a pas pu être envoyé pour le moment. Réessayez dans quelques minutes."
+    }
   }
 }

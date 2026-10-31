@@ -5,12 +5,15 @@
 // Required fields carry the native `required`; the visual asterisk is hidden from assistive tech
 const props = defineProps<{
   label: string
+  /** A stable id, when something else links to the control (an error summary); generated otherwise */
+  id?: string | undefined
   description?: string | undefined
   error?: string | undefined
   required?: boolean
 }>()
 
-const id = useId()
+const generatedId = useId()
+const id = props.id ?? generatedId
 const descriptionId = `${id}-description`
 const errorId = `${id}-error`
 

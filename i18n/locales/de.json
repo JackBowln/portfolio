@@ -173,5 +173,31 @@
   },
   "common": {
     "sampleDate": "Beispieldatum: {date}"
+  },
+  "contact": {
+    "form": {
+      "label": "Kontaktformular",
+      "name": "Name",
+      "email": "E-Mail",
+      "message": "Nachricht",
+      "messageHint": "{min} bis {max} Zeichen.",
+      "submit": "Nachricht senden",
+      "sending": "Wird gesendet…"
+    },
+    "notice": "Name, E-Mail und Nachricht werden nur zur Beantwortung dieser Anfrage verwendet und 12 Monate lang gespeichert.",
+    "privacyLink": "Datenschutzerklärung",
+    "sent": "Nachricht gesendet. Danke für Ihre Nachricht!",
+    "disabled": "Das Kontaktformular ist derzeit deaktiviert.",
+    "errors": {
+      "summary": "Korrigieren Sie {count} Feld zum Senden: | Korrigieren Sie {count} Felder zum Senden:",
+      "required": "Füllen Sie dieses Feld aus.",
+      "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein, z. B. name{'@'}beispiel.de.",
+      "tooShort": "Schreiben Sie mindestens {min} Zeichen.",
+      "tooLong": "Verwenden Sie höchstens {max} Zeichen.",
+      "invalid": "Prüfen Sie dieses Feld.",
+      "turnstile": "Wir konnten nicht bestätigen, dass Sie kein Roboter sind. Bitte versuchen Sie es erneut.",
+      "rateLimited": "Zu viele Nachrichten in kurzer Zeit. Warten Sie eine Minute und versuchen Sie es erneut.",
+      "failed": "Die Nachricht konnte gerade nicht gesendet werden. Versuchen Sie es in einigen Minuten erneut."
+    }
   }
 }

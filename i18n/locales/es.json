@@ -173,5 +173,31 @@
   },
   "common": {
     "sampleDate": "Fecha de ejemplo: {date}"
+  },
+  "contact": {
+    "form": {
+      "label": "Formulario de contacto",
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "message": "Mensaje",
+      "messageHint": "De {min} a {max} caracteres.",
+      "submit": "Enviar mensaje",
+      "sending": "Enviando…"
+    },
+    "notice": "Tu nombre, correo y mensaje solo se usan para responder a este contacto y se guardan durante 12 meses.",
+    "privacyLink": "Política de privacidad",
+    "sent": "Mensaje enviado. ¡Gracias por escribir!",
+    "disabled": "El formulario de contacto está desactivado en este momento.",
+    "errors": {
+      "summary": "Corrige {count} campo para enviar: | Corrige {count} campos para enviar:",
+      "required": "Completa este campo.",
+      "invalidEmail": "Escribe un correo válido, como nombre{'@'}ejemplo.com.",
+      "tooShort": "Escribe al menos {min} caracteres.",
+      "tooLong": "Usa como máximo {max} caracteres.",
+      "invalid": "Revisa este campo.",
+      "turnstile": "No pudimos confirmar que no eres un robot. Inténtalo de nuevo.",
+      "rateLimited": "Demasiados mensajes en poco tiempo. Espera un minuto e inténtalo de nuevo.",
+      "failed": "No se pudo enviar ahora. Inténtalo de nuevo en unos minutos."
+    }
   }
 }

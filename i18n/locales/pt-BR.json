@@ -230,7 +230,8 @@
       "projects": "Projetos",
       "technologies": "Tecnologias",
       "settings": "Configurações",
-      "pages": "Páginas"
+      "pages": "Páginas",
+      "contact": "Mensagens"
     },
     "dashboard": {
       "title": "Painel",
@@ -1133,6 +1134,60 @@
         "titleHint": "Vazio usa o nome padrão da seção.",
         "intro": "Introdução"
       }
+    },
+    "contact": {
+      "title": "Mensagens",
+      "intro": "Mensagens enviadas pelo formulário de contato. São guardadas por 12 meses; excluir apaga de vez.",
+      "filter": "Filtrar por estado",
+      "all": "Todas",
+      "unread": "{count} não lida | {count} não lidas",
+      "empty": "Nenhuma mensagem.",
+      "more": "Carregar mais",
+      "received": "Recebida em {date}",
+      "from": "De",
+      "statuses": {
+        "new": "Nova",
+        "read": "Lida",
+        "archived": "Arquivada",
+        "spam": "Spam"
+      },
+      "actions": {
+        "archive": "Arquivar",
+        "spam": "Marcar como spam",
+        "read": "Mover para lidas",
+        "delete": "Excluir",
+        "back": "Voltar para as mensagens"
+      },
+      "confirmDelete": "Excluir esta mensagem de vez? Não há como desfazer.",
+      "deleted": "Mensagem excluída.",
+      "updated": "Estado alterado para {status}.",
+      "notFound": "Mensagem não encontrada."
+    }
+  },
+  "contact": {
+    "form": {
+      "label": "Formulário de contato",
+      "name": "Nome",
+      "email": "E-mail",
+      "message": "Mensagem",
+      "messageHint": "De {min} a {max} caracteres.",
+      "submit": "Enviar mensagem",
+      "sending": "Enviando…"
+    },
+    "notice": "Seu nome, e-mail e mensagem servem só para responder a este contato e ficam guardados por 12 meses.",
+    "privacyLink": "Política de privacidade",
+    "sent": "Mensagem enviada. Obrigado pelo contato!",
+    "disabled": "O formulário de contato está desativado no momento.",
+    "errors": {
+      "summary": "Corrija {count} campo para enviar: | Corrija {count} campos para enviar:",
+      "required": "Preencha este campo.",
+      "invalidEmail": "Informe um e-mail válido, como nome{'@'}exemplo.com.",
+      "tooShort": "Escreva pelo menos {min} caracteres.",
+      "tooLong": "Use no máximo {max} caracteres.",
+      "invalid": "Confira este campo.",
+      "turnstile": "Não foi possível confirmar que você não é um robô. Tente de novo.",
+      "rateLimited": "Muitas mensagens em pouco tempo. Aguarde um minuto e tente de novo.",
+      "failed": "Não foi possível enviar agora. Tente de novo em alguns minutos."
     }
   }
 }

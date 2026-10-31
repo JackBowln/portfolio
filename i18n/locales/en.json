@@ -173,5 +173,31 @@
   },
   "common": {
     "sampleDate": "Sample date: {date}"
+  },
+  "contact": {
+    "form": {
+      "label": "Contact form",
+      "name": "Name",
+      "email": "Email",
+      "message": "Message",
+      "messageHint": "{min} to {max} characters.",
+      "submit": "Send message",
+      "sending": "Sending…"
+    },
+    "notice": "Your name, email and message are used only to reply to this message and are kept for 12 months.",
+    "privacyLink": "Privacy policy",
+    "sent": "Message sent. Thank you for getting in touch!",
+    "disabled": "The contact form is turned off at the moment.",
+    "errors": {
+      "summary": "Fix {count} field to send: | Fix {count} fields to send:",
+      "required": "Fill in this field.",
+      "invalidEmail": "Enter a valid email, such as name{'@'}example.com.",
+      "tooShort": "Write at least {min} characters.",
+      "tooLong": "Use at most {max} characters.",
+      "invalid": "Check this field.",
+      "turnstile": "We could not confirm you are not a robot. Please try again.",
+      "rateLimited": "Too many messages in a short time. Wait a minute and try again.",
+      "failed": "The message could not be sent right now. Try again in a few minutes."
+    }
   }
 }
