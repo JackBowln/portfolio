@@ -1,6 +1,9 @@
 // CSP by hash (ADR-0012 §1). Pages are cached at the edge, so a per-request nonce would be frozen in the cache;
 // hashes of the final HTML's inline scripts travel with that same HTML instead. Pure, so it is unit-tested directly
 import { EMBED_FRAME_ORIGINS } from '../../shared/content/embed-origins.ts'
+import { localizedPath } from '../../shared/i18n/locales.ts'
+import { STATIC_PAGE_PATHS } from '../../shared/i18n/routes.ts'
+import { LOCALES } from '../../shared/types/enums.ts'
 
 const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi
 const SRC_ATTR = /(?:^|\s)src\s*=/i
@@ -53,14 +56,27 @@ export interface PageCspOptions {
   localMedia?: boolean
   /** Public pages frame the embed players after a click (F05-T5); the admin frames nothing */
   embeds?: boolean
+  /** Only the contact page loads Turnstile's script and frames its challenge (F08-T3) */
+  turnstile?: boolean
 }
 
-export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, localMedia = false, embeds = false }: PageCspOptions): string {
+export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
+
+const CONTACT_PATHS = new Set(LOCALES.map(locale => localizedPath(locale, STATIC_PAGE_PATHS.contact[locale])))
+
+/** The contact page in any locale, the only one with a third-party script */
+export function isContactPath(path: string): boolean {
+  const clean = path.split('?')[0] ?? path
+  return CONTACT_PATHS.has(clean.length > 1 ? clean.replace(/\/$/, '') : clean)
+}
+
+export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, localMedia = false, embeds = false, turnstile = false }: PageCspOptions): string {
   const media = mediaOrigin ? ` ${mediaOrigin}` : ''
   const hashes = [...new Set(scriptHashes)].map(hash => ` ${hash}`).join('')
+  const frames = [...(embeds ? EMBED_FRAME_ORIGINS : []), ...(turnstile ? [TURNSTILE_ORIGIN] : [])]
   const directives = [
     `default-src 'self'`,
-    `script-src 'self'${hashes}`,
+    `script-src 'self'${hashes}${turnstile ? ` ${TURNSTILE_ORIGIN}` : ''}`,
     // Accepted trade-off: Nuxt and Vue emit inline styles (ADR-0012 §1)
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data:${media}`,
@@ -68,7 +84,7 @@ export function pageCsp({ scriptHashes, mediaOrigin, upgradeInsecureRequests, lo
     `font-src 'self'`,
     `connect-src 'self'`,
     // Without it, default-src 'self' blocks every frame
-    ...(embeds ? [`frame-src ${EMBED_FRAME_ORIGINS.join(' ')}`] : []),
+    ...(frames.length > 0 ? [`frame-src ${frames.join(' ')}`] : []),
     `object-src 'none'`,
     `base-uri 'none'`,
     `form-action 'self'`,

@@ -18,6 +18,9 @@
     // Public media URL = MEDIA_BASE_URL + "/" + R2 key (media/…): the site itself here, via server/routes/media
     "MEDIA_BASE_URL": "http://localhost:3000",
     "NUXT_PUBLIC_MEDIA_BASE_URL": "http://localhost:3000",
+    // F08-T3: Turnstile's official test site key (always passes); the secret comes from .dev.vars or --var
+    "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+    "CONTACT_FROM": "contato@localhost.test",
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "portfolio-local", "database_id": "portfolio-local", "migrations_dir": "server/db/migrations" },
@@ -33,6 +36,8 @@
     { "name": "RL_PUBLIC", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } },
     { "name": "RL_ADMIN", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } },
   ],
+  // F08-T3: emulated locally (the message is only logged); remotely it sends to the address verified in Email Routing
+  "send_email": [{ "name": "CONTACT_EMAIL" }],
     "cache": { "enabled": false },
   "observability": { "enabled": false },
 
@@ -47,6 +52,9 @@
         "NUXT_PUBLIC_SITE_URL": "https://portfolio-preview.vinivdias.workers.dev",
         "MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev",
         "NUXT_PUBLIC_MEDIA_BASE_URL": "https://portfolio-preview.vinivdias.workers.dev",
+        // Placeholders until the owner creates the Turnstile widget and verifies the address (Q-05)
+        "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "TURNSTILE_SITE_KEY",
+        "CONTACT_FROM": "contato@DOMAIN",
       },
       "d1_databases": [
         { "binding": "DB", "database_name": "portfolio-preview", "database_id": "6e4be818-aeba-4fe7-8e55-c07b6f880332", "migrations_dir": "server/db/migrations" },
@@ -60,6 +68,7 @@
         { "name": "RL_PUBLIC", "namespace_id": "2002", "simple": { "limit": 3, "period": 60 } },
         { "name": "RL_ADMIN", "namespace_id": "2003", "simple": { "limit": 120, "period": 60 } },
       ],
+      "send_email": [{ "name": "CONTACT_EMAIL", "destination_address": "CONTACT_EMAIL_ADDRESS@DOMAIN" }],
       // Availability on the Free plan is validated in the F00-T6 spike (ADR-0003)
       "cache": { "enabled": true },
       "observability": { "enabled": true },
@@ -78,6 +87,9 @@
         // Bucket on its own domain (ADR-0007 §5); a WAF rule there blocks /originals/* (F04-T3, deploy checklist)
         "MEDIA_BASE_URL": "https://media.DOMAIN",
         "NUXT_PUBLIC_MEDIA_BASE_URL": "https://media.DOMAIN",
+        // Placeholders until the owner creates the Turnstile widget and verifies the address (Q-05)
+        "NUXT_PUBLIC_TURNSTILE_SITE_KEY": "TURNSTILE_SITE_KEY",
+        "CONTACT_FROM": "contato@DOMAIN",
       },
       "d1_databases": [
         // [PLACEHOLDER] created only at launch (F12): wrangler d1 create portfolio-production
@@ -92,6 +104,7 @@
         { "name": "RL_PUBLIC", "namespace_id": "3002", "simple": { "limit": 3, "period": 60 } },
         { "name": "RL_ADMIN", "namespace_id": "3003", "simple": { "limit": 120, "period": 60 } },
       ],
+      "send_email": [{ "name": "CONTACT_EMAIL", "destination_address": "CONTACT_EMAIL_ADDRESS@DOMAIN" }],
       "cache": { "enabled": true },
       "observability": { "enabled": true },
       // One cron for every scheduled job (environments.md §1; nuxt.config scheduledTasks): F06-T2 prunes autosaves

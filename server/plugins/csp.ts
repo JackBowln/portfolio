@@ -7,13 +7,15 @@ async function policyForPage(event: H3Event, html: string): Promise<string> {
   // Nuxt renders error pages in an internal sub-request that has no bindings (its headers are copied to the real
   // response); the public site URL holds the same value, and an error page shows no media
   const siteUrl = env?.SITE_URL ?? useRuntimeConfig(event).public.siteUrl
-  const admin = (event.path.split('?')[0] ?? '').startsWith('/admin')
+  const path = event.path.split('?')[0] ?? ''
+  const admin = path.startsWith('/admin')
   return pageCsp({
     scriptHashes: await Promise.all(inlineScripts(html).map(scriptHash)),
     mediaOrigin: mediaOriginFor(siteUrl, env?.MEDIA_BASE_URL),
     upgradeInsecureRequests: siteUrl.startsWith('https://'),
     localMedia: admin,
     embeds: !admin,
+    turnstile: isContactPath(path),
   })
 }
 

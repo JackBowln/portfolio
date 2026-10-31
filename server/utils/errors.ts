@@ -8,6 +8,7 @@ export type AppErrorCode
     | 'conflict'
     | 'payload_too_large'
     | 'unsupported_media_type'
+    | 'unprocessable'
     | 'rate_limited'
     | 'internal'
 
@@ -21,6 +22,8 @@ const STATUS: Record<AppErrorCode, number> = {
   conflict: 409,
   payload_too_large: 413,
   unsupported_media_type: 415,
+  // Field errors of the public contact form (F08-T3); admin routes keep 400 for invalid input
+  unprocessable: 422,
   rate_limited: 429,
   internal: 500,
 }

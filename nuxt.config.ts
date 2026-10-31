@@ -44,6 +44,8 @@ export default defineNuxtConfig({
       siteUrl: 'http://localhost:3000',
       // Base of public media URLs (base + "/" + R2 key); NUXT_PUBLIC_MEDIA_BASE_URL must equal MEDIA_BASE_URL
       mediaBaseUrl: 'http://localhost:3000',
+      // Contact form widget (F08-T3); a public key by design, set per environment by NUXT_PUBLIC_TURNSTILE_SITE_KEY
+      turnstileSiteKey: '1x00000000000000000000AA',
     },
   },
 
@@ -85,7 +87,7 @@ export default defineNuxtConfig({
     // production (wrangler.jsonc, environments.md); a task that needs less often decides inside itself (F06-T2)
     experimental: { tasks: true },
     scheduledTasks: {
-      '*/5 * * * *': ['content:publish-due', 'content:prune-autosaves'],
+      '*/5 * * * *': ['content:publish-due', 'content:prune-autosaves', 'contact:retention'],
     },
   },
 

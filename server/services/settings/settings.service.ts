@@ -68,6 +68,11 @@ export async function siteFeatures(db: Db): Promise<SettingGlobal<'features'>> {
   return globalOf('features', await findSettings(db, ['features']))
 }
 
+/** Where contact notifications go (F08-T3): the address set in the settings, verified in Email Routing */
+export async function contactAddress(db: Db): Promise<string | null> {
+  return globalOf('contact', await findSettings(db, ['contact'])).email
+}
+
 export interface AdminSetting {
   key: SiteSettingKey
   /** 0 while the key was never saved (its value is the default) */

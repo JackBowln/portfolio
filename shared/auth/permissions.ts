@@ -17,6 +17,8 @@ export const STATEMENTS = {
   settings: ['read', 'update'],
   user: ['invite', 'update-role', 'revoke-session'],
   audit: ['read'],
+  // Contact messages (F08-T3): personal data, so owner and admin only
+  contact: ['read', 'update', 'delete'],
   // The user's own sessions (RF-03.5); other users' sessions are user:revoke-session
   session: ['read', 'revoke'],
 } as const

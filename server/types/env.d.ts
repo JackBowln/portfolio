@@ -13,6 +13,8 @@ declare global {
     IP_HASH_SALT?: string
     /** HMAC key of preview links (F06-T3); rotating it invalidates every link */
     PREVIEW_TOKEN_SECRET?: string
+    /** Turnstile's server-side key (F08-T3); without it the contact form fails closed */
+    TURNSTILE_SECRET_KEY?: string
   }
 }
 
