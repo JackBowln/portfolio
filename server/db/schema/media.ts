@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm'
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { check, index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
+import { segmentsMeta } from '../../../shared/content/snapshot.ts'
 import { IMAGE_FORMATS } from '../../../shared/media/schemas.ts'
 import type { MediaMimeType } from '../../../shared/media/schemas.ts'
 import { LOCALES, MEDIA_KINDS, MEDIA_STATUSES, MEDIA_TRACK_KINDS, MEDIA_USAGE_CONTEXTS, TRANSLATION_STATES } from '../../../shared/types/enums.ts'
@@ -58,6 +59,8 @@ export const mediaLocalizations = sqliteTable('media_localizations', {
   caption: text(),
   credit: text(),
   translationState: text({ enum: TRANSLATION_STATES }).notNull(),
+  // Source hash per segment at approval (F09-T1): which fields went outdated when the pt-BR original changed
+  segmentsMeta: zodJson(segmentsMeta)().notNull().default(sql`'{}'`),
   updatedAt: integer({ mode: 'timestamp_ms' }).notNull().$defaultFn(now).$onUpdateFn(now),
 }, table => [primaryKey({ columns: [table.mediaId, table.locale] })])
 

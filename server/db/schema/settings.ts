@@ -1,5 +1,7 @@
+import { sql } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
+import { segmentsMeta } from '../../../shared/content/snapshot.ts'
 import { LOCALES, SITE_SETTING_KEYS, TRANSLATION_STATES } from '../../../shared/types/enums.ts'
 import { now } from '../../../shared/utils/time.ts'
 import { zodJson } from '../columns.ts'
@@ -21,5 +23,7 @@ export const siteSettingLocalizations = sqliteTable('site_setting_localizations'
   locale: text({ enum: LOCALES }).notNull(),
   value: zodJson(settingValue)().notNull(),
   translationState: text({ enum: TRANSLATION_STATES }).notNull(),
+  // Source hash per segment at approval (F09-T1): which fields went outdated when the pt-BR original changed
+  segmentsMeta: zodJson(segmentsMeta)().notNull().default(sql`'{}'`),
   updatedAt: integer({ mode: 'timestamp_ms' }).notNull().$defaultFn(now),
 }, table => [primaryKey({ columns: [table.key, table.locale] })])
