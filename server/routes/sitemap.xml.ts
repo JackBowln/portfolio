@@ -1,21 +1,25 @@
 // Own sitemap endpoint (ADR-0008 §5, F02-T3 decision): only indexable, published URLs, with hreflang alternates of the
-// published locales. The indexable static pages; the blog index and the projects index in the locales with a
-// published article or project; the published articles (F06-T5) and projects (F07-T2) with their lastmod. Topics
-// and the validating crawl come with F11-T3
+// published locales. The institutional pages in the locales where they are published (F08-T2: a fallback page is
+// noindex, so it stays out); the blog index and the projects index in the locales with a published article or
+// project; the published articles (F06-T5) and projects (F07-T2) with their lastmod. Topics and the validating crawl
+// come with F11-T3
 import { LOCALES } from '#shared/types/enums'
 import type { Locale } from '#shared/types/enums'
 import { cacheTags } from '#shared/cache/tags'
 import { articlePath, projectPath } from '#shared/content/paths'
 import { localizedPath } from '#shared/i18n/locales'
-import { INDEXABLE_STATIC_PAGES, STATIC_PAGE_PATHS } from '#shared/i18n/routes'
+import { STATIC_PAGE_PATHS } from '#shared/i18n/routes'
 import type { StaticPage } from '#shared/i18n/routes'
 import { absoluteUrl } from '#shared/seo/head'
 import { buildSitemap } from '#shared/seo/sitemap'
 import type { SitemapEntry } from '#shared/seo/sitemap'
 import { allPublishedArticles } from '../services/content/blog.repo.ts'
+import { publishedPageLocales } from '../services/content/pages.repo.ts'
 import { allPublishedProjects } from '../services/content/projects-public.repo.ts'
 
 type Published = { id: string, locale: Locale, slug: string, publishedAt: Date }
+
+const INSTITUTIONAL_PAGES = ['home', 'about', 'contact', 'privacy'] as const
 
 /** One entry per item with its published locales, then its index in the locales that have one */
 function publishedEntries(siteUrl: string, rows: readonly Published[], pathOf: (locale: Locale, slug: string) => string, index: StaticPage): SitemapEntry[] {
@@ -40,11 +44,17 @@ function publishedEntries(siteUrl: string, rows: readonly Published[], pathOf: (
 export default defineEventHandler(async (event) => {
   const siteUrl = useEnv(event).SITE_URL
   const db = useDb(event)
-  const [articles, projects] = await Promise.all([allPublishedArticles(db), allPublishedProjects(db)])
+  const [articles, projects, pages] = await Promise.all([allPublishedArticles(db), allPublishedProjects(db), publishedPageLocales(db, INSTITUTIONAL_PAGES)])
   const entries: SitemapEntry[] = [
-    ...INDEXABLE_STATIC_PAGES.map(page => ({
-      urls: Object.fromEntries(LOCALES.map(locale => [locale, absoluteUrl(siteUrl, localizedPath(locale, STATIC_PAGE_PATHS[page][locale]))])),
-    })),
+    ...INSTITUTIONAL_PAGES.flatMap((page) => {
+      const rows = pages.filter(row => row.key === page)
+      return rows.length === 0
+        ? []
+        : [{
+            urls: Object.fromEntries(rows.map(row => [row.locale, absoluteUrl(siteUrl, localizedPath(row.locale, STATIC_PAGE_PATHS[page][row.locale]))])),
+            lastmod: rows.reduce((latest, row) => (row.publishedAt > latest ? row.publishedAt : latest), new Date(0)).toISOString(),
+          }]
+    }),
     ...publishedEntries(siteUrl, articles.map(({ articleId, ...row }) => ({ id: articleId, ...row })), articlePath, 'blog'),
     ...publishedEntries(siteUrl, projects.map(({ projectId, ...row }) => ({ id: projectId, ...row })), projectPath, 'projects'),
   ]

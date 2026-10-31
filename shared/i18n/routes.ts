@@ -13,6 +13,3 @@ export const STATIC_PAGE_PATHS: Record<StaticPage, Record<Locale, string>> = {
   contact: { 'pt-BR': '/contato', 'en': '/contact', 'es': '/contacto', 'de': '/kontakt', 'fr': '/contact' },
   privacy: { 'pt-BR': '/privacidade', 'en': '/privacy', 'es': '/privacidad', 'de': '/datenschutz', 'fr': '/confidentialite' },
 }
-
-// Pages indexable today (F02-T3): the rest are [PLACEHOLDER] skeletons with noindex until their own phase
-export const INDEXABLE_STATIC_PAGES: readonly StaticPage[] = ['home', 'about']

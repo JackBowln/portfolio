@@ -7,7 +7,7 @@ import { CURRENT_SCHEMA_VERSION } from '../../../shared/content/document-schema.
 import type { DocumentJson } from '../../../shared/content/document-schema.ts'
 import { deriveDocument } from '../../../shared/content/derive.ts'
 import { snapshotOf } from '../../../shared/content/snapshot.ts'
-import type { Snapshot, SnapshotEntity, SnapshotInput, SluggedContentType } from '../../../shared/content/snapshot.ts'
+import type { ContentType, Snapshot, SnapshotEntity, SnapshotInput, SluggedContentType } from '../../../shared/content/snapshot.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { Locale, RevisionKind } from '../../../shared/types/enums.ts'
 import { MAX_SLUG_LENGTH, slugify } from '../../../shared/utils/slugify.ts'
@@ -23,7 +23,7 @@ import { copyAtVersion, isSlugTaken, saveStatements, takenSlugs } from './workin
 export const EMPTY_DOCUMENT: DocumentJson = { type: 'doc', attrs: { schemaVersion: CURRENT_SCHEMA_VERSION }, content: [] }
 
 export const slugConflict = () => createAppError('conflict', 'Slug already used', [{ path: 'slug', message: 'slug_taken' }])
-export const versionConflict = (type: SluggedContentType) => createAppError('conflict', `The ${type} changed since it was opened`, [{ path: 'version', message: 'stale' }])
+export const versionConflict = (type: ContentType) => createAppError('conflict', `The ${type} changed since it was opened`, [{ path: 'version', message: 'stale' }])
 
 export function sourceCopyOf<R extends { locale: Locale }>(localizations: readonly R[]): R {
   const current = localizations.find(item => item.locale === SOURCE_LOCALE)
@@ -175,14 +175,14 @@ export interface RevisionListItem {
 }
 
 /** The pt-BR history, newest first, without snapshots */
-export async function listSourceRevisions(db: Db, type: SluggedContentType, localizationId: string): Promise<RevisionListItem[]> {
+export async function listSourceRevisions(db: Db, type: ContentType, localizationId: string): Promise<RevisionListItem[]> {
   const revisions = await listRevisions(db, type, localizationId)
   const names = await userNames(db, revisions.flatMap(revision => (revision.createdBy ? [revision.createdBy] : [])))
   return revisions.map(({ id, number, kind, note, createdBy, createdAt }) => ({ id, number, kind, note, authorName: createdBy ? names.get(createdBy) ?? null : null, createdAt }))
 }
 
 /** One pt-BR revision with its snapshot; 404 for a revision of another item or locale */
-export async function getSourceRevision<T extends SluggedContentType>(db: Db, type: T, localizationId: string, revisionId: string) {
+export async function getSourceRevision<T extends ContentType>(db: Db, type: T, localizationId: string, revisionId: string) {
   const revision = await getRevision(db, type, localizationId, revisionId)
   if (!revision) {
     throw createAppError('not_found')
@@ -198,7 +198,7 @@ const listItemOf = ({ id, number, kind, note, createdAt }: RevisionMeta) => ({ i
  * A named version of the working copy as the editor last saved it (decision 3: a repeat of the latest manual version
  * with the same note is dropped). 409 on "version" when the copy changed since. `reload` reads the copy again
  */
-export async function saveSourceVersion<T extends SluggedContentType>(db: Db, type: T, input: {
+export async function saveSourceVersion<T extends ContentType>(db: Db, type: T, input: {
   userId: string
   entityId: string
   current: LocalizationRow<T>
