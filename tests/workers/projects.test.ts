@@ -165,4 +165,13 @@ describe('projects', () => {
     await deleteProject(db, userId, unpublished)
     expect(await errorOf(getProject(db, project.id))).toMatchObject({ statusCode: 404 })
   })
+
+  it('lists more projects than D1 binds parameters in one query', async () => {
+    for (let index = 0; index < 95; index++) {
+      await createProject(db, userId, `Muitos ${index} ${unique()}`)
+    }
+    const { items } = await listProjects(db)
+    expect(items.length).toBeGreaterThan(95)
+    expect(items.every(item => item.localizations.length > 0)).toBe(true)
+  })
 })

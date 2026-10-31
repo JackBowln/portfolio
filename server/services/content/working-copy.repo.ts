@@ -3,9 +3,10 @@
 // written once; soft-deleted rows are hidden everywhere here
 import { and, eq, exists, gt, inArray, isNull, lt, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
-import type { SluggedContentType } from '../../../shared/content/snapshot.ts'
+import type { ContentType, SluggedContentType } from '../../../shared/content/snapshot.ts'
 import type { Locale, MediaUsageContext } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
+import { chunked } from '../../db/in-limit.ts'
 import { mediaUsages } from '../../db/schema/media.ts'
 import { contentTables } from './content-tables.ts'
 import type { ContentTables } from './content-tables.ts'
@@ -14,7 +15,7 @@ import type { PreparedRevision } from './revisions.repo.ts'
 import { insertRevisionStatement } from './revisions.repo.ts'
 
 // The two tables differ only in their entity key (localizationEntityId); the casts stay here
-const tablesOf = (type: SluggedContentType) => contentTables[type] as unknown as ContentTables['article']
+const tablesOf = (type: ContentType) => contentTables[type] as unknown as ContentTables['article']
 
 export interface MediaUse {
   mediaId: string
@@ -27,10 +28,11 @@ export async function findLocalizations<T extends SluggedContentType>(db: Db, ty
     return []
   }
   const { localizations, localizationEntityId } = tablesOf(type)
-  const rows = await db.select().from(localizations)
-    .where(and(inArray(localizationEntityId, [...entityIds]), isNull(localizations.deletedAt)))
-    .orderBy(localizations.locale)
-  return rows as unknown as LocalizationRow<T>[]
+  // A list of every project can pass D1's 100 bound parameters
+  const groups = await Promise.all(chunked(entityIds).map(group => db.select().from(localizations)
+    .where(and(inArray(localizationEntityId, group), isNull(localizations.deletedAt)))
+    .orderBy(localizations.locale)))
+  return groups.flat() as unknown as LocalizationRow<T>[]
 }
 
 /**
@@ -53,7 +55,7 @@ export async function isSlugTaken(db: Db, type: SluggedContentType, locale: Loca
 }
 
 /** SQL true while the localization still has this version: a write based on it is not stale */
-export function copyAtVersion(db: Db, type: SluggedContentType, localizationId: string, version: number): SQL {
+export function copyAtVersion(db: Db, type: ContentType, localizationId: string, version: number): SQL {
   const { localizations } = tablesOf(type)
   return exists(db.select({ one: sql`1` }).from(localizations)
     .where(and(eq(localizations.id, localizationId), eq(localizations.version, version), isNull(localizations.deletedAt))))

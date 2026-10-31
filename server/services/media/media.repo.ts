@@ -4,6 +4,7 @@ import type { SQL } from 'drizzle-orm'
 import type { Locale, MediaKind, MediaStatus, MediaTrackKind, MediaUsageContext, TranslationState } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
+import { chunked } from '../../db/in-limit.ts'
 import { media, mediaLocalizations, mediaTracks, mediaUsages } from '../../db/schema/media.ts'
 
 export type MediaRow = typeof media.$inferSelect
@@ -173,17 +174,6 @@ export async function findReadyImage(db: Db, id: string): Promise<boolean> {
   const [row] = await db.select({ id: media.id }).from(media)
     .where(and(eq(media.id, id), eq(media.kind, 'image'), eq(media.status, 'ready')))
   return row !== undefined
-}
-
-// D1 binds at most 100 parameters per query
-const IN_LIMIT = 90
-
-function chunked<T>(items: readonly T[]): T[][] {
-  const out: T[][] = []
-  for (let start = 0; start < items.length; start += IN_LIMIT) {
-    out.push(items.slice(start, start + IN_LIMIT))
-  }
-  return out
 }
 
 /** Ready rows among `ids`, with their localizations and tracks: a single D1 batch whatever the count */
