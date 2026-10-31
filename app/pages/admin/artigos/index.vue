@@ -6,6 +6,7 @@ import { can } from '#shared/auth/permissions'
 import { ARTICLE_LIMITS } from '#shared/content/article-input'
 import { LOCALES, PUBLICATION_STATUSES, SOURCE_LOCALE, TRANSLATION_STATES } from '#shared/types/enums'
 import type { Locale, PublicationStatus, TranslationState } from '#shared/types/enums'
+import StatusBadge from '~/components/admin/translation/StatusBadge.vue'
 import type { ArticleDetail, ArticleListItem } from '~/utils/admin/articles'
 import { formatDateTime } from '~/utils/admin/format'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
@@ -282,7 +283,14 @@ useHead({ title: () => t('admin.articles.title'), meta: [{ name: 'robots', conte
               {{ source(item) ? $t(`admin.articles.statuses.${source(item)!.status}`) : '—' }}
             </td>
             <td class="py-3 pe-4">
-              {{ item.localizations.map(localization => localization.locale).join(', ') }}
+              <span class="flex flex-wrap gap-1">
+                <StatusBadge
+                  v-for="localization in item.localizations"
+                  :key="localization.locale"
+                  :locale="localization.locale"
+                  :state="localization.translationState"
+                />
+              </span>
             </td>
             <td class="py-3 pe-4">
               {{ item.authorName ?? '—' }}

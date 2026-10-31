@@ -67,7 +67,15 @@ function failure(error: unknown): string {
   if (issues.some(issue => issue.message === 'published_slug_taken')) {
     return text('slugTaken', 'errors.')
   }
-  if (issues.some(issue => issue.path === 'translationState' || issue.path === 'source')) {
+  // F09-T1: name the state that blocks, so the reviewer knows what to do
+  const state = issues.find(issue => issue.path === 'translationState')?.message
+  if (state && ['outdated', 'machine', 'in_review', 'missing'].includes(state)) {
+    return t(`admin.publish.errors.translationStates.${state}`)
+  }
+  if (issues.some(issue => issue.path === 'source')) {
+    return t('admin.publish.errors.sourceNotPublished')
+  }
+  if (state) {
     return t('admin.publish.errors.translation')
   }
   return t('admin.common.unexpectedError')
