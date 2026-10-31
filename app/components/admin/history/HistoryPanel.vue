@@ -16,12 +16,14 @@ import RevisionDiff from './RevisionDiff.vue'
 const props = withDefaults(defineProps<{
   /** The item's admin API, e.g. /api/admin/articles/{id} */
   apiBase: string
-  resource?: 'article' | 'project'
+  resource?: 'article' | 'project' | 'page'
   current: AnyVersionFields
   topics: TopicItem[]
   fields?: readonly DiffField[]
   refresh: number
-}>(), { resource: 'article', fields: () => DIFF_FIELDS })
+  /** How a revision's snapshot reads as the compared fields; a page flattens its blocks (F08-T2) */
+  toFields?: (snapshot: RevisionDetail['snapshot']) => AnyVersionFields
+}>(), { resource: 'article', fields: () => DIFF_FIELDS, toFields: versionFieldsOf })
 const emit = defineEmits<{ restore: [revision: RevisionItem] }>()
 
 const { t } = useI18n()
@@ -49,7 +51,7 @@ watch(() => props.refresh, load)
 
 async function compare(revision: RevisionItem) {
   const detail = await adminFetch<RevisionDetail>(`${props.apiBase}/revisions/${encodeURIComponent(revision.id)}`)
-  compared.value = { revision, fields: versionFieldsOf(detail.snapshot) }
+  compared.value = { revision, fields: props.toFields(detail.snapshot) }
 }
 
 function askRestore(revision: RevisionItem) {

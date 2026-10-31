@@ -14,6 +14,7 @@ const links = computed(() => [
   { to: '/admin/artigos', label: 'admin.layout.articles' },
   { to: '/admin/temas', label: 'admin.layout.tags' },
   { to: '/admin/projetos', label: 'admin.layout.projects' },
+  { to: '/admin/paginas', label: 'admin.layout.pages' },
   { to: '/admin/tecnologias', label: 'admin.layout.technologies' },
   { to: '/admin/midia', label: 'admin.layout.media' },
   ...(canReadSettings.value ? [{ to: '/admin/configuracoes', label: 'admin.layout.settings' }] : []),

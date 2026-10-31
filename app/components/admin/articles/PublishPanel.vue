@@ -17,7 +17,7 @@ type Detail = Record<string, unknown> & { id: string }
 const props = withDefaults(defineProps<{
   /** The item's admin API, e.g. /api/admin/articles/{id} */
   apiBase: string
-  resource?: 'article' | 'project'
+  resource?: 'article' | 'project' | 'page'
   copy: Pick<ArticleLocalization, 'status' | 'version' | 'publishedAt' | 'scheduledAt'>
   changed: boolean
   beforeAction: () => Promise<boolean>
@@ -29,8 +29,8 @@ const user = useAdminUser()
 const role = computed(() => user.value?.role ?? '')
 const canPublish = computed(() => can(role.value, { [props.resource]: ['publish'] }))
 // Projects are published by hand only (F07-T1, decision 2), and some texts name the type
-const PROJECT_TEXTS = new Set(['unpublishTitle', 'unpublishText', 'published', 'unpublished', 'unavailable', 'slugTaken'])
-const text = (key: string, group = '') => (props.resource === 'project' && PROJECT_TEXTS.has(key) ? t(`admin.publish.project.${key}`) : t(`admin.publish.${group}${key}`))
+const TYPE_TEXTS = new Set(['unpublishTitle', 'unpublishText', 'published', 'unpublished', 'unavailable', 'slugTaken'])
+const text = (key: string, group = '') => (props.resource !== 'article' && TYPE_TEXTS.has(key) ? t(`admin.publish.${props.resource}.${key}`) : t(`admin.publish.${group}${key}`))
 const canSchedule = computed(() => props.resource === 'article' && can(role.value, { article: ['schedule'] }))
 const at = ref(utcToZoned(new Date(Date.now() + 24 * 3600 * 1000)).slice(0, 11) + '09:00')
 const message = ref<{ tone: 'success' | 'danger', text: string }>()

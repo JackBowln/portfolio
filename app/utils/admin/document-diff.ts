@@ -35,7 +35,8 @@ export const PROJECT_DIFF_FIELDS = [
   'technologyIds', 'coverMediaId', 'galleryMediaIds', 'seoTitle', 'seoDescription', 'noindex', 'ogImageMediaId',
 ] as const
 
-export type DiffField = (typeof DIFF_FIELDS)[number] | (typeof PROJECT_DIFF_FIELDS)[number]
+/** A field of the compared version: an article's or project's (above), or a page's blocks and SEO (F08-T2) */
+export type DiffField = string
 
 export interface FieldChange {
   field: DiffField

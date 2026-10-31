@@ -40,6 +40,10 @@ function show(field: DiffField, value: unknown): string {
   if (field === 'coverMediaId' || field === 'ogImageMediaId') {
     return t('admin.history.diff.image')
   }
+  // A list or a group of fields (a page's blocks, F08-T2, decision 3): which block changed, not how
+  if (typeof value === 'object') {
+    return t('admin.history.diff.changedValue')
+  }
   return String(value)
 }
 </script>
