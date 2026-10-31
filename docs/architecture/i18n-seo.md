@@ -44,7 +44,7 @@ Os caminhos não incluem o prefixo; o módulo aplica `/en`, `/es`, `/de` e `/fr`
 | Artigo publicado em pt-BR, sem `en` aprovado | Não aparece em `/en/blog`, no sitemap `en` nem no hreflang. `/en/blog/<slug-pt>` → 404 |
 | Usuário em `/de/blog/artikel` troca para `es`, sem tradução `es` | O seletor leva a `/es/blog` (índice da seção): a página declara os idiomas em que existe (`useLocaleFallback`), e o servidor reescreve os links depois do render (`plugins/locale-switch.server.ts`). Páginas de tema fazem o mesmo para os outros idiomas, até os temas terem slugs traduzidos (F09) |
 | Tradução `outdated` | A versão `approved` anterior continua no ar até a nova aprovação (a revisão publicada não muda) |
-| Página institucional (sobre, contato) sem tradução aprovada | O conteúdo da página usa o fallback pt-BR com o aviso "conteúdo disponível em português", e a página leva `noindex` naquele idioma até ser traduzida. A interface (menu, rodapé) segue traduzida |
+| Página institucional (home, sobre, contato, privacidade e os textos dos índices) sem tradução publicada | O conteúdo da página usa o pt-BR publicado, marcado `lang="pt-BR"`, com o aviso localizado (`pages.fallbackNotice`); a página leva `noindex` naquele idioma, sem hreflang nem entrada no sitemap até ser traduzida (F08-T2). A interface (menu, rodapé) segue traduzida |
 
 ## 4. Head por página (`usePageSeo`)
 

@@ -52,7 +52,7 @@ Mudar `ai_translation` exige sessão fresca.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F08-T1 | RF-01.1, RF-01.2, RF-01.7, RF-10.4 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
+| concluída | F08-T1 | RF-01.1, RF-01.2, RF-01.7, RF-10.4 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
 
 **Objetivo.** Criar os schemas de blocos por `PageKey` (data-model §4.6), os editores de blocos no admin e a publicação pelos serviços compartilhados. As páginas públicas (home sem motion por enquanto, sobre, contato, privacidade e os índices) passam a consumir esse conteúdo, com a regra de fallback para páginas institucionais não traduzidas: original + aviso + `noindex` + fora do sitemap e do hreflang.
 
@@ -61,13 +61,21 @@ Mudar `ai_translation` exige sessão fresca.
 **Fora do escopo.** Motion da home (F10); o texto jurídico da privacidade (escrito por você; o Claude Code propõe só a estrutura).
 
 **Critérios de aceite**
-- [ ] Cada página renderiza só conteúdo publicado; sem conteúdo publicado → estado vazio elegante (sem lorem ipsum).
-- [ ] Fallback institucional: em `/de/ueber-mich` sem tradução aprovada → conteúdo pt-BR com aviso localizado, `noindex`, sem hreflang `de` e fora do sitemap `de`.
-- [ ] A página de privacidade lista os dados tratados conforme o security-model §6.
+- [x] Cada página renderiza só conteúdo publicado; sem conteúdo publicado → estado vazio elegante (sem lorem ipsum).
+- [x] Fallback institucional: em `/de/ueber-mich` sem tradução aprovada → conteúdo pt-BR com aviso localizado, `noindex`, sem hreflang `de` e fora do sitemap `de`.
+- [x] A página de privacidade lista os dados tratados conforme o security-model §6.
 
 **Testes**
 - E2E: editar o hero da home → publicar → o público atualiza; fallback em `de`.
 - API: `noindex` no fallback.
+
+**Resultado (31/10/2026).**
+- **Blocos:** `shared/pages/blocks.ts`, um schema estrito por `PageKey` (home: abertura, seções, títulos dos destaques, chamada final; sobre: introdução em documento, trajetória, competências, links `https:`; contato: introdução e mensagem de sucesso; privacidade: texto em documento e data; índices do blog e de projetos: título e introdução). Os botões da home levam a uma página do site, nunca a uma URL livre (decisão 5).
+- **Servidor:** `server/services/content/pages.{repo,service}.ts`. A página e a cópia pt-BR são criadas na primeira necessidade; salvar com versão (revisão autosave), versões nomeadas, restaurar, publicar e despublicar em batches protegidos e auditados (`page.*`). Rotas em `server/api/admin/pages/**` e `GET /api/public/pages/[key]`, que devolve o publicado no idioma, senão o pt-BR (`fallback`), senão o estado vazio. Publicar o pt-BR purga a página em todos os idiomas, além do sitemap, que lista cada página só onde está publicada.
+- **Site:** home (com os projetos em destaque e os 3 últimos artigos, decisão 2, num componente `hydrate-never`), sobre, contato e privacidade; os índices do blog e de projetos leem título e introdução das páginas. Fallback com aviso localizado, `lang="pt-BR"` no conteúdo, `noindex` e sem hreflang do idioma; estado vazio com o nome da página (decisão 4). A privacidade lista sempre os dados tratados (security-model §6, decisão 1), traduzidos nos 5 idiomas.
+- **Admin:** `/admin/paginas` e `/admin/paginas/[key]`, um formulário por página, com autosave, conflito, versões, histórico comparado por bloco (decisão 3) e publicação.
+- **Também corrigido:** a lista de projetos do admin passava todos os ids numa só consulta e quebrava com mais de 100 projetos (limite de parâmetros do D1); o helper de lotes foi para `server/db/in-limit.ts`.
+- **Testes:** `tests/workers/pages.test.ts`, `tests/api/pages.spec.ts`, `tests/e2e/pages.spec.ts`, `tests/a11y/pages.spec.ts`, as telas novas em `tests/a11y/admin.spec.ts` e `tests/nuxt/app.test.ts`; a fixture de teste publica a home e o sobre só em pt-BR, e as specs que tratavam essas páginas como esqueleto foram atualizadas.
 
 ---
 

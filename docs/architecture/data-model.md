@@ -167,6 +167,8 @@ Desde a F07-T1: o autor de um projeto, para as permissões 🟡, é o `created_b
     - `blog` e `projects`: título, introdução e SEO dos índices.
 - `page_revisions`: idêntica às demais.
 
+Desde a F08-T2, os schemas ficam em `shared/pages/blocks.ts`. Uma página e a sua cópia pt-BR são criadas na primeira necessidade (`getPage`), com os blocos vazios. `entity` do snapshot de página é `{}`; publicar e despublicar seguem os batches protegidos dos artigos, sem colunas `published_*` próprias (o público lê o `published_snapshot`).
+
 ### 4.7 Taxonomia: `tags`, `tag_localizations`
 
 | Tabela | Colunas | Índices |

@@ -69,7 +69,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
-- **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`).
+- **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`). Desde a F08-T2, ler exige `page:read`; editar e salvar versão, `page:update`; restaurar, `page:restore`; publicar e despublicar, `page:publish`. Uma página não tem autor (`authorId: null`), então `author` nunca a edita. Os blocos passam por schemas `strict`. Os links do sobre só aceitam `https:`, e os botões da home só apontam para páginas do site (`PAGE_LINK_TARGETS`). Sobre e privacidade usam o documento validado pelo renderer, e a rota pública devolve só o snapshot publicado.
 - **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
 - **Configurações** (F08-T1): ler é `settings:read`; salvar é `settings:update` (owner e admin), por chave e com a versão lida. `ai_translation` decide o que o site gasta, então também exige sessão fresca (`requireFreshSession`, 15 min), tem `provider` fixo em `workers-ai` e teto diário ≤ 10.000 neurônios, e nunca sai na rota pública. A auditoria `settings.updated` guarda chave, versão e idiomas, nunca os valores.
 - **Projetos** (F07-T1): o autor de um projeto é quem o criou (`created_by`), para os escopos 🟡. A ordem manual (`PUT /api/admin/projects/order`) muda a posição de projetos de outras pessoas no site, por isso exige `project:publish`.
@@ -85,7 +85,7 @@ A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/per
 - **Saída:** Vue escapa; nenhum `v-html`; JSON-LD serializado com escape de `</script>`.
 - **Armazenamento:** Drizzle parametrizado; nada de `sql.raw` com entrada; IP como HMAC; tokens OAuth descartados ou criptografados.
 - **Navegador:** CSP por hash; `frame-ancestors 'none'`; `Permissions-Policy` restritiva; COOP.
-- **Operação:** segredos via `wrangler secret`; `pnpm audit`; Dependabot; deploy manual; auditoria.
+- **Operação:** segredos via `wrangler secret`; `pnpm audit`; Dependabot; deploy manual; auditoria. Risco aceito (31/10/2026, F08-T2): o `pnpm audit --audit-level high` acusa o `node-forge` ≤ 1.4.0 via `nuxt > @nuxt/nitro-server > nitropack > listhen`, que só serve o `nuxt dev`. Ele não entra no bundle do Worker; reavaliar a cada atualização do Nuxt e remover a exceção quando o `listhen` trouxer o `node-forge` ≥ 1.4.1.
 
 ## 6. Privacidade
 
