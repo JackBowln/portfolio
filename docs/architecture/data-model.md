@@ -174,7 +174,7 @@ Desde a F08-T2, os schemas ficam em `shared/pages/blocks.ts`. Uma página e a su
 | Tabela | Colunas | Índices |
 |---|---|---|
 | `tags` | `id`, `kind` (`TagKind`), `url` (site oficial da tecnologia, nulo), `icon_key` (ícone versionado no repositório, nulo), auditoria | |
-| `tag_localizations` | `tag_id`, `locale`, `name`, `slug`, `description`, `translation_state`, `updated_at` | `PK(tag_id, locale)`, `UNIQUE(locale, slug)` |
+| `tag_localizations` | `tag_id`, `locale`, `name`, `slug`, `description`, `translation_state`, `segments_meta` (F09-T1, migração 0006), `updated_at` | `PK(tag_id, locale)`, `UNIQUE(locale, slug)` |
 
 ### 4.8 Decisões da F05-T1
 
@@ -221,7 +221,7 @@ Desde a F08-T2, os schemas ficam em `shared/pages/blocks.ts`. Uma página e a su
 | Tabela | Colunas | Notas |
 |---|---|---|
 | `media` | `id`, `kind`, `status`, `mime_type`, `original_filename`, `size_bytes`, `width`, `height`, `duration_ms`, `sha256` (único, inclusive entre apagados), `original_key`, `variants` (json `{ name, format, width, height, key, size }[]`), `placeholder_data_url`, `dominant_color`, `focal_x`/`focal_y` (0–1, `CHECK`), `decorative` (alt vazio explícito, F04-T1), `poster_media_id` (vídeo), `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at` | [ADR-0007](adr/0007-midia.md); migração `0003_media` |
-| `media_localizations` | `media_id`, `locale`, `alt`, `caption`, `credit`, `translation_state`, `updated_at` | `PK(media_id, locale)`; `alt` obrigatório para imagens informativas (vazio só se decorativa, marcada explicitamente) |
+| `media_localizations` | `media_id`, `locale`, `alt`, `caption`, `credit`, `translation_state`, `segments_meta` (F09-T1, migração 0006), `updated_at` | `PK(media_id, locale)`; `alt` obrigatório para imagens informativas (vazio só se decorativa, marcada explicitamente) |
 | `media_tracks` | `id`, `media_id`, `locale`, `kind` (`captions`/`subtitles`), `key`, `label`, `size` | Legendas WebVTT de vídeo, registradas com o manifesto; únicas por `(media_id, locale, kind)` |
 | `media_usages` | `media_id`, `entity_type`, `entity_id`, `locale` (nulo), `context` (`body`, `cover`, `og`, `gallery`, `poster`, `settings`) | Sem chave única (um `locale` nulo não seria único): as linhas de uma entidade são trocadas por inteiro a cada gravação e publicação; índices em `media_id` e na entidade; impede exclusão de mídia em uso |
 
@@ -230,7 +230,7 @@ Desde a F08-T2, os schemas ficam em `shared/pages/blocks.ts`. Uma página e a su
 | Tabela | Colunas | Notas |
 |---|---|---|
 | `site_settings` | `key` PK (`identity`, `social`, `contact`, `seo_defaults`, `navigation`, `footer`, `ai_translation`, `features`), `value` json, `version`, `updated_by`, `updated_at` | Um schema zod por chave em `shared/settings/` |
-| `site_setting_localizations` | `key`, `locale`, `value` json, `translation_state`, `updated_at` | `PK(key, locale)`; partes traduzíveis (cargo, bio, modelo de título, rótulos de navegação, rodapé) |
+| `site_setting_localizations` | `key`, `locale`, `value` json, `translation_state`, `segments_meta` (F09-T1, migração 0006), `updated_at` | `PK(key, locale)`; partes traduzíveis (cargo, bio, modelo de título, rótulos de navegação, rodapé) |
 | `redirects` | `id`, `from_path` (único), `to_path`, `status_code` (301/302/308), `locale`, `entity_type`, `entity_id` (nulo se manual), `created_by`, `created_at` | Criado automaticamente quando um slug publicado muda |
 | `contact_messages` | `id`, `name`, `email`, `message`, `locale`, `status` (`new`/`read`/`archived`/`spam`), `ip_hash`, `created_at`, `read_at` | Retenção de 12 meses (`contact:retention`, diária). Sem `deleted_at`: excluir no admin apaga a linha de vez, por serem dados pessoais (F08-T3, migração 0005) |
 | `audit_log` | `id`, `actor_user_id` (nulo = sistema), `action` (`article.publish`, `auth.login_failed`…), `entity_type`, `entity_id`, `locale`, `metadata` json (sem segredos nem PII), `ip_hash`, `created_at` | Índices `(created_at DESC)`, `(entity_type, entity_id)`; retenção de 12 meses |
@@ -294,6 +294,23 @@ stateDiagram-v2
 ```
 
 A comparação usa `segments_meta[segmentId].sourceHash` contra os hashes da última revisão pt-BR.
+
+**Implementação (F09-T1).**
+- **Segmentos:** `shared/content/segment-hash.ts` (`articleSegments`, `projectSegments`, `pageSegments`, `fieldSegments`).
+  - Um segmento é um campo de texto ou um bloco de nível superior do documento, pelo `id` estável.
+  - Nas páginas, cada texto dos blocos entra pelo caminho (`blocks.hero.title`).
+  - Ficam de fora o slug, as URLs e as escolhas (o destino de um botão, uma data).
+  - O hash é SHA-256 do texto canônico.
+- **Quando marca:** todo salvamento do pt-BR (artigo, projeto, página, nome de tema, alt, legenda e crédito de mídia, configurações localizadas) compara as traduções `approved` e `outdated`.
+  - Os segmentos alterados, novos ou removidos ficam `outdated`, e a localização também.
+  - Fica no mesmo `db.batch`, guardado pela versão lida do original e pela versão da tradução.
+  - Traduções `machine` e `in_review` não são tocadas.
+  - **Base da comparação:** o `sourceHash` gravado na aprovação; para uma tradução aprovada antes do rastreio (`segments_meta` vazio), o original como estava logo antes do salvamento.
+- **Transições:** `shared/translation/states.ts` aceita exatamente as do diagrama.
+- **O que chega ao site:** só nomes de tema, textos de mídia e configurações `source` ou `approved`. Um tema sem nome aprovado some do idioma; um texto de mídia ou de configuração cai para o pt-BR.
+- **Quem aprova:**
+  - **Mídia:** uma tradução de texto entra `approved` só quando quem a digita tem `translation:approve`; senão fica `in_review`.
+  - **Configurações:** só owner e admin salvam, então o que salvam já entra aprovado.
 
 ## 9. Invariantes (cobertas por testes)
 

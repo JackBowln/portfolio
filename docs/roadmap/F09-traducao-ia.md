@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F07 (gate), F08 (gate) | RF-10.4, RF-11.2, RF-11.4 | `/cms-engineer`, `/i18n-manager` |
+| concluída | F07 (gate), F08 (gate, envio real do contato pendente) | RF-10.4, RF-11.2, RF-11.4 | `/cms-engineer`, `/i18n-manager` |
 
 **Objetivo.** Criar o serviço de estados de tradução (data-model §8) e o cálculo de `segments_meta` (hash por segmento do original). A localização vira `outdated` quando a origem muda. As guardas de publicação (só `approved`) passam a valer para artigos, projetos, páginas, temas e textos de mídia, e o dashboard ganha contadores por estado.
 
@@ -23,13 +23,33 @@
 **Fora do escopo.** Chamar a IA (T3).
 
 **Critérios de aceite**
-- [ ] Editar um segmento do original marca como `outdated` **só** esse segmento nas traduções `approved`, e a localização passa a `outdated`.
-- [ ] A publicação de uma localização `outdated`, `machine` ou `in_review` é bloqueada com uma mensagem clara.
-- [ ] O dashboard mostra pendências por idioma e por tipo de entidade.
+- [x] Editar um segmento do original marca como `outdated` **só** esse segmento nas traduções `approved`, e a localização passa a `outdated`.
+- [x] A publicação de uma localização `outdated`, `machine` ou `in_review` é bloqueada com uma mensagem clara.
+- [x] O dashboard mostra pendências por idioma e por tipo de entidade.
 
 **Testes**
 - Unit: as transições de estado e o cálculo dos hashes.
 - Workers: o `outdated` por segmento depois de editar o original.
+
+**Resultado (31/10/2026).**
+- **Núcleo:**
+  - `shared/content/segment-hash.ts`: segmentos por tipo e hash SHA-256 do texto canônico;
+  - `shared/translation/states.ts`: as transições exatas do data-model §8;
+  - `server/services/translation/state.{service,repo}.ts`: comparação e escrita dos `outdated`.
+- **Migração `0006`** (aditiva): `segments_meta` em `tag_localizations`, `media_localizations` e `site_setting_localizations`, para o `outdated` por campo também nesses tipos (decisão 1).
+- **Detecção:** a cada salvamento do original (decisão 3), no mesmo batch e guardada pelas versões. O custo medido é de ~1,7 ms por salvamento num documento de ~4.800 palavras, só quando há tradução aprovada ou desatualizada.
+- **Guardas:**
+  - a publicação de `outdated`, `machine` e `in_review` é recusada com o estado, e o painel de publicação diz qual é e o que fazer;
+  - temas, textos de mídia e configurações só chegam ao site `approved`;
+  - traduções de mídia de quem não pode aprovar entram `in_review` (decisão 2).
+- **Dashboard:** pendências (`missing`, `machine`, `in_review`, `outdated`) por idioma e tipo, de `GET /api/admin/translations/summary` (`translation:review`, decisão 4).
+  - Só entra o que já está no site em pt-BR.
+  - A lista de artigos mostra um selo de estado por idioma (`StatusBadge`).
+- **Testes:**
+  - `tests/unit/translation-states.test.ts`;
+  - `tests/workers/translation-state.test.ts` (9);
+  - `tests/api/translations.spec.ts`;
+  - `tests/e2e/admin-shell.spec.ts` atualizado.
 
 ---
 
