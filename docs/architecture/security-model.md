@@ -19,7 +19,7 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | Superfície | Exposição | Controles principais |
 |---|---|---|
 | Páginas públicas (SSR/cache) | Anônima | Sem `v-html`, renderer com allowlist, CSP por hash (`server/plugins/csp.ts`), sem cookies, headers de segurança |
-| `/api/public/contact` | Anônima | Turnstile, `RL_PUBLIC`, zod, limite de tamanho, checagem de origem, sem reflexo de entrada |
+| `/api/public/contact` | Anônima | Turnstile validado no servidor (com o hostname do site fora do local), `RL_PUBLIC` por IP antes de ler o corpo, zod `strict` com 422 só de códigos, honeypot, limite de tamanho, checagem de origem, sem reflexo de entrada, sem `Set-Cookie`; o IP só como HMAC (F08-T3) |
 | `/api/auth/*` | Anônima | Checagem de origem (middleware + Better Auth), `RL_AUTH` por IP + rota nas mutações e no callback OAuth, allowlist do GitHub, sem cadastro público, auditoria com hash de IP |
 | `/admin/setup` (bootstrap) | Anônima até existir owner | Exige ausência de owner **e** `BOOTSTRAP_TOKEN`; 404 depois; origem + JSON + `RL_AUTH` em `POST /api/setup` |
 | `/api/admin/*` | Autenticada | Origem + JSON + 1 MB (antes da sessão), sessão obrigatória, `RL_ADMIN` por sessão, `requirePermission`, propriedade, zod, auditoria (`auditRequest`) |
@@ -65,12 +65,14 @@ Complementa o [ADR-0005](adr/0005-autenticacao-e-rbac.md) (auth e RBAC) e o [ADR
 | `settings:update` | ✅ | ✅ | — | — | — | — |
 | `user:invite`, `:update-role`, `:revoke-session` | ✅ | ✅ (exceto owner) | — | — | — | — |
 | `audit:read` | ✅ | ✅ | — | — | — | — |
+| `contact:read`, `:update`, `:delete` | ✅ | ✅ | — | — | — | — |
 | `session:read`, `:revoke` | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 | 🟡 |
 
 A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/permissions.test.ts` lê esta tabela e a compara célula por célula com o código, e o `tests/api/authz-matrix.spec.ts` gera os casos de API a partir do código. Mantenha o formato (permissões entre crases, `✅`, `🟡`, `🟡 (rascunho)`, `—`).
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`). Desde a F08-T2, ler exige `page:read`; editar e salvar versão, `page:update`; restaurar, `page:restore`; publicar e despublicar, `page:publish`. Uma página não tem autor (`authorId: null`), então `author` nunca a edita. Os blocos passam por schemas `strict`. Os links do sobre só aceitam `https:`, e os botões da home só apontam para páginas do site (`PAGE_LINK_TARGETS`). Sobre e privacidade usam o documento validado pelo renderer, e a rota pública devolve só o snapshot publicado.
 - **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
+- **Mensagens de contato** (F08-T3): `contact:read`, `contact:update` e `contact:delete` só para owner e admin, porque são dados pessoais. A lista e a mensagem nunca devolvem o `ip_hash`. Excluir apaga de vez, e a auditoria (`contact.status_changed`, `contact.deleted`) guarda só o id e o estado. A notificação vai só ao endereço verificado (binding `send_email` com `destination_address`), com o assunto em uma linha (sem injeção de cabeçalho).
 - **Configurações** (F08-T1): ler é `settings:read`; salvar é `settings:update` (owner e admin), por chave e com a versão lida. `ai_translation` decide o que o site gasta, então também exige sessão fresca (`requireFreshSession`, 15 min), tem `provider` fixo em `workers-ai` e teto diário ≤ 10.000 neurônios, e nunca sai na rota pública. A auditoria `settings.updated` guarda chave, versão e idiomas, nunca os valores.
 - **Projetos** (F07-T1): o autor de um projeto é quem o criou (`created_by`), para os escopos 🟡. A ordem manual (`PUT /api/admin/projects/order`) muda a posição de projetos de outras pessoas no site, por isso exige `project:publish`.
 - **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.

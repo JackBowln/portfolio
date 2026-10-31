@@ -27,14 +27,15 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `NUXT_PUBLIC_SITE_URL` | var | todos | Mesmo valor da `SITE_URL`, lido pelo app como `runtimeConfig.public.siteUrl` (canonical, hreflang, JSON-LD). Um teste garante a igualdade |
 | `MEDIA_BASE_URL` | var | todos | Base pública da mídia, sem barra final: URL = base + `/` + chave do R2 (`media/…`). Local e preview: a origem do próprio site (rota `/media/**`); produção: o domínio do bucket |
 | `NUXT_PUBLIC_MEDIA_BASE_URL` | var | todos | Mesmo valor da `MEDIA_BASE_URL`, lido pelos componentes como `runtimeConfig.public.mediaBaseUrl`. Um teste garante a igualdade (F04-T3) |
-| `TURNSTILE_SITE_KEY` | var pública | todos | Widget do contato |
+| `NUXT_PUBLIC_TURNSTILE_SITE_KEY` | var pública | todos | Widget do contato (`runtimeConfig.public.turnstileSiteKey`). Local: a chave de teste oficial `1x00000000000000000000AA`; preview e produção: placeholder até o owner criar o widget (F08-T3) |
+| `CONTACT_FROM` | var | todos | Remetente da notificação do contato, num domínio com Email Routing (placeholder `contato@DOMAIN` em preview e produção) |
 | `BETTER_AUTH_SECRET` | segredo | preview e produção (local opcional) | Assinatura de sessões (≥ 32 caracteres aleatórios). Sem ele, preview e produção falham fechados; local usa um valor aleatório por isolate (sessões caem quando o isolate reinicia). Local: `.dev.vars`; remoto: `wrangler secret put`, só com pedido do owner |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | segredo | todos | Um OAuth App por ambiente (callback `${SITE_URL}/api/auth/callback/github`) |
 | `OWNER_GITHUB_ID` | segredo | todos | ID numérico do GitHub do owner (allowlist) |
 | `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois. Com menos de 32 caracteres o bootstrap não abre. Os testes usam um valor falso (`pnpm preview:test`) |
 | `PREVIEW_TOKEN_SECRET` | segredo | preview e produção (local opcional) | HMAC dos links de preview (≥ 32 caracteres). Sem ele, preview e produção falham fechados; o local usa um valor aleatório por isolate, e o build de teste recebe um valor fixo por `--var` (`pnpm preview:test`). Trocar o valor invalida todos os links |
 | `IP_HASH_SALT` | segredo | todos | Chave do HMAC-SHA256 dos IPs no `audit_log` (rotação anual). Sem ela, o `ip_hash` fica nulo: nunca há hash sem chave nem IP em claro. Os testes usam um valor falso (`pnpm preview:test`) |
-| `TURNSTILE_SECRET_KEY` | segredo | todos | Validação do Turnstile |
+| `TURNSTILE_SECRET_KEY` | segredo | todos | Validação do Turnstile. Sem ele, o contato falha fechado (500). O build de teste recebe a chave de teste oficial, que sempre passa, por `--var` (`pnpm preview:test`) |
 | `CF_API_TOKEN_PURGE` | segredo | só se usar o fallback | Purge por tag via API (ADR-0003) |
 | `ANTHROPIC_API_KEY` | segredo | futuro | Só com ADR e aprovação (ADR-0009) |
 
@@ -52,11 +53,11 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `MEDIA`, `BACKUPS` | R2 | `BACKUPS` só em produção |
 | `AI` | Workers AI | Free: 10 mil neurons/dia. Só em preview e produção: não tem emulação local, e declará-lo localmente abriria uma sessão remota no `nuxt dev` e nos testes (ADR-0015) |
 | `RL_AUTH`, `RL_PUBLIC`, `RL_ADMIN` | Rate limiting | `simple: { limit, period: 60 }` |
-| `CONTACT_EMAIL` | `send_email` | Destino = endereço verificado no Email Routing (Q-05) |
+| `CONTACT_EMAIL` | `send_email` | Destino = endereço verificado no Email Routing (Q-05), o mesmo de `contact.email` nas configurações. Local: emulado (a mensagem só é registrada). Preview e produção: `destination_address` ainda é placeholder (F08-T3) |
 | `ASSETS` | Static Assets | Gerado pelo Nitro |
 | `cache` | Workers Cache | `{ enabled: true }` em preview e produção (validar no F00-T6) |
 | `observability` | Workers Logs | `enabled: true` |
-| `triggers.crons` | Cron | `["*/5 * * * *"]` em `env.preview` e `env.production` (o local não tem cron). Um só trigger para todas as tarefas (`nuxt.config` `scheduledTasks`); quem precisa de menos frequência decide dentro da tarefa. Tarefas: `content:publish-due` (agendamentos, F06-T4) e `content:prune-autosaves` (uma vez por dia, F06-T2) |
+| `triggers.crons` | Cron | `["*/5 * * * *"]` em `env.preview` e `env.production` (o local não tem cron). Um só trigger para todas as tarefas (`nuxt.config` `scheduledTasks`); quem precisa de menos frequência decide dentro da tarefa. Tarefas: `content:publish-due` (agendamentos, F06-T4), `content:prune-autosaves` (uma vez por dia, F06-T2) e `contact:retention` (mensagens com mais de 12 meses, uma vez por dia, F08-T3) |
 
 ## 4. Recursos a criar (comandos de referência, executados pelo owner)
 

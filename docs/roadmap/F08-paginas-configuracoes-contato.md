@@ -83,7 +83,7 @@ Mudar `ai_translation` exige sessão fresca.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F08-T2, F03-T4 | RF-01.6, RNF-07, RNF-12 | `/security-audit`, `/frontend-design` |
+| concluída (envio real pendente no preview) | F08-T2, F03-T4 | RF-01.6, RNF-07, RNF-12 | `/security-audit`, `/frontend-design` |
 
 **Objetivo.** Criar:
 - o formulário acessível (nome, e-mail, mensagem, consentimento informativo) com Turnstile só nesta página, `RL_PUBLIC`, zod, honeypot e limites;
@@ -97,15 +97,48 @@ Mudar `ai_translation` exige sessão fresca.
 **Fora do escopo.** Resposta automática por e-mail ao visitante (exigiria envio para destinatários arbitrários, que só existe no Paid).
 
 **Critérios de aceite**
-- [ ] Sem Turnstile válido → 400; acima do limite → 429; cross-origin → 403; campos inválidos → 422 com erros acessíveis.
-- [ ] O script do Turnstile só carrega na página de contato (CSP e Network conferidas); a página continua utilizável por teclado e leitor de tela.
-- [ ] A mensagem é gravada com hash de IP, nunca em claro; a notificação chega ao endereço verificado (teste manual no preview, com sua autorização).
-- [ ] A retenção apaga mensagens com mais de 12 meses (relógio falso).
+- [x] Sem Turnstile válido → 400; acima do limite → 429; cross-origin → 403; campos inválidos → 422 com erros acessíveis.
+- [x] O script do Turnstile só carrega na página de contato (CSP e Network conferidas); a página continua utilizável por teclado e leitor de tela.
+- [~] A mensagem é gravada com hash de IP, nunca em claro; a notificação chega ao endereço verificado (teste manual no preview, com sua autorização).
+- [x] A retenção apaga mensagens com mais de 12 meses (relógio falso).
 
 **Testes**
 - API: os cenários de erro acima (chaves de teste do Turnstile).
 - Workers: retenção.
 - E2E e a11y: envio com sucesso e erros anunciados.
+
+**Resultado (31/10/2026).**
+- **Dados:** migração `0005_contact.sql` (`contact_messages`, sem `deleted_at`: excluir apaga de vez, decisão 4). O IP só como HMAC (`IP_HASH_SALT`).
+- **API pública:** `POST /api/public/contact`. A ordem das checagens:
+  1. origem e JSON (403/415, middleware);
+  2. `RL_PUBLIC` por IP (3/60 s, 429 com `Retry-After: 60`);
+  3. o interruptor `features.contactForm` (404);
+  4. zod `strict` (422, só com códigos: nem o nome de uma chave desconhecida volta na resposta);
+  5. honeypot (aceito e descartado);
+  6. Turnstile no servidor (400), com o hostname do site conferido fora do ambiente local;
+  7. gravação e notificação em `waitUntil` (uma falha no envio não perde a mensagem, decisão 2).
+- **Notificação:** o binding `send_email` (`CONTACT_EMAIL`) envia ao endereço das configurações (`contact.email`), com `Reply-To` do visitante e o assunto em uma linha. Em preview e produção, o binding fica preso a `destination_address`, ainda como placeholder.
+- **Site:** o formulário em `/contato` hidrata com a página e funciona antes de o texto da página ser publicado:
+  - validação nativa com mensagens localizadas;
+  - resumo de erros que recebe o foco;
+  - `aria-invalid` e descrições por campo;
+  - status ao vivo e aviso de privacidade com link.
+- **Turnstile:** o script só carrega na interação e só nessa página (CSP `script-src` e `frame-src` com `https://challenges.cloudflare.com` só nos 5 caminhos do contato).
+- **Admin:** `/admin/mensagens` (lista por estado, não lidas, paginação) e `/admin/mensagens/[id]` (abrir marca como lida; arquivar, spam, voltar a lida, excluir), com `contact:read`, `contact:update` e `contact:delete` só para owner e admin (decisão 1), auditados sem conteúdo.
+- **Retenção:** `contact:retention` no cron de 5 min, na janela diária das 03:00 UTC, em lotes de 1.000.
+- **Testes:**
+  - `tests/workers/contact.test.ts` (9, com siteverify e envio simulados e relógio falso na retenção);
+  - `tests/api/contact.spec.ts` (5, com a chave de teste do Turnstile, que sempre passa: o token inválido fica coberto nos testes de Workers);
+  - `tests/e2e/contact.spec.ts`;
+  - a caixa de entrada em `tests/a11y/admin.spec.ts`;
+  - a CSP em `tests/unit/csp.test.ts`.
+- **Pendente (com a sua autorização):**
+  - verificar o endereço no Email Routing (Q-05);
+  - criar o widget do Turnstile do preview e configurar `TURNSTILE_SECRET_KEY`;
+  - trocar os placeholders do `wrangler.jsonc`;
+  - testar o envio real no preview.
+  
+  O gate de saída da F08 depende desse teste.
 
 ---
 
