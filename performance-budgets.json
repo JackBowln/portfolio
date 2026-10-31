@@ -20,7 +20,7 @@
       "path": "/blog/x",
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
-      "js": 121,
+      "js": 122,
       "css": 25,
       "lighthouse": false
     },
@@ -51,7 +51,7 @@
       "path": "/contato",
       "page": "pages/contato.vue",
       "layout": "layouts/default.vue",
-      "js": 125,
+      "js": 127,
       "css": 30,
       "lighthouse": false
     },
@@ -59,7 +59,7 @@
       "path": "/de/blog/x",
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
-      "js": 121,
+      "js": 122,
       "css": 25,
       "lighthouse": false
     },

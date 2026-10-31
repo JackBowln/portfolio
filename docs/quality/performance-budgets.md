@@ -53,11 +53,13 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 
 **Revisão na F08-T1 (owner, 30/10/2026):** R3 e R8 passam a **≤ 121 KB**. Medido: as configurações globais no layout (carregamento, cabeçalho, navegação e rodapé que as leem) somam ~1,37 kB a toda rota pública, e o R3 ficou em 120,88 kB; os cortes sem perda de função somavam ~0,45 kB. A F11-T5 revisita os orçamentos no passe de performance.
 
+**Revisão na F08-T3 (owner, 31/10/2026):** R7 passa a **≤ 127 KB**, e R3 e R8 a **≤ 122 KB**. Medido: o formulário de contato hidrata com a página e soma 6,56 kB ao R7, que ficou em 126,29 kB (3,19 kB do chunk da página com o formulário e 3,37 kB dos componentes `UiField`, `UiInput`, `UiTextarea` e `UiButton`). Os chunks novos que o contato importa entram no mapa de pré-carga do entry de toda rota (≈ 15 B cada), e o R3 ficou em 121,04 kB. Os cortes sem perda de função (o `v-show` e os modificadores de evento, que traziam o `vShow` e o `withModifiers` do Vue para o código comum) somaram 0,15 kB. O Turnstile é de terceiros e carrega só na interação, fora do JS inicial.
+
 **F01-T5 (29/10/2026):** o JS inicial de cada rota soma o entry, o chunk da página **e o do layout** (`layout` no JSON), com os imports estáticos. O layout é um chunk dinâmico, mas toda página o carrega antes de pintar. O E404 não tem chunk de página, porque o `app/error.vue` vai no entry.
 
 | Recurso | R3 (artigo) | R1 (home) | Demais públicas |
 |---|---|---|---|
-| JS inicial (gzip, carregado até o `load`) | ≤ 121 KB (F08-T1) | ≤ 125 KB | ≤ 125 KB |
+| JS inicial (gzip, carregado até o `load`) | ≤ 122 KB (F08-T3) | ≤ 125 KB | ≤ 125 KB (R7 ≤ 127, F08-T3) |
 | JS adiado de motion (após o LCP) | 0 | ≤ 60 KB | ≤ 60 KB (estudo de caso) |
 | CSS (gzip) | ≤ 25 KB | ≤ 30 KB | ≤ 30 KB |
 | Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB no caminho crítico (desde a F01-T3: 0, porque no primeiro acesso as fontes entram depois do `load`) | idem | idem |
