@@ -139,9 +139,13 @@ test('after a client-side navigation the renderer renders in the browser', async
   const scripts = recordScripts(page)
   await page.goto(path)
   await expect(page.getByRole('button', { name: 'Copiar' })).toBeVisible()
+  // Hydrated first: a click before it is a full page load, and coming back would not run the renderer
+  await expect.poll(() => page.evaluate(() => Boolean((document.querySelector('#__nuxt') as { __vue_app__?: unknown } | null)?.__vue_app__))).toBe(true)
   // Away through the header's home link (a client-side navigation), then back
   await page.locator('header a[href="/"]').first().click()
   await expect(page).toHaveURL(/\/$/)
+  // The home has rendered (its data arrives after the URL changes), so going back renders the content again
+  await expect(page.getByRole('button', { name: 'Copiar' })).toHaveCount(0)
   await page.goBack()
   await expect(page.getByRole('heading', { name: 'Introdução' })).toBeVisible()
   await expect(page.locator('.content-gallery dialog')).toHaveCount(3)

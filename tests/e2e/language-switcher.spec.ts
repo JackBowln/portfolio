@@ -30,6 +30,8 @@ test('the switcher leads to the equivalent page in each language', async ({ page
   for (const from of LOCALES) {
     for (const to of LOCALES.filter(locale => locale !== from)) {
       await page.goto(ABOUT[from])
+      // A click in the middle of hydration can be lost (WebKit); the institutional pages hydrate with their content
+      await expect.poll(() => page.evaluate(() => Boolean((document.querySelector('#__nuxt') as { __vue_app__?: unknown } | null)?.__vue_app__))).toBe(true)
       await page.getByRole('link', { name: NAMES[to] }).click()
 
       await expect(page).toHaveURL(ABOUT[to])

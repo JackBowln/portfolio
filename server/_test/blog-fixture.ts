@@ -1,7 +1,8 @@
 // Test-only (PORTFOLIO_TEST_BUILD=1): the content the route, layout, CSP and a11y specs open at /blog/x,
-// /blog/temas/x (F06-T5) and /projetos/x (F07-T2) since those pages are real. Idempotent: an article and a project
-// with slug `x` published in the five locales, a topic `x` named in all of them and a technology. Translations are
-// written straight to the table, as the translation flow is F09
+// /blog/temas/x (F06-T5), /projetos/x (F07-T2) and the home and about pages (F08-T2) since those pages are real.
+// Idempotent: an article and a project with slug `x` published in the five locales, a topic `x` named in all of them,
+// a technology, and the home and about published in pt-BR only (the other locales show the fallback). Translations
+// are written straight to the table, as the translation flow is F09
 import { eq } from 'drizzle-orm'
 import { LOCALES, SOURCE_LOCALE } from '../../shared/types/enums.ts'
 import type { Db } from '../db/client.ts'
@@ -11,6 +12,7 @@ import { findPublishedArticle, findTopic } from '../services/content/blog.repo.t
 import { createArticle, getArticle, updateArticle } from '../services/content/articles.service.ts'
 import { createLocalization } from '../services/content/localized.repo.ts'
 import { publishArticle } from '../services/content/publishing.service.ts'
+import { getPage, publishPage, updatePage } from '../services/content/pages.service.ts'
 import { findPublishedProject, findTechnology } from '../services/content/projects-public.repo.ts'
 import { createProject, getProject, publishProject, updateProject } from '../services/content/projects.service.ts'
 import { createTag, createTopic } from '../services/content/tags.service.ts'
@@ -61,10 +63,38 @@ async function ensureProjectFixture(db: Db, userId: string): Promise<void> {
   }
 }
 
+/** Home and about published in pt-BR only, with placeholder blocks */
+async function ensurePagesFixture(db: Db, userId: string): Promise<void> {
+  const actor = { userId, ip: null, ipHashSalt: undefined }
+  const blocks = {
+    home: { hero: { eyebrow: '[PLACEHOLDER]', title: '[PLACEHOLDER] Título da home', subtitle: '[PLACEHOLDER]', cta: { label: '[PLACEHOLDER] Projetos', target: 'projects' as const } }, sections: [{ title: '[PLACEHOLDER] Seção', text: '[PLACEHOLDER]' }], featuredTitle: '', articlesTitle: '', closing: { title: '', text: '', cta: { label: '', target: 'contact' as const } } },
+    about: { intro: body, timeline: [{ period: '[PLACEHOLDER]', title: '[PLACEHOLDER] Item', text: '' }], skills: [], links: [] },
+  }
+  for (const key of ['home', 'about'] as const) {
+    const page = await getPage(db, key)
+    const copy = page.localizations.find(item => item.locale === SOURCE_LOCALE)!
+    if (copy.publishedRevisionId) {
+      continue
+    }
+    try {
+      const saved = await updatePage(db, userId, page, { version: copy.version, blocks: blocks[key] })
+      await publishPage(db, actor, saved, SOURCE_LOCALE, saved.localizations.find(item => item.locale === SOURCE_LOCALE)!.version)
+    }
+    catch (error) {
+      // Specs set up in parallel: another one may have published the page meanwhile
+      const now = (await getPage(db, key)).localizations.find(item => item.locale === SOURCE_LOCALE)!
+      if (!now.publishedRevisionId) {
+        throw error
+      }
+    }
+  }
+}
+
 /** Creates the fixture once; returns the article's id */
 export async function ensureBlogFixture(db: Db): Promise<{ articleId: string }> {
   const userId = await fixtureUser(db)
   await ensureProjectFixture(db, userId)
+  await ensurePagesFixture(db, userId)
   const existing = await findPublishedArticle(db, SOURCE_LOCALE, 'x')
   if (existing) {
     return { articleId: existing.articleId }

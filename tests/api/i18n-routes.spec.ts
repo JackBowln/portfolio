@@ -43,11 +43,13 @@ for (const [name, paths] of Object.entries(ROUTES)) {
   })
 }
 
-test('skeleton pages are noindex; the home and about are indexable (F02-T3)', async ({ request }) => {
-  // The projects are real since F07-T2; contact is still a skeleton
-  expect(await (await request.get('/en/contact')).text()).toContain('<meta name="robots" content="noindex">')
-  for (const path of ['/en', '/en/about']) {
+test('published institutional pages are indexable; fallbacks and empty pages are noindex (F08-T2)', async ({ request }) => {
+  // The fixture publishes the home and about in pt-BR only; contact has nothing published
+  for (const path of ['/', '/sobre']) {
     expect(await (await request.get(path)).text(), path).not.toContain('<meta name="robots"')
+  }
+  for (const path of ['/en', '/en/about', '/contato', '/en/contact']) {
+    expect(await (await request.get(path)).text(), path).toContain('<meta name="robots" content="noindex">')
   }
 })
 

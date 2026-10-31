@@ -27,8 +27,9 @@ test.describe('public pages', () => {
 
       expect(response.status(), method).toBe(200)
       expect(headers['cache-control'], method).toBe(PUBLIC_POLICY)
-      // The layout's settings (F08-T1); `site` is the default only for a page with no tags at all
-      expect(headers['cache-tag'], method).toBe('settings')
+      // The layout's settings (F08-T1) and the home's own page (F08-T2); `site` is the default only for a page with
+      // no tags at all
+      expect(headers['cache-tag']?.split(','), method).toEqual(expect.arrayContaining(['settings', 'page:home:pt-BR']))
       expect(headers['set-cookie'], method).toBeUndefined()
       expectBaseSecurityHeaders(headers)
     }

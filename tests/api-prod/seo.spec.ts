@@ -26,6 +26,12 @@ async function readHead(page: Page, url: string): Promise<Head> {
   }))
 }
 
+/** Locales where an institutional page is published, from the public API */
+async function publishedLocales(request: APIRequestContext, key: string): Promise<(keyof typeof ABOUT)[]> {
+  const response = await request.get(`/api/public/pages/${key}?locale=pt-BR`)
+  return ((await response.json()) as { published: (keyof typeof ABOUT)[] }).published
+}
+
 async function sitemapUrls(request: APIRequestContext, page: Page) {
   const xml = await (await request.get('/sitemap.xml')).text()
   return page.evaluate((source) => {
@@ -67,23 +73,15 @@ test('the sitemap is valid XML with absolute URLs, alternates and x-default', as
   expect(response.headers()['content-type']).toContain('application/xml')
   expect(response.headers()['cache-tag']).toBe('sitemap')
 
-  // The blog index and articles (F06-T5) are listed only where published, so they depend on the instance's data:
-  // empty in CI, whatever was copied locally
+  // Everything in the sitemap is listed only where it is published (pages since F08-T2, the blog since F06-T5,
+  // projects since F07-T2), so it depends on the instance's data: empty in CI, whatever was copied locally
   const urls = await sitemapUrls(request, page)
-  const isBlog = (loc: string) => /^\/(?:[a-z]{2}\/)?blog(?:\/|$)/.test(new URL(loc).pathname)
-  expect(urls.filter(url => !isBlog(url.loc)).map(url => url.loc).sort()).toEqual([
-    ...Object.values(ABOUT).map(path => `${SITE}${path}`),
-    `${SITE}/`, `${SITE}/de`, `${SITE}/en`, `${SITE}/es`, `${SITE}/fr`,
-  ].sort())
+  const aboutPublished = await publishedLocales(request, 'about')
+  const aboutUrls = urls.filter(url => Object.values(ABOUT).some(path => url.loc === `${SITE}${path}`)).map(url => url.loc).sort()
+  expect(aboutUrls).toEqual(aboutPublished.map(locale => `${SITE}${ABOUT[locale]}`).sort())
   for (const url of urls) {
-    if (isBlog(url.loc)) {
-      expect(Object.values(url.alternates), url.loc).toContain(url.loc)
-      expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en ?? url.alternates['pt-BR'])
-    }
-    else {
-      expect(Object.keys(url.alternates).sort(), url.loc).toEqual(['de', 'en', 'es', 'fr', 'pt-BR', 'x-default'])
-      expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en)
-    }
+    expect(Object.values(url.alternates), url.loc).toContain(url.loc)
+    expect(url.alternates['x-default'], url.loc).toBe(url.alternates.en ?? url.alternates['pt-BR'])
     expect(Object.values(url.alternates).every(href => href?.startsWith(`${SITE}/`)), url.loc).toBe(true)
   }
 })
@@ -99,14 +97,24 @@ test('every sitemap URL answers 200 with a self canonical and reciprocal hreflan
   }
 })
 
-test('the about page has the right head in every locale', async ({ page }) => {
-  for (const [locale, path] of Object.entries(ABOUT)) {
+test('the about page has the right head in every locale', async ({ page, request }) => {
+  // Indexable with hreflang where it is published; elsewhere (the pt-BR fallback, or nothing published) noindex
+  // without hreflang (F08-T2, i18n-seo §3)
+  const published = await publishedLocales(request, 'about')
+  for (const [locale, path] of Object.entries(ABOUT) as [keyof typeof ABOUT, string][]) {
     const head = await readHead(page, path)
 
     expect(head.lang, locale).toBe(locale)
-    expect(head.ogLocale, locale).toBe(OG[locale as keyof typeof OG])
+    expect(head.ogLocale, locale).toBe(OG[locale])
     expect(head.canonical, locale).toBe(`${SITE}${path}`)
-    expect(head.alternates['x-default'], locale).toBe(`${SITE}/en/about`)
+    if (published.includes(locale)) {
+      expect(head.robots, locale).toBeNull()
+      expect(head.alternates['x-default'], locale).toBe(`${SITE}${published.includes('en') ? ABOUT.en : ABOUT['pt-BR']}`)
+    }
+    else {
+      expect(head.robots, locale).toBe('noindex')
+      expect(head.alternates, locale).toEqual({})
+    }
   }
 })
 
