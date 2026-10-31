@@ -29,6 +29,8 @@ test.beforeAll(async ({ request }) => {
 test('list → article → the same article in German', async ({ page }) => {
   await page.goto('/blog')
   await expect(page.getByRole('heading', { level: 1, name: 'Blog' })).toBeVisible()
+  // A click during hydration can be lost on a slow (mobile) run
+  await expect.poll(() => page.evaluate(() => Boolean((document.querySelector('#__nuxt') as { __vue_app__?: unknown } | null)?.__vue_app__))).toBe(true)
   // Other specs publish articles in parallel, so the fixture's own topic is the stable list
   await page.getByRole('navigation', { name: 'Temas do blog' }).getByRole('link', { name: /^x/ }).click()
   await expect(page).toHaveURL(/\/blog\/temas\/x$/)

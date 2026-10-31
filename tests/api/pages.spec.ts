@@ -69,10 +69,11 @@ test('a page published in pt-BR only: indexable there, a noindex fallback elsewh
   expect(sitemap).not.toContain('/de/ueber-mich')
 })
 
-test('a page with nothing published is an empty state with noindex; privacy always lists the data it handles', async ({ playwright, baseURL }) => {
+test('a page with nothing published has noindex (contact keeps its form, F08-T3); privacy always lists the data it handles', async ({ playwright, baseURL }) => {
   const anonymous = await playwright.request.newContext({ baseURL })
   const contact = await (await anonymous.get('/contato')).text()
-  expect(contact).toContain('data-testid="page-empty"')
+  expect(contact).not.toContain('data-testid="page-empty"')
+  expect(contact).toContain('aria-label="Formulário de contato"')
   expect(contact).toContain('<meta name="robots" content="noindex">')
   const privacy = await (await anonymous.get('/en/privacy')).text()
   expect(privacy).toContain('Contact form messages (name, e-mail and message), kept for 12 months.')

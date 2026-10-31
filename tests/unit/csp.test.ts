@@ -1,6 +1,6 @@
 // F03-T4: CSP by hash (ADR-0012 §1): which inline scripts count, their hashes and the policy text
 import { describe, expect, it } from 'vitest'
-import { inlineScripts, mediaOriginFor, NON_PAGE_CSP, pageCsp, scriptHash } from '../../server/utils/csp'
+import { inlineScripts, isContactPath, mediaOriginFor, NON_PAGE_CSP, pageCsp, scriptHash } from '../../server/utils/csp'
 
 describe('inlineScripts', () => {
   it('keeps the scripts the browser runs, in order, and their exact text', () => {
@@ -102,5 +102,25 @@ describe('mediaOriginFor', () => {
     expect(mediaOriginFor('https://example.com', 'https://media.example.com/files')).toBe('https://media.example.com')
     expect(mediaOriginFor('https://example.com', 'https://example.com/media')).toBeUndefined()
     expect(mediaOriginFor('https://example.com', undefined)).toBeUndefined()
+  })
+})
+
+// F08-T3: Turnstile is the one third-party script, on the contact page only
+describe('Turnstile on the contact page', () => {
+  it('allows its origin for scripts and frames only when asked', () => {
+    const contact = pageCsp({ scriptHashes: [], upgradeInsecureRequests: false, embeds: true, turnstile: true })
+    expect(contact).toContain(`script-src 'self' https://challenges.cloudflare.com;`)
+    expect(contact).toContain('frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://challenges.cloudflare.com;')
+    const other = pageCsp({ scriptHashes: [], upgradeInsecureRequests: false, embeds: true })
+    expect(other).not.toContain('challenges.cloudflare.com')
+  })
+
+  it('recognizes the contact page in every locale and nothing else', () => {
+    for (const path of ['/contato', '/en/contact', '/es/contacto', '/de/kontakt', '/fr/contact', '/contato/', '/en/contact?x=1']) {
+      expect(isContactPath(path), path).toBe(true)
+    }
+    for (const path of ['/', '/contact', '/en/contato', '/contato/extra', '/admin/mensagens', '/blog']) {
+      expect(isContactPath(path), path).toBe(false)
+    }
   })
 })
