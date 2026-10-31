@@ -79,7 +79,6 @@
   },
   "blog": {
     "title": "Blog",
-    "intro": "[PLACEHOLDER]",
     "rssTitle": "Blog [PLACEHOLDER]",
     "rssDescription": "[PLACEHOLDER]",
     "rss": "RSS-Feed des Blogs",
@@ -103,7 +102,6 @@
   },
   "projects": {
     "title": "Projekte",
-    "intro": "[PLACEHOLDER]",
     "empty": "Noch keine Projekte veröffentlicht.",
     "filterLabel": "Nach Technologie filtern",
     "all": "Alle",
@@ -131,7 +129,10 @@
   },
   "pages": {
     "about": {
-      "title": "Über mich"
+      "title": "Über mich",
+      "timeline": "Werdegang",
+      "skills": "Kompetenzen",
+      "links": "Links"
     },
     "projects": {
       "title": "Projekte"
@@ -149,7 +150,25 @@
       "title": "Kontakt"
     },
     "privacy": {
-      "title": "Datenschutz"
+      "title": "Datenschutz",
+      "updatedOn": "Aktualisiert am {date}",
+      "factsTitle": "Von dieser Website verarbeitete Daten",
+      "facts": {
+        "contact": "Nachrichten aus dem Kontaktformular (Name, E-Mail und Nachricht), 12 Monate gespeichert.",
+        "admin": "Sitzungen und Audit-Protokoll des Verwaltungsbereichs, nur für die Betreiber der Website; das Protokoll wird 12 Monate aufbewahrt, die IP nur als Hash.",
+        "logs": "Technische Protokolle der Hosting-Plattform (Cloudflare), 3 Tage aufbewahrt.",
+        "cookies": "Keine Cookies und kein Tracking außerhalb des Verwaltungsbereichs; keine Analyse.",
+        "turnstile": "Cloudflare Turnstile schützt nur die Kontaktseite vor Spam.",
+        "embeds": "Externe Videos laden erst nach einem Klick, von Domains ohne Cookies (youtube-nocookie).",
+        "fonts": "Schriften liefert die Website selbst aus, ohne Drittanbieter."
+      }
+    },
+    "fallbackNotice": "Diese Seite wurde noch nicht übersetzt; der Inhalt unten ist auf Portugiesisch.",
+    "empty": "Diese Seite wird noch geschrieben.",
+    "home": {
+      "featured": "Ausgewählte Projekte",
+      "articles": "Neueste Artikel",
+      "more": "Alle ansehen"
     }
   },
   "common": {

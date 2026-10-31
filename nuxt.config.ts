@@ -117,8 +117,9 @@ export default defineNuxtConfig({
     // manifest, and production renders from precomputed dependencies, so the chunk is unflagged here instead.
     // A client-side navigation still loads it on demand
     'build:manifest': (manifest) => {
-      // Never-hydrated components: the content renderer (F05-T4), the article body (F06-T5) and the case study (F07-T2)
-      for (const key of ['components/content/ContentRenderer.vue', 'components/blog/BlogArticleBody.vue', 'components/projects/CaseStudy.vue']) {
+      // Never-hydrated components: the content renderer (F05-T4), the article body (F06-T5), the case study (F07-T2)
+      // and the home's content (F08-T2)
+      for (const key of ['components/content/ContentRenderer.vue', 'components/blog/BlogArticleBody.vue', 'components/projects/CaseStudy.vue', 'components/pages/HomeContent.vue']) {
         const chunk = manifest[key]
         if (chunk) {
           chunk.prefetch = false

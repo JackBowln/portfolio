@@ -79,7 +79,6 @@
   },
   "blog": {
     "title": "Blog",
-    "intro": "[PLACEHOLDER]",
     "rssTitle": "Blog [PLACEHOLDER]",
     "rssDescription": "[PLACEHOLDER]",
     "rss": "RSS del blog",
@@ -103,7 +102,6 @@
   },
   "projects": {
     "title": "Proyectos",
-    "intro": "[PLACEHOLDER]",
     "empty": "Todavía no hay proyectos publicados.",
     "filterLabel": "Filtrar por tecnología",
     "all": "Todos",
@@ -131,7 +129,10 @@
   },
   "pages": {
     "about": {
-      "title": "Sobre mí"
+      "title": "Sobre mí",
+      "timeline": "Trayectoria",
+      "skills": "Competencias",
+      "links": "Enlaces"
     },
     "projects": {
       "title": "Proyectos"
@@ -149,7 +150,25 @@
       "title": "Contacto"
     },
     "privacy": {
-      "title": "Privacidad"
+      "title": "Privacidad",
+      "updatedOn": "Actualizada el {date}",
+      "factsTitle": "Datos que trata este sitio",
+      "facts": {
+        "contact": "Mensajes del formulario de contacto (nombre, correo y mensaje), guardados durante 12 meses.",
+        "admin": "Sesiones y registro de auditoría del panel de administración, usados solo por quien administra el sitio; la auditoría se guarda 12 meses y la IP solo como hash.",
+        "logs": "Registros técnicos de la plataforma de alojamiento (Cloudflare), guardados 3 días.",
+        "cookies": "Ninguna cookie ni rastreo fuera del panel de administración; sin analítica.",
+        "turnstile": "Cloudflare Turnstile protege solo la página de contacto contra el spam.",
+        "embeds": "Los vídeos externos solo se cargan tras un clic, desde dominios sin cookies (youtube-nocookie).",
+        "fonts": "Las fuentes las sirve el propio sitio, sin servicios de terceros."
+      }
+    },
+    "fallbackNotice": "Esta página aún no se ha traducido; el contenido de abajo está en portugués.",
+    "empty": "Esta página aún se está escribiendo.",
+    "home": {
+      "featured": "Proyectos destacados",
+      "articles": "Artículos recientes",
+      "more": "Ver todos"
     }
   },
   "common": {

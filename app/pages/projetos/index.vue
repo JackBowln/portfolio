@@ -4,6 +4,8 @@
 // list is noindex and its canonical is the whole list; an unknown technology is 404, and so is an empty one
 import { priorityCover } from '#shared/content/blog'
 import type { ProjectList } from '#shared/content/projects-public'
+import type { PageBlocks } from '#shared/pages/blocks'
+import type { PublicPage } from '#shared/pages/public'
 import { parseTechnology } from '#shared/content/projects-public'
 import ProjectCard from '~/components/projects/ProjectCard.vue'
 import TechnologyFilter from '~/components/projects/TechnologyFilter.vue'
@@ -28,11 +30,14 @@ if (tech === null) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found', fatal: true })
 }
 const data = await usePublicData<ProjectList>(`projects:${locale.value}:${tech ?? ''}`, '/api/public/projects', { locale: locale.value, tech })
+// The index's own title and introduction, from the page of blocks (F08-T2)
+const intro = await usePublicData<PublicPage<PageBlocks<'projects'>>>(`page:projects:${locale.value}`, '/api/public/pages/projects', { locale: locale.value })
+const settings = useSiteSettings()
 
-const title = computed(() => (data.value.technology ? t('projects.filtered', { name: data.value.technology.name }) : t('projects.title')))
+const title = computed(() => (data.value.technology ? t('projects.filtered', { name: data.value.technology.name }) : intro.value.blocks?.title || t('projects.title')))
 usePageSeo({
   title: () => title.value,
-  description: () => t('projects.intro'),
+  description: () => intro.value.blocks?.intro || settings.value.seo.description,
   noindex: () => data.value.technology !== null || data.value.items.length === 0,
 })
 </script>
@@ -43,8 +48,12 @@ usePageSeo({
       <UiHeading :level="1">
         {{ title }}
       </UiHeading>
-      <p class="text-text-muted">
-        {{ $t('projects.intro') }}
+      <p
+        v-if="intro.blocks?.intro"
+        class="text-text-muted"
+        :lang="intro.fallback ? 'pt-BR' : undefined"
+      >
+        {{ intro.blocks.intro }}
       </p>
       <TechnologyFilter
         :technologies="data.technologies"

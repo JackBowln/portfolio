@@ -79,7 +79,6 @@
   },
   "blog": {
     "title": "Blog",
-    "intro": "[PLACEHOLDER]",
     "rssTitle": "Blog [PLACEHOLDER]",
     "rssDescription": "[PLACEHOLDER]",
     "rss": "RSS do blog",
@@ -103,7 +102,6 @@
   },
   "projects": {
     "title": "Projetos",
-    "intro": "[PLACEHOLDER]",
     "empty": "Nenhum projeto publicado ainda.",
     "filterLabel": "Filtrar por tecnologia",
     "all": "Todos",
@@ -131,7 +129,10 @@
   },
   "pages": {
     "about": {
-      "title": "Sobre"
+      "title": "Sobre",
+      "timeline": "Trajetória",
+      "skills": "Competências",
+      "links": "Links"
     },
     "projects": {
       "title": "Projetos"
@@ -149,7 +150,25 @@
       "title": "Contato"
     },
     "privacy": {
-      "title": "Privacidade"
+      "title": "Privacidade",
+      "updatedOn": "Atualizada em {date}",
+      "factsTitle": "Dados tratados neste site",
+      "facts": {
+        "contact": "Mensagens do formulário de contato (nome, e-mail e mensagem), guardadas por 12 meses.",
+        "admin": "Sessões e registro de auditoria do painel administrativo, usados só por quem administra o site; a auditoria é guardada por 12 meses e o IP só como hash.",
+        "logs": "Logs técnicos da plataforma de hospedagem (Cloudflare), guardados por 3 dias.",
+        "cookies": "Nenhum cookie nem rastreamento fora do painel administrativo; sem analytics.",
+        "turnstile": "O Cloudflare Turnstile protege só a página de contato contra spam.",
+        "embeds": "Vídeos externos só carregam depois de um clique, a partir de domínios sem cookie (youtube-nocookie).",
+        "fonts": "As fontes são servidas pelo próprio site, sem serviços de terceiros."
+      }
+    },
+    "fallbackNotice": "Esta página ainda não foi traduzida; o conteúdo abaixo está em português.",
+    "empty": "Esta página ainda está sendo escrita.",
+    "home": {
+      "featured": "Projetos em destaque",
+      "articles": "Artigos recentes",
+      "more": "Ver todos"
     }
   },
   "common": {
@@ -210,7 +229,8 @@
       "tags": "Temas",
       "projects": "Projetos",
       "technologies": "Tecnologias",
-      "settings": "Configurações"
+      "settings": "Configurações",
+      "pages": "Páginas"
     },
     "dashboard": {
       "title": "Painel",
@@ -758,7 +778,19 @@
         "repoUrl": "Link do GitHub",
         "demoUrl": "Link da demo",
         "technologyIds": "Tecnologias",
-        "galleryMediaIds": "Galeria"
+        "galleryMediaIds": "Galeria",
+        "hero": "Abertura",
+        "sections": "Seções",
+        "featuredTitle": "Título dos projetos em destaque",
+        "articlesTitle": "Título dos artigos recentes",
+        "closing": "Chamada final",
+        "intro": "Introdução",
+        "timeline": "Trajetória",
+        "skills": "Competências",
+        "links": "Links",
+        "success": "Mensagem de sucesso",
+        "body": "Texto",
+        "updatedOn": "Atualizada em"
       },
       "diff": {
         "identical": "Nenhuma diferença.",
@@ -773,7 +805,8 @@
         "no": "não",
         "image": "outra imagem",
         "deletedTopic": "(tema excluído)",
-        "images": "{count} imagem | {count} imagens"
+        "images": "{count} imagem | {count} imagens",
+        "changedValue": "(alterado)"
       },
       "version": {
         "button": "Salvar versão",
@@ -844,6 +877,14 @@
         "unpublished": "Projeto fora do site.",
         "unavailable": "O projeto usa uma imagem que não está mais disponível. Troque ou remova a imagem.",
         "slugTaken": "Outro projeto já está no site com este endereço. Mude o endereço antes de publicar."
+      },
+      "page": {
+        "unpublishTitle": "Tirar esta página do site?",
+        "unpublishText": "A página volta ao estado vazio no site, em todos os idiomas. O texto e o histórico continuam no admin, e você pode publicar de novo.",
+        "published": "Página publicada.",
+        "unpublished": "Página fora do site.",
+        "unavailable": "A página usa uma imagem que não está mais disponível. Troque ou remova a imagem.",
+        "slugTaken": "Não foi possível publicar a página."
       }
     },
     "technologies": {
@@ -1020,6 +1061,77 @@
         "notes": "Notas de estilo em {locale}",
         "informal": "Informal",
         "formal": "Formal"
+      }
+    },
+    "pages": {
+      "title": "Páginas",
+      "intro": "As páginas fixas do site, editadas por blocos. Só o português é editado aqui; as traduções chegam com a tradução por IA.",
+      "names": {
+        "home": "Início",
+        "about": "Sobre",
+        "contact": "Contato",
+        "privacy": "Privacidade",
+        "blog": "Índice do blog",
+        "projects": "Índice de projetos"
+      },
+      "updated": "alterada em {date}",
+      "back": "Voltar para as páginas",
+      "notFound": "Página não encontrada.",
+      "meta": "{status} · versão {version} · alterada em {date}",
+      "content": "Conteúdo",
+      "invalid": "Algum campo não é válido. Confira os links (https://) e os limites.",
+      "forbidden": "Você não tem permissão para alterar esta página.",
+      "paragraphsHint": "Uma linha em branco separa os parágrafos.",
+      "remove": "Remover: {item}",
+      "home": {
+        "hero": "Abertura",
+        "eyebrow": "Chamada curta acima do título",
+        "heroTitle": "Título",
+        "subtitle": "Subtítulo",
+        "ctaLabel": "Texto do botão",
+        "ctaTarget": "O botão leva para",
+        "sections": "Seções",
+        "sectionTitle": "Título da seção {number}",
+        "sectionText": "Texto da seção {number}",
+        "addSection": "Adicionar seção",
+        "featuredTitle": "Título dos projetos em destaque",
+        "featuredHint": "Os projetos marcados como destaque aparecem sozinhos.",
+        "articlesTitle": "Título dos artigos recentes",
+        "articlesHint": "Os 3 artigos publicados mais recentes aparecem sozinhos.",
+        "closing": "Chamada final",
+        "closingTitle": "Título da chamada final",
+        "closingText": "Texto da chamada final",
+        "closingCtaLabel": "Texto do botão final",
+        "closingCtaTarget": "O botão final leva para"
+      },
+      "about": {
+        "intro": "Introdução",
+        "period": "Período {number}",
+        "itemTitle": "Título do item {number}",
+        "itemText": "Descrição do item {number}",
+        "addItem": "Adicionar item à trajetória",
+        "group": "Grupo de competências {number}",
+        "items": "Competências do grupo {number}",
+        "itemsHint": "Uma competência por linha.",
+        "addGroup": "Adicionar grupo",
+        "linkLabel": "Texto do link {number}",
+        "linkUrl": "Endereço do link {number}",
+        "addLink": "Adicionar link"
+      },
+      "contact": {
+        "intro": "Introdução",
+        "success": "Mensagem depois do envio",
+        "successHint": "Mostrada quando o formulário de contato (F08-T3) for enviado."
+      },
+      "privacy": {
+        "factsNote": "A lista de dados tratados (mensagens de contato, sessões, auditoria, logs, cookies, Turnstile, vídeos e fontes) vem do sistema e aparece sempre. Aqui fica o seu texto: finalidade, base legal, direitos e contato do responsável.",
+        "updatedOn": "Atualizada em",
+        "body": "Texto da política"
+      },
+      "index": {
+        "title": "Título",
+        "titleHint": "Vazio usa o nome padrão da seção.",
+        "intro": "Introdução"
       }
     }
   }

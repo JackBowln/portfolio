@@ -3,6 +3,8 @@
 // it from page 2), the topics with articles as links, and the RSS in the head. A page past the last is 404; an
 // empty blog is noindex. Only published snapshots are read (/api/public)
 import type { BlogList } from '#shared/content/blog'
+import type { PageBlocks } from '#shared/pages/blocks'
+import type { PublicPage } from '#shared/pages/public'
 import { parsePage, priorityCover } from '#shared/content/blog'
 import BlogCard from '~/components/blog/BlogCard.vue'
 import BlogPagination from '~/components/blog/BlogPagination.vue'
@@ -17,10 +19,14 @@ if (page === null) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found', fatal: true })
 }
 const data = await usePublicData<BlogList>(`blog:${locale.value}:${page}`, '/api/public/blog', { locale: locale.value, page })
+// The index's own title and introduction, from the page of blocks (F08-T2)
+const intro = await usePublicData<PublicPage<PageBlocks<'blog'>>>(`page:blog:${locale.value}`, '/api/public/pages/blog', { locale: locale.value })
+const title = computed(() => intro.value.blocks?.title || t('blog.title'))
+const settings = useSiteSettings()
 
 usePageSeo({
-  title: () => (page > 1 ? `${t('blog.title')} — ${t('blog.page', { page, pages: data.value.pages })}` : t('blog.title')),
-  description: () => t('blog.intro'),
+  title: () => (page > 1 ? `${title.value} — ${t('blog.page', { page, pages: data.value.pages })}` : title.value),
+  description: () => intro.value.blocks?.intro || settings.value.seo.description,
   page,
   noindex: () => data.value.total === 0,
 })
@@ -31,10 +37,14 @@ useBlogFeed()
   <div class="grid gap-10">
     <header class="grid gap-4">
       <UiHeading :level="1">
-        {{ $t('blog.title') }}
+        {{ title }}
       </UiHeading>
-      <p class="text-text-muted">
-        {{ $t('blog.intro') }}
+      <p
+        v-if="intro.blocks?.intro"
+        class="text-text-muted"
+        :lang="intro.fallback ? 'pt-BR' : undefined"
+      >
+        {{ intro.blocks.intro }}
       </p>
       <TopicLinks
         :topics="data.topics"

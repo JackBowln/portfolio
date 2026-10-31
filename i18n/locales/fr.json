@@ -79,7 +79,6 @@
   },
   "blog": {
     "title": "Blog",
-    "intro": "[PLACEHOLDER]",
     "rssTitle": "Blog [PLACEHOLDER]",
     "rssDescription": "[PLACEHOLDER]",
     "rss": "Flux RSS du blog",
@@ -103,7 +102,6 @@
   },
   "projects": {
     "title": "Projets",
-    "intro": "[PLACEHOLDER]",
     "empty": "Aucun projet publié pour l’instant.",
     "filterLabel": "Filtrer par technologie",
     "all": "Tous",
@@ -131,7 +129,10 @@
   },
   "pages": {
     "about": {
-      "title": "À propos"
+      "title": "À propos",
+      "timeline": "Parcours",
+      "skills": "Compétences",
+      "links": "Liens"
     },
     "projects": {
       "title": "Projets"
@@ -149,7 +150,25 @@
       "title": "Contact"
     },
     "privacy": {
-      "title": "Confidentialité"
+      "title": "Confidentialité",
+      "updatedOn": "Mise à jour le {date}",
+      "factsTitle": "Données traitées par ce site",
+      "facts": {
+        "contact": "Messages du formulaire de contact (nom, e-mail et message), conservés 12 mois.",
+        "admin": "Sessions et journal d’audit de l’espace d’administration, utilisés seulement par qui gère le site ; le journal est conservé 12 mois et l’IP seulement sous forme de hash.",
+        "logs": "Journaux techniques de la plateforme d’hébergement (Cloudflare), conservés 3 jours.",
+        "cookies": "Aucun cookie ni suivi hors de l’espace d’administration ; pas d’analytics.",
+        "turnstile": "Cloudflare Turnstile protège seulement la page de contact contre le spam.",
+        "embeds": "Les vidéos externes ne se chargent qu’après un clic, depuis des domaines sans cookie (youtube-nocookie).",
+        "fonts": "Les polices sont servies par le site lui-même, sans service tiers."
+      }
+    },
+    "fallbackNotice": "Cette page n’a pas encore été traduite ; le contenu ci-dessous est en portugais.",
+    "empty": "Cette page est encore en cours de rédaction.",
+    "home": {
+      "featured": "Projets en vedette",
+      "articles": "Articles récents",
+      "more": "Tout voir"
     }
   },
   "common": {
