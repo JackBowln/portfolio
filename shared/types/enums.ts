@@ -39,3 +39,7 @@ export type MediaTrackKind = (typeof MEDIA_TRACK_KINDS)[number]
 
 export const MEDIA_USAGE_CONTEXTS = ['body', 'cover', 'og', 'gallery', 'poster', 'settings'] as const
 export type MediaUsageContext = (typeof MEDIA_USAGE_CONTEXTS)[number]
+
+/** Inbox states of a contact message (F08-T3); deleting one removes it */
+export const CONTACT_STATUSES = ['new', 'read', 'archived', 'spam'] as const
+export type ContactStatus = (typeof CONTACT_STATUSES)[number]

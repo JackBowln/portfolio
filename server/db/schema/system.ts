@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { check, index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
-import { LOCALES } from '../../../shared/types/enums.ts'
+import { CONTACT_STATUSES, LOCALES } from '../../../shared/types/enums.ts'
 import type { RedirectStatusCode } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import { now } from '../../../shared/utils/time.ts'
@@ -38,4 +38,21 @@ export const auditLog = sqliteTable('audit_log', {
 }, table => [
   index('audit_log_created_at_idx').on(sql`${table.createdAt} DESC`),
   index('audit_log_entity_idx').on(table.entityType, table.entityId),
+])
+
+// Contact form messages (F08-T3, data-model §6): personal data, kept 12 months (contact:retention) and deleted for good
+// from the inbox; the IP only as an HMAC (ip-hash.ts), never in clear
+export const contactMessages = sqliteTable('contact_messages', {
+  id: text().primaryKey().$defaultFn(() => uuidv7()),
+  name: text().notNull(),
+  email: text().notNull(),
+  message: text().notNull(),
+  locale: text({ enum: LOCALES }).notNull(),
+  status: text({ enum: CONTACT_STATUSES }).notNull().default('new'),
+  ipHash: text(),
+  createdAt: integer({ mode: 'timestamp_ms' }).notNull().$defaultFn(now),
+  readAt: integer({ mode: 'timestamp_ms' }),
+}, table => [
+  index('contact_messages_status_idx').on(table.status, table.id),
+  index('contact_messages_created_at_idx').on(table.createdAt),
 ])
