@@ -5,6 +5,7 @@
 // sign-in. The server checks everything again
 import { can } from '#shared/auth/permissions'
 import { NAVIGATION_PAGES, NEURON_CAP_MAX, SOCIAL_NETWORKS } from '#shared/settings/schemas'
+import { AI_MODEL_IDS } from '#shared/translation/models'
 import type { SettingGlobal, SettingLocalized } from '#shared/settings/schemas'
 import type { SiteSettingKey } from '#shared/types/enums'
 import MediaField from '~/components/admin/media/MediaField.vue'
@@ -422,13 +423,25 @@ useHead({ title: () => t('admin.settings.title'), meta: [{ name: 'robots', conte
             :label="$t('admin.settings.ai.model')"
             :description="$t('admin.settings.ai.modelHint')"
           >
-            <UiInput
+            <select
+              :id="field.id"
               v-model="value.model"
-              v-bind="field"
-              :maxlength="120"
-            />
+              :class="input"
+              :aria-describedby="field.describedby"
+            >
+              <option value="">
+                {{ $t('admin.settings.ai.noModel') }}
+              </option>
+              <option
+                v-for="model in AI_MODEL_IDS"
+                :key="model"
+                :value="model"
+              >
+                {{ model }}
+              </option>
+            </select>
           </UiField>
-          <div class="grid gap-4 sm:grid-cols-3">
+          <div class="grid gap-4 sm:grid-cols-2">
             <UiField
               v-slot="field"
               :label="$t('admin.settings.ai.dailyNeuronCap')"
@@ -470,6 +483,22 @@ useHead({ title: () => t('admin.settings.title'), meta: [{ name: 'robots', conte
                 v-model.number="value.perJobMaxMicroUsd"
                 type="number"
                 min="0"
+                step="1"
+                :class="input"
+                :aria-describedby="field.describedby"
+              >
+            </UiField>
+            <UiField
+              v-slot="field"
+              :label="$t('admin.settings.ai.perJobNeuronCap')"
+              :description="$t('admin.settings.ai.dailyNeuronCapHint', { max: NEURON_CAP_MAX })"
+            >
+              <input
+                :id="field.id"
+                v-model.number="value.perJobNeuronCap"
+                type="number"
+                min="0"
+                :max="NEURON_CAP_MAX"
                 step="1"
                 :class="input"
                 :aria-describedby="field.describedby"

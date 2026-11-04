@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Dashboard (RF-02.3). Translations (F09-T1): pending work per locale and entity type, from the server (which checks
-// translation:review); the other cards wait for their data (drafts and schedule counts, the AI budget in F09-T3)
-// and say so instead of showing a made-up number
+// translation:review). AI usage (F09-T3): today's neurons (UTC) against the daily cap, and the month. The other cards
+// wait for their data (drafts and schedule counts) and say so instead of showing a made-up number
 import { can } from '#shared/auth/permissions'
 import type { Locale } from '#shared/types/enums'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
@@ -15,20 +15,32 @@ interface Summary {
 }
 
 const PENDING: Pending[] = ['missing', 'machine', 'in_review', 'outdated']
-const CARDS = ['drafts', 'scheduled', 'aiUsage'] as const
+const CARDS = ['drafts', 'scheduled'] as const
+
+interface Usage {
+  enabled: boolean
+  model: string
+  today: { neurons: number, cap: number }
+  month: { neurons: number, costMicroUsd: number, budgetMicroUsd: number }
+}
 
 const { t } = useI18n()
 const user = useAdminUser()
 const canReview = computed(() => can(user.value?.role ?? '', { translation: ['review'] }))
 const summary = ref<Summary | null>(null)
+const usage = ref<Usage | null>(null)
 const failed = ref(false)
+const number = new Intl.NumberFormat('pt-BR')
 
 onMounted(async () => {
   if (!canReview.value) {
     return
   }
   try {
-    summary.value = await adminFetch<Summary>('/api/admin/translations/summary')
+    ;[summary.value, usage.value] = await Promise.all([
+      adminFetch<Summary>('/api/admin/translations/summary'),
+      adminFetch<Usage>('/api/admin/translations/usage'),
+    ])
   }
   catch {
     failed.value = true
@@ -163,6 +175,25 @@ useHead({ title: () => t('admin.dashboard.title'), meta: [{ name: 'robots', cont
     </section>
 
     <ul class="grid gap-4 sm:grid-cols-3">
+      <li
+        v-if="canReview"
+        class="grid gap-2 border border-border p-4"
+        data-testid="dashboard-ai-usage"
+      >
+        <span class="font-strong">{{ $t('admin.dashboard.aiUsage') }}</span>
+        <template v-if="usage">
+          <span class="text-step-2">{{ $t('admin.dashboard.aiToday', { used: number.format(usage.today.neurons), cap: number.format(usage.today.cap) }) }}</span>
+          <span class="text-step--1 text-text-muted">{{ $t('admin.dashboard.aiMonth', { neurons: number.format(usage.month.neurons) }) }}</span>
+          <span
+            v-if="!usage.enabled"
+            class="text-step--1 text-text-muted"
+          >{{ $t('admin.dashboard.aiOff') }}</span>
+        </template>
+        <span
+          v-else
+          class="text-step--1 text-text-muted"
+        >{{ $t('admin.dashboard.placeholder') }}</span>
+      </li>
       <li
         v-for="card in CARDS"
         :key="card"

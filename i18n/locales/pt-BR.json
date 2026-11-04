@@ -239,7 +239,7 @@
       "intro": "Resumo do conteúdo e das traduções.",
       "drafts": "Rascunhos",
       "scheduled": "Agendados",
-      "aiUsage": "Uso de IA no mês",
+      "aiUsage": "Uso de IA",
       "placeholder": "[PLACEHOLDER] Disponível quando o conteúdo existir.",
       "translationsTitle": "Traduções pendentes por idioma",
       "translationsIntro": "Itens sem tradução aprovada em cada idioma. Desatualizadas são as aprovadas cujo original mudou.",
@@ -253,7 +253,10 @@
         "media": "Textos de mídia",
         "setting": "Configurações"
       },
-      "total": "Total"
+      "total": "Total",
+      "aiToday": "Hoje: {used} de {cap} neurônios",
+      "aiMonth": "No mês: {neurons} neurônios (dia e mês em UTC)",
+      "aiOff": "A tradução por IA está desligada ou sem modelo."
     },
     "sessions": {
       "title": "Sessões",
@@ -1072,7 +1075,7 @@
         "enabled": "Tradução por IA ligada",
         "provider": "Provedor: Workers AI (fixo).",
         "model": "Modelo",
-        "modelHint": "Definido na F09; deixe vazio por enquanto.",
+        "modelHint": "Só os modelos avaliados (ADR-0009). Sem modelo, a tradução não roda.",
         "dailyNeuronCap": "Teto diário de neurônios",
         "dailyNeuronCapHint": "Até {max} (o plano gratuito).",
         "monthlyBudget": "Orçamento mensal (micro-US$)",
@@ -1081,7 +1084,9 @@
         "formality": "Tom em {locale}",
         "notes": "Notas de estilo em {locale}",
         "informal": "Informal",
-        "formal": "Formal"
+        "formal": "Formal",
+        "noModel": "Nenhum (tradução parada)",
+        "perJobNeuronCap": "Máximo de neurônios por tradução"
       }
     },
     "pages": {
