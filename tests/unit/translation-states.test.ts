@@ -16,7 +16,7 @@ const doc = (...texts: [string, string][]): DocumentJson => ({
 describe('translation transitions', () => {
   it('follow the diagram in data-model §8 and nothing else', () => {
     const allowed = TRANSLATION_STATES.flatMap(from => TRANSLATION_STATES.filter(to => canTransition(from, to)).map(to => `${from}→${to}`))
-    expect(allowed).toEqual(['missing→machine', 'missing→in_review', 'machine→in_review', 'machine→approved', 'in_review→approved', 'approved→outdated', 'outdated→in_review'])
+    expect(allowed).toEqual(['missing→machine', 'missing→in_review', 'machine→in_review', 'machine→approved', 'in_review→approved', 'approved→in_review', 'approved→outdated', 'outdated→in_review'])
     expect(TRANSLATION_TRANSITIONS.source).toEqual([])
   })
 

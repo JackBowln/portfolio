@@ -268,3 +268,17 @@ describe('segments of a document', () => {
     expect(reinsertField('guide', tagged)).toEqual({ ok: false })
   })
 })
+
+describe('review text', () => {
+  it('turns term placeholders back into the terms and renumbers code placeholders', async () => {
+    const { withoutTerms } = await import('../../shared/content/inline-tags')
+    const content: InlineNode[] = [{ type: 'text', text: 'Use Nuxt e ' }, { type: 'text', text: 'npm i', marks: [{ type: 'code' }] }, { type: 'text', text: ' com Nuxt & cia' }]
+    const protectedText = tagInline(content, TERMS)
+    expect(protectedText.text).toBe('Use <x1/> e <x2/> com <x3/> &amp; cia')
+    const review = withoutTerms('Use <x1/> and <x2/> with <x3/> &amp; co', protectedText)
+    expect(review).toBe('Use Nuxt and <x1/> with Nuxt &amp; co')
+    // It reads back against the term-free tagging of the same source
+    expect(untagInline(review, tagInline(content))).toMatchObject({ ok: true })
+    expect(withoutTerms('<x9/>', protectedText)).toBe('<x9/>')
+  })
+})
