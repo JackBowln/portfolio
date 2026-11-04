@@ -43,6 +43,12 @@ useHead({ title: () => t('admin.translations.title'), meta: [{ name: 'robots', c
         {{ $t('admin.translations.title') }}
       </UiHeading>
       <p>{{ $t('admin.translations.intro') }}</p>
+      <NuxtLink
+        to="/admin/traducoes/textos"
+        class="justify-self-start underline underline-offset-(--underline-offset) hover:text-accent"
+      >
+        {{ $t('admin.translations.texts.link') }}
+      </NuxtLink>
     </div>
     <UiStatusMessage
       v-if="failed"

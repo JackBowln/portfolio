@@ -6,7 +6,8 @@ import type { Locale } from '#shared/types/enums'
 import { adminFetch } from '~/utils/admin/session'
 
 const props = defineProps<{
-  type: 'article' | 'project' | 'page'
+  /** `texts`: a batch of short texts (F09-T5), with `id` 'batch' and the chosen fields as segmentIds */
+  type: 'article' | 'project' | 'page' | 'texts'
   id: string
   locale: Locale
   /** Only these segments (a partial retranslation); all of them when absent */

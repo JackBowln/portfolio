@@ -1305,6 +1305,51 @@
         "slugTaken": "Este endereço já é usado neste idioma.",
         "approve": "Não foi possível aprovar. Salve a revisão primeiro.",
         "missing": "{count} trecho ainda está sem tradução. | {count} trechos ainda estão sem tradução."
+      },
+      "texts": {
+        "link": "Textos curtos: temas, mídia e configurações",
+        "title": "Textos curtos",
+        "intro": "Nomes de temas e tecnologias, textos de imagens e textos das configurações. Escolha os itens para traduzir com IA, revise e aprove; só os aprovados aparecem no site.",
+        "locale": "Idioma",
+        "pendingOnly": "Só pendentes",
+        "empty": "Nada pendente neste idioma.",
+        "choose": "Escolher: {label}",
+        "kinds": {
+          "tag": "Tema ou tecnologia",
+          "media": "Imagem",
+          "setting": "Configurações"
+        },
+        "settingKeys": {
+          "identity": "Identidade",
+          "seo_defaults": "SEO padrão",
+          "footer": "Rodapé"
+        },
+        "fields": {
+          "name": "Nome",
+          "alt": "Texto alternativo",
+          "caption": "Legenda",
+          "credit": "Crédito",
+          "role": "Cargo",
+          "bio": "Bio",
+          "titleTemplate": "Modelo de título",
+          "description": "Descrição",
+          "text": "Texto"
+        },
+        "translate": "Traduzir {count} item escolhido com IA | Traduzir {count} itens escolhidos com IA",
+        "approve": "Aprovar {count} item escolhido | Aprovar {count} itens escolhidos",
+        "saved": "{count} item salvo para revisão. | {count} itens salvos para revisão.",
+        "approved": "{count} item aprovado. | {count} itens aprovados.",
+        "errors": {
+          "missing": "Um dos itens escolhidos ainda tem campo sem tradução.",
+          "settings_update": "Só owner e admin alteram os textos das configurações.",
+          "template": "O modelo de título precisa ter %s exatamente uma vez.",
+          "slug_taken": "Este endereço já é usado neste idioma.",
+          "unknown_item": "Um dos itens não existe mais.",
+          "invalid": "Confira os campos.",
+          "machine": "Revise antes de aprovar.",
+          "outdated": "Revise antes de aprovar.",
+          "unexpected": "Algo deu errado. Tente de novo."
+        }
       }
     }
   },
