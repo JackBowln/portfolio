@@ -57,6 +57,13 @@
       "when": 1793791177637,
       "tag": "0007_glossary",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793792568955,
+      "tag": "0008_translation_jobs",
+      "breakpoints": true
     }
   ]
 }
