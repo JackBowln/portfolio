@@ -30,6 +30,8 @@ usePageSeo({
   page,
   noindex: () => data.value.total === 0,
 })
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 useBlogFeed()
 </script>
 

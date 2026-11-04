@@ -36,6 +36,8 @@ usePageSeo({
   published: () => data.value.alternates.map(alternate => alternate.locale),
   noindex: () => data.value.seo.noindex,
 })
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 
 const root = useTemplateRef<HTMLElement>('root')
 let cleanup: (() => void) | undefined

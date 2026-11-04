@@ -5,25 +5,15 @@
 import { useMotion } from '~/composables/motion/useMotion'
 import type { PageBlocks } from '#shared/pages/blocks'
 import type { PublicPage } from '#shared/pages/public'
-import { person, serializeJsonLd, website } from '#shared/seo/jsonld'
-import type { Locale } from '#shared/types/enums'
 import PageEmpty from '~/components/pages/PageEmpty.vue'
 
 const { locale } = useI18n()
-const { siteUrl } = useRuntimeConfig().public
 const settings = useSiteSettings()
 const data = await usePublicData<PublicPage<PageBlocks<'home'>>>(`page:home:${locale.value}`, '/api/public/pages/home', { locale: locale.value })
 useInstitutionalSeo(data, () => settings.value.identity.name, { titleTemplate: '%s' })
 
-useHead({
-  script: [{
-    type: 'application/ld+json',
-    innerHTML: () => serializeJsonLd([
-      website({ siteUrl, name: settings.value.identity.name, locale: locale.value as Locale }),
-      person({ siteUrl, name: settings.value.identity.name }),
-    ]),
-  }],
-})
+// WebSite + Person, built on the server (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 
 // The home's motion (storyboard-home §2–§6, F10-T3): the scene and GSAP only after the load, never with reduced motion
 useMotion(() => document.querySelector('main'), 'home', { plugins: ['ScrollTrigger', 'SplitText'] })

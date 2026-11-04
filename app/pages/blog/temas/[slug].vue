@@ -32,6 +32,8 @@ usePageSeo({
   published: () => [locale.value as Locale],
   page,
 })
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 useBlogFeed()
 </script>
 

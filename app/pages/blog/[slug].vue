@@ -25,6 +25,8 @@ usePageSeo({
   publishedTime: () => data.value.firstPublishedAt,
   modifiedTime: () => data.value.publishedAt,
 })
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 useBlogFeed()
 
 // Copy, gallery and video facades, by delegation, whichever way the article was rendered

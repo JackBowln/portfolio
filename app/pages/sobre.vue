@@ -23,6 +23,8 @@ definePageMeta({
 const { locale, t } = useI18n()
 const data = await usePublicData<PublicPage<PageBlocks<'about'>>>(`page:about:${locale.value}`, '/api/public/pages/about', { locale: locale.value })
 useInstitutionalSeo(data, () => t('pages.about.title'))
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 const ids = { timeline: useId(), skills: useId(), links: useId() }
 </script>
 

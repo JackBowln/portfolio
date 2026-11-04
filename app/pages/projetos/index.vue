@@ -40,6 +40,8 @@ usePageSeo({
   description: () => intro.value.blocks?.intro || settings.value.seo.description,
   noindex: () => data.value.technology !== null || data.value.items.length === 0,
 })
+// JSON-LD from the response (F11-T1)
+useJsonLd(() => data.value.jsonLd)
 </script>
 
 <template>
