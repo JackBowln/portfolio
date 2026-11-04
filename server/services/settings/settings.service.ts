@@ -3,8 +3,7 @@
 // key at a time. A stored value that no longer fits its schema reads as the default instead of breaking the layout
 import { cacheTags } from '../../../shared/cache/tags.ts'
 import { fieldSegments } from '../../../shared/content/segment-hash.ts'
-import { mediaUrl } from '../../../shared/media/public.ts'
-import type { PublicImage } from '../../../shared/media/public.ts'
+import { shareImage } from '../../../shared/media/public.ts'
 import type { SettingUpdate } from '../../../shared/settings/input.ts'
 import type { PublicSettings } from '../../../shared/settings/public.ts'
 import { settingSchemas } from '../../../shared/settings/schemas.ts'
@@ -38,13 +37,6 @@ function localizedOf<K extends 'identity' | 'seo_defaults' | 'footer'>(key: K, r
     }
   }
   return settingSchemas[key].defaults.localized as SettingLocalized<K>
-}
-
-/** The share image as og:image takes it: the largest JPEG up to 1200 px wide, as an absolute URL */
-function shareImage(image: PublicImage, mediaBaseUrl: string): PublicSettings['seo']['ogImage'] {
-  const variant = image.variants.filter(item => item.format === 'jpeg' && item.width <= 1200).sort((a, b) => b.width - a.width)[0]
-  const url = variant ? mediaUrl(mediaBaseUrl, variant.key) : undefined
-  return variant && url ? { url, width: variant.width, height: variant.height, alt: image.alt } : null
 }
 
 export async function publicSettings(db: Db, locale: Locale, mediaBaseUrl: string): Promise<PublicSettings> {

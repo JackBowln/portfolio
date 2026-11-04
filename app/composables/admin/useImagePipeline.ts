@@ -1,6 +1,6 @@
 // Admin-only. Runs the image pipeline in a fresh Web Worker per file and reports its progress; cancelling
 // terminates the worker, which also frees its memory and codecs at once
-import type { PipelineMessage, PipelineResult, PipelineStage } from '~/utils/admin/image-pipeline'
+import type { PipelineMessage, PipelineRequest, PipelineResult, PipelineStage } from '~/utils/admin/image-pipeline'
 
 export class PipelineCancelledError extends Error {}
 
@@ -14,7 +14,7 @@ export function useImagePipeline() {
   const progress = ref<{ stage: PipelineStage, done: number, total: number } | null>(null)
   let current: { worker: Worker, reject: (error: Error) => void } | null = null
 
-  function process(file: File): Promise<PipelineResult> {
+  function process(file: File, options: { withOriginalWidth?: boolean } = {}): Promise<PipelineResult> {
     cancel()
     const worker = new Worker(new URL('../../workers/admin/image-pipeline.worker.ts', import.meta.url), { type: 'module' })
     return new Promise<PipelineResult>((resolve, reject) => {
@@ -39,7 +39,7 @@ export function useImagePipeline() {
         current = null
         reject(new PipelineFailedError('failed', event.message || 'Worker failed'))
       }
-      worker.postMessage({ type: 'process', file })
+      worker.postMessage({ type: 'process', file, withOriginalWidth: options.withOriginalWidth === true } satisfies PipelineRequest)
     })
   }
 

@@ -3,10 +3,16 @@
 import { IMAGE_WIDTHS } from './schemas.ts'
 import type { ImageFormat, ImageManifest } from './schemas.ts'
 
-/** IMAGE_WIDTHS up to the original's width; an original narrower than the first step ships at its own width */
-export function targetWidths(originalWidth: number): number[] {
+/**
+ * IMAGE_WIDTHS up to the original's width; an original narrower than the first step ships at its own width.
+ * `withOriginal` adds the original's own width between the steps (the 1200 px share images, F11-T2)
+ */
+export function targetWidths(originalWidth: number, withOriginal = false): number[] {
   const widths = IMAGE_WIDTHS.filter(width => width <= originalWidth)
-  return widths.length > 0 ? widths : [originalWidth]
+  if (widths.length === 0) {
+    return [originalWidth]
+  }
+  return withOriginal && !widths.includes(originalWidth as (typeof IMAGE_WIDTHS)[number]) ? [...widths, originalWidth] : widths
 }
 
 /** Same rounding the API checks (imageVariantIssues), never below 1 px */

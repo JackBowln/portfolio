@@ -31,6 +31,21 @@ export interface PublicImage {
   credit: string | null
 }
 
+/** An image as og:image takes it (F08-T1, F11-T2): one JPEG variant as an absolute URL, its size and alt */
+export interface ShareImage {
+  url: string
+  width: number
+  height: number
+  alt: string
+}
+
+/** The largest JPEG up to 1200 px wide; `fallbackAlt` when the image has no alt (a generated one is decorative) */
+export function shareImage(image: PublicImage, mediaBaseUrl: string, fallbackAlt = ''): ShareImage | null {
+  const variant = image.variants.filter(item => item.format === 'jpeg' && item.width <= 1200).sort((a, b) => b.width - a.width)[0]
+  const url = variant ? mediaUrl(mediaBaseUrl, variant.key) : undefined
+  return variant && url ? { url, width: variant.width, height: variant.height, alt: image.alt || fallbackAlt } : null
+}
+
 export interface PublicVideo {
   width: number
   height: number

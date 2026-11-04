@@ -8,6 +8,8 @@ export type PipelineStage = (typeof PIPELINE_STAGES)[number]
 export interface PipelineRequest {
   type: 'process'
   file: File
+  /** Also a variant at the original's own width (the 1200 px share images, F11-T2) */
+  withOriginalWidth?: boolean
 }
 
 export interface PipelineFile {

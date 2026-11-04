@@ -111,7 +111,7 @@ async function placeholder(image: ImageData) {
   }
 }
 
-async function process(file: File) {
+async function process(file: File, withOriginalWidth: boolean) {
   const mimeType = file.type as ImageManifest['mimeType']
   if (!(IMAGE_MIME_TYPES as readonly string[]).includes(mimeType)) {
     throw new PipelineError('unsupported', `Unsupported type ${file.type || 'unknown'}`)
@@ -143,7 +143,7 @@ async function process(file: File) {
   const sha256 = toHex(new Uint8Array(await crypto.subtle.digest('SHA-256', originalBuffer)))
   report('original', 1, 1)
 
-  const widths = targetWidths(image.width)
+  const widths = targetWidths(image.width, withOriginalWidth)
   const total = widths.length * IMAGE_FORMATS.length
   const files: PipelineFile[] = []
   const variants: ImageManifest['variants'] = []
@@ -186,7 +186,7 @@ scope.onmessage = (event) => {
   if (event.data.type !== 'process') {
     return
   }
-  process(event.data.file).catch((error: unknown) => {
+  process(event.data.file, event.data.withOriginalWidth === true).catch((error: unknown) => {
     const code = error instanceof PipelineError ? error.code : 'failed'
     scope.postMessage({ type: 'error', code, message: error instanceof Error ? error.message.slice(0, 200) : 'Pipeline failed' })
   })
