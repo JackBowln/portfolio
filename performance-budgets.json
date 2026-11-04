@@ -12,7 +12,7 @@
       "path": "/blog",
       "page": "pages/blog/index.vue",
       "layout": "layouts/default.vue",
-      "js": 126,
+      "js": 127,
       "css": 30,
       "lighthouse": false
     },

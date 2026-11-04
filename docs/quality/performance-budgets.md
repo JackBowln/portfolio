@@ -53,6 +53,11 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 
 **Revisão na F08-T1 (owner, 30/10/2026):** R3 e R8 passam a **≤ 121 KB**. Medido: as configurações globais no layout (carregamento, cabeçalho, navegação e rodapé que as leem) somam ~1,37 kB a toda rota pública, e o R3 ficou em 120,88 kB; os cortes sem perda de função somavam ~0,45 kB. A F11-T5 revisita os orçamentos no passe de performance.
 
+**Revisão na F11-T1 (owner, 04/11/2026):** R2 passa a **≤ 127 KB**.
+- O JSON-LD é montado no servidor e chega pronto. Mesmo sem nenhum código de JSON-LD no cliente, a R2 mediu 126,04 kB: dois builds assim deram 125,99 e 126,04 kB, variação do build sobre uma base que já estava no limite desde a F10-T4 (a classe `.press` no botão compartilhado).
+- Com o limite revisto, ficou também no cliente a chamada que troca o bloco numa navegação no cliente (`useJsonLd`, ~0,1 kB): sem ela, o JSON-LD da página anterior ficaria no `<head>`. Medido: R2 126,17 kB.
+- A F11-T5 revisita todos os orçamentos.
+
 **Revisão na F10-T2 (owner, 04/11/2026):** R2 passa a **≤ 126 KB**, R3 e R8 a **≤ 123 KB** e R7 a **≤ 128 KB**. Medido: a infraestrutura de motion soma ~1,5 kB a toda rota pública. Desse total:
 - ~0,7 kB são do botão "Reduzir movimento" no rodapé, aprovado no storyboard;
 - 0,43 kB são do plugin de View Transitions do Nuxt;
@@ -70,7 +75,7 @@ O GSAP (core, ScrollTrigger e SplitText) e o director ficam adiados: 48,9 KB gz,
 
 | Recurso | R3 (artigo) | R1 (home) | Demais públicas |
 |---|---|---|---|
-| JS inicial (gzip, carregado até o `load`) | ≤ 123 KB (F10-T2) | ≤ 125 KB | ≤ 125 KB (R2 ≤ 126 e R7 ≤ 128, F10-T2) |
+| JS inicial (gzip, carregado até o `load`) | ≤ 123 KB (F10-T2) | ≤ 125 KB | ≤ 125 KB (R2 ≤ 127, F11-T1; R7 ≤ 128, F10-T2) |
 | JS adiado de motion (após o LCP) | 0 | ≤ 60 KB | ≤ 60 KB (estudo de caso) |
 | CSS (gzip) | ≤ 25 KB | ≤ 30 KB | ≤ 30 KB |
 | Fontes na primeira tela | ≤ 2 arquivos, ≤ 120 KB no caminho crítico (desde a F01-T3: 0, porque no primeiro acesso as fontes entram depois do `load`) | idem | idem |
