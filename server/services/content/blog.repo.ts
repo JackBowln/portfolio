@@ -8,6 +8,7 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { articleLocalizations, articles, articleTags } from '../../db/schema/content.ts'
 import { tagLocalizations } from '../../db/schema/taxonomy.ts'
+import { publishedIndexable } from './localized.repo.ts'
 
 const live = (locale: Locale): SQL => and(
   eq(articleLocalizations.locale, locale),
@@ -137,6 +138,31 @@ export async function allPublishedArticles(db: Db): Promise<{ articleId: string,
     publishedAt: listColumns.publishedAt,
   }).from(articleLocalizations)
     .innerJoin(articles, eq(articles.id, articleLocalizations.articleId))
-    .where(and(isNotNull(articleLocalizations.publishedRevisionId), isNull(articleLocalizations.deletedAt), isNull(articles.deletedAt)))
+    .where(and(isNotNull(articleLocalizations.publishedRevisionId), isNull(articleLocalizations.deletedAt), isNull(articles.deletedAt), publishedIndexable(articleLocalizations.publishedSnapshot)))
     .orderBy(articles.id, articleLocalizations.locale)
+}
+
+/**
+ * Topics with a name and at least one published article per locale (F11-T3), with the newest of those articles: the
+ * sitemap's topic pages, and a topic page's alternates when `tagId` is given
+ */
+export async function publishedTopics(db: Db, tagId?: string): Promise<{ tagId: string, locale: Locale, slug: string, publishedAt: Date }[]> {
+  return db.select({
+    tagId: tagLocalizations.tagId,
+    locale: tagLocalizations.locale,
+    slug: tagLocalizations.slug,
+    publishedAt: sql<number>`max(${articleLocalizations.publishedAt})`.mapWith(value => new Date(Number(value))),
+  }).from(tagLocalizations)
+    .innerJoin(articleTags, eq(articleTags.tagId, tagLocalizations.tagId))
+    .innerJoin(articles, eq(articles.id, articleTags.articleId))
+    .innerJoin(articleLocalizations, and(eq(articleLocalizations.articleId, articles.id), eq(articleLocalizations.locale, tagLocalizations.locale)))
+    .where(and(
+      inArray(tagLocalizations.translationState, ['source', 'approved']),
+      isNotNull(articleLocalizations.publishedRevisionId),
+      isNull(articleLocalizations.deletedAt),
+      isNull(articles.deletedAt),
+      ...(tagId ? [eq(tagLocalizations.tagId, tagId)] : []),
+    ))
+    .groupBy(tagLocalizations.tagId, tagLocalizations.locale, tagLocalizations.slug)
+    .orderBy(tagLocalizations.tagId, tagLocalizations.locale) as Promise<{ tagId: string, locale: Locale, slug: string, publishedAt: Date }[]>
 }

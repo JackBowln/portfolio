@@ -10,6 +10,7 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { projectLocalizations, projects, projectTechnologies } from '../../db/schema/content.ts'
 import { tagLocalizations, tags } from '../../db/schema/taxonomy.ts'
+import { publishedIndexable } from './localized.repo.ts'
 
 const live = (locale: Locale): SQL => and(
   eq(projectLocalizations.locale, locale),
@@ -133,6 +134,6 @@ export async function allPublishedProjects(db: Db): Promise<{ projectId: string,
     publishedAt: sql<number>`${projectLocalizations.publishedAt}`.mapWith(value => new Date(Number(value))),
   }).from(projectLocalizations)
     .innerJoin(projects, eq(projects.id, projectLocalizations.projectId))
-    .where(and(isNotNull(projectLocalizations.publishedRevisionId), isNull(projectLocalizations.deletedAt), isNull(projects.deletedAt)))
+    .where(and(isNotNull(projectLocalizations.publishedRevisionId), isNull(projectLocalizations.deletedAt), isNull(projects.deletedAt), publishedIndexable(projectLocalizations.publishedSnapshot)))
     .orderBy(projects.id, projectLocalizations.locale)
 }

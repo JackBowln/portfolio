@@ -296,6 +296,8 @@ export async function approveTextItems(db: Db, locale: Locale, keys: readonly st
     if (row.kind === 'tag') {
       await db.update(tagLocalizations).set({ translationState: 'approved', segmentsMeta: meta }).where(and(eq(tagLocalizations.tagId, id), eq(tagLocalizations.locale, locale)))
       purge.add(cacheTags.tag(id))
+      // F11-T3: the topic's page in this locale enters the sitemap
+      purge.add(cacheTags.sitemap())
     }
     else if (row.kind === 'media') {
       await db.update(mediaLocalizations).set({ translationState: 'approved', segmentsMeta: meta }).where(and(eq(mediaLocalizations.mediaId, id), eq(mediaLocalizations.locale, locale)))

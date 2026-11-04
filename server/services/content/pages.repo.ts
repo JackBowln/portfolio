@@ -12,6 +12,7 @@ import { mediaUsages } from '../../db/schema/media.ts'
 import type { AuditRow } from '../audit/audit.repo.ts'
 import { auditEntryStatement } from '../audit/audit.repo.ts'
 import type { PreparedRevision } from './revisions.repo.ts'
+import { publishedIndexable } from './localized.repo.ts'
 import { insertRevisionStatement } from './revisions.repo.ts'
 import type { MediaUse } from './working-copy.repo.ts'
 import type { CopyKey } from '../translation/state.repo.ts'
@@ -136,6 +137,6 @@ export async function publishedPageLocales(db: Db, keys: readonly PageKey[]): Pr
   return db.select({ key: pages.key, locale: pageLocalizations.locale, publishedAt: sql<number>`${pageLocalizations.publishedAt}`.mapWith(value => new Date(Number(value))) })
     .from(pageLocalizations)
     .innerJoin(pages, eq(pages.id, pageLocalizations.pageId))
-    .where(and(inArray(pages.key, [...keys]), isNotNull(pageLocalizations.publishedRevisionId), isNull(pageLocalizations.deletedAt)))
+    .where(and(inArray(pages.key, [...keys]), isNotNull(pageLocalizations.publishedRevisionId), isNull(pageLocalizations.deletedAt), publishedIndexable(pageLocalizations.publishedSnapshot)))
     .orderBy(pages.key, pageLocalizations.locale)
 }

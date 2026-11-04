@@ -1,7 +1,8 @@
 // Localization queries shared by articles, projects and pages (data-model §4, §10). Public reads touch only the
 // published_* columns and published_snapshot, never the working copy (invariant §9.3), and soft-deleted rows or
 // entities are hidden everywhere here
-import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm'
+import { and, desc, eq, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
+import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { contentHash } from '../../../shared/content/canonical-json.ts'
 import type { PublishedCursor } from '../../../shared/content/cursor.ts'
 import { encodePublishedCursor } from '../../../shared/content/cursor.ts'
@@ -11,6 +12,9 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { contentTables, publishedLead } from './content-tables.ts'
 import type { ContentTables } from './content-tables.ts'
+
+/** SQL true when the published snapshot is indexable: the sitemap leaves out what was published with noindex (F11-T3) */
+export const publishedIndexable = (publishedSnapshot: AnySQLiteColumn) => sql`coalesce(json_extract(${publishedSnapshot}, '$.localization.noindex'), 0) = 0`
 
 export type LocalizationRow<T extends ContentType> = ContentTables[T]['localizations']['$inferSelect']
 export type NewLocalization<T extends ContentType> = Omit<ContentTables[T]['localizations']['$inferInsert'], 'workingHash'>
