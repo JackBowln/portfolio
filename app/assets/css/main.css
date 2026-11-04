@@ -182,6 +182,30 @@
   }
 }
 
+/*
+ * Page transitions (F10-T2, storyboard-home §8): a short crossfade between routes; none with reduced motion, from the
+ * system or from the site's button (data-reduce-motion, set by the inline script and the button)
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+html[data-reduce-motion]::view-transition-group(*),
+html[data-reduce-motion]::view-transition-old(*),
+html[data-reduce-motion]::view-transition-new(*) {
+  animation: none !important;
+}
+
 @layer base {
   /* Anchor and skip-link targets keep some air above them; the header is static, so nothing covers them */
   html {

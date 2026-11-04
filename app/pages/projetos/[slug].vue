@@ -4,6 +4,7 @@
 // where it is not published, the URL is 404 and the switcher leads to the projects there. No motion and no content
 // JS: the case study never hydrates (CaseStudy, hydrate-never); only the enhancement script runs, on this root. The
 // document blocks' stylesheet comes with this page, as the reading layout brings it for articles
+import { useMotion } from '~/composables/motion/useMotion'
 import '~/assets/css/content.css'
 import type { PublicProject } from '#shared/content/projects-public'
 
@@ -45,6 +46,9 @@ onMounted(async () => {
   }
 })
 onBeforeUnmount(() => cleanup?.())
+
+// F10-T2: the page's motion (storyboard-home §9); no scenes yet (F10-T3/T4). GSAP only after the load, never with reduced motion
+useMotion(() => document.querySelector('main'), () => {}, { plugins: ['ScrollTrigger'] })
 </script>
 
 <template>

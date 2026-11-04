@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import { version } from './package.json'
 import { FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from './shared/design/fonts'
+import { MOTION_INIT_SCRIPT } from './shared/design/motion'
 import { THEME_INIT_SCRIPT } from './shared/design/theme'
 
 // Policy of every Web Worker script under /_nuxt/ (ADR-0012, F04-T2)
@@ -27,6 +28,8 @@ export default defineNuxtConfig({
       script: [
         { innerHTML: THEME_INIT_SCRIPT, tagPosition: 'head' },
         { innerHTML: FONT_LOADING_SCRIPT, tagPosition: 'head' },
+        // F10-T2: html.motion-ok when motion is allowed, with its 3 s fallback (shared/design/motion.ts)
+        { innerHTML: MOTION_INIT_SCRIPT, tagPosition: 'head' },
       ],
       style: [{ innerHTML: FONT_PENDING_CSS }],
     },
@@ -68,6 +71,10 @@ export default defineNuxtConfig({
     // WASM codecs and fetch them from this site, and nothing else; pages keep their own hash-based policy
     '/_nuxt/**': { headers: { 'x-content-type-options': 'nosniff', 'content-security-policy': WORKER_CSP } },
   },
+
+  // ADR-0011 §6, F10-T2: route changes go through the View Transitions API where supported (a crossfade, main.css);
+  // without support or with reduced motion, navigation is instant
+  experimental: { viewTransition: true },
 
   // The Cloudflare date is capped by the pinned workerd (1.20261019.1); keep it equal to wrangler.jsonc
   compatibilityDate: { default: '2026-10-25', cloudflare: '2026-10-19' },

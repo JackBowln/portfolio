@@ -2,6 +2,7 @@
 // The home (F08-T2, RF-01.1; motion comes with F10): hero, narrative sections, the featured projects and the latest
 // articles (from what is published, decision 2) and the closing call, in HomeContent, which never hydrates. Fallback
 // and empty state as the other institutional pages; WebSite and Person JSON-LD named by the identity settings
+import { useMotion } from '~/composables/motion/useMotion'
 import type { PageBlocks } from '#shared/pages/blocks'
 import type { PublicPage } from '#shared/pages/public'
 import { person, serializeJsonLd, website } from '#shared/seo/jsonld'
@@ -23,6 +24,9 @@ useHead({
     ]),
   }],
 })
+
+// F10-T2: the page's motion (storyboard-home §1); no scenes yet (F10-T3/T4). GSAP only after the load, never with reduced motion
+useMotion(() => document.querySelector('main'), () => {}, { plugins: ['ScrollTrigger', 'SplitText'] })
 </script>
 
 <template>
