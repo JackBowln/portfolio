@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { evaluateRoute, findChunkKey, staticClosure } from '../../scripts/budgets/compute'
+import { evaluateRoute, findChunkKey, fullClosure, staticClosure } from '../../scripts/budgets/compute'
 import type { Manifest } from '../../scripts/budgets/compute'
 
 const manifest: Manifest = {
@@ -93,5 +93,28 @@ describe('budget computation', () => {
     expect(report.jsKb).toBe(70)
     expect(() => evaluateRoute('E404', { path: '/x', layout: 'layouts/missing.vue', js: 1, css: 1 }, manifest, gzipBytes, forbidden))
       .toThrow('layout chunk "layouts/missing.vue" not found')
+  })
+})
+
+// F10-T2: the article never reaches GSAP, not even through a dynamic import
+describe('noMotion', () => {
+  const withMotion: Manifest = {
+    ...manifest,
+    'pages/blog.vue': { file: 'blog.js', isDynamicEntry: true, imports: ['node_modules/nuxt/dist/app/entry.js'] },
+    'pages/motion.vue': { file: 'motion.js', isDynamicEntry: true, dynamicImports: ['composables/motion/director.ts'] },
+    'composables/motion/director.ts': { file: 'director.js', isDynamicEntry: true, dynamicImports: ['node_modules/gsap/index.js'] },
+    'node_modules/gsap/index.js': { file: 'gsap.js', isDynamicEntry: true },
+  }
+
+  it('follows dynamic imports too', () => {
+    expect([...fullClosure(withMotion, ['pages/motion.vue'])].sort()).toEqual(['composables/motion/director.ts', 'node_modules/gsap/index.js', 'pages/motion.vue'])
+  })
+
+  it('flags a route marked noMotion that can load the motion, and not one that cannot', () => {
+    const route = (page: string) => evaluateRoute('R3', { path: '/x', page, js: 999, css: 999, noMotion: true }, withMotion, gzipBytes, [])
+    expect(route('pages/motion.vue').forbidden).toEqual(expect.arrayContaining(['node_modules/gsap/index.js (motion)']))
+    expect(route('pages/motion.vue').ok).toBe(false)
+    // The entry reaches every page through the router: the page and layout are the roots, not the entry
+    expect(route('pages/blog.vue')).toMatchObject({ forbidden: [], ok: true })
   })
 })
