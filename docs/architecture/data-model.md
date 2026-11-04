@@ -290,6 +290,7 @@ stateDiagram-v2
   machine --> approved: revisar e aprovar
   in_review --> approved: aprovar
   approved --> outdated: origem muda (hash de segmento difere)
+  approved --> in_review: editar (F09-T4)
   outdated --> in_review: retraduzir segmentos alterados ou editar
 ```
 

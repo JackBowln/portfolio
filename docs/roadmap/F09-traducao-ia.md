@@ -152,7 +152,7 @@ Fazer a **avaliação de modelos** (3 artigos × 4 idiomas: qualidade de 1 a 5, 
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F09-T3 | RF-11.1, RF-11.2, RF-11.5 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
+| concluída | F09-T3 | RF-11.1, RF-11.2, RF-11.5 | `/cms-engineer`, `/frontend-design`, `/i18n-manager` |
 
 **Objetivo.** Criar a tela de revisão:
 - segmentos lado a lado (original e tradução editável), com destaque dos falhos e dos `outdated`;
@@ -161,20 +161,57 @@ Fazer a **avaliação de modelos** (3 artigos × 4 idiomas: qualidade de 1 a 5, 
 - sugestão de slug e SEO traduzidos, editáveis;
 - publicação por idioma.
 
-Incluir uma tela de tradução em lote para temas, textos de mídia e configurações.
+A tela de tradução em lote para temas, textos de mídia e configurações passou para a F09-T5 (decisão 1 da F09-T4).
 
 **Arquivos prováveis.** `app/pages/admin/traducoes/{index,[entity]/[id]/[locale]}.vue`, `app/components/admin/translation/*.vue`.
 
 **Fora do escopo.** Tradução das strings de interface do repositório.
 
 **Critérios de aceite**
-- [ ] Aprovar exige `translation:approve`; publicar o idioma exige também `*:publish` e respeita as guardas.
-- [ ] O slug traduzido é único por idioma, com transliteração.
-- [ ] A interface é operável por teclado; a ordem de leitura do lado a lado faz sentido no leitor de tela.
+- [x] Aprovar exige `translation:approve`; publicar o idioma exige também `*:publish` e respeita as guardas.
+- [x] O slug traduzido é único por idioma, com transliteração.
+- [x] A interface é operável por teclado; a ordem de leitura do lado a lado faz sentido no leitor de tela.
 
 **Testes**
 - E2E (J-05): traduzir com o fake → revisar → aprovar → publicar `en` → a página `/en/blog/<slug-en>` existe, com hreflang recíproco.
 - E2E (J-06): editar o original → só os segmentos alterados ficam `outdated` → retraduzir → aprovar.
+
+**Resultado (04/11/2026).**
+- **Revisão:** `server/services/translation/{review.service,target}.ts`.
+  - Os segmentos aparecem lado a lado com o estado (`ok`, `outdated`, `missing`) e o texto da revisão anterior da tradução (decisão 4).
+  - Salvar confere as tags por segmento e leva a tradução a `in_review`; o slug é único por idioma e transliterado.
+  - Aprovar exige `translation:approve` e nenhum bloco `missing` (decisão 3).
+  - A publicação usa as rotas de publicação, com `*:publish` e as guardas atuais.
+- **Escrita:** toda escrita reconstrói a tradução sobre a estrutura atual do original (decisão 2) e grava uma revisão.
+- **Retradução:** `segmentIds` no job da F09-T3 retraduz só os trechos escolhidos ou pendentes de uma tradução existente, que volta a `in_review`.
+- **Transições:** `approved → in_review` (editar uma tradução aprovada) entrou no diagrama.
+- **Telas:**
+  - `/admin/traducoes`: itens × idiomas, com selo de estado;
+  - `/admin/traducoes/[type]/[id]/[locale]`: cada segmento é um grupo com título, original antes da tradução, e as ações no fim.
+- **Testes:**
+  - `tests/workers/translation-review.test.ts` (5);
+  - `tests/e2e/translations.spec.ts`, com J-05 e J-06 no navegador e axe;
+  - a lista em `tests/a11y/admin.spec.ts`.
+
+---
+
+### F09-T5 — Tradução em lote: temas, textos de mídia e configurações
+
+| Status | Depende de | Requisitos | Skills |
+|---|---|---|---|
+| pendente | F09-T4 | RF-11.1, RF-11.2 | `/cms-engineer`, `/i18n-manager` |
+
+**Objetivo.** Uma tela de tradução em lote para os textos curtos:
+- nomes de temas e tecnologias;
+- alt, legenda e crédito de mídia;
+- campos localizados das configurações.
+
+Ela deve ter estimativa e confirmação, os mesmos tetos de custo e a revisão humana antes de os textos chegarem ao site (F09-T1).
+
+**Critérios de aceite**
+- [ ] Traduzir em lote exige estimativa recente e confirmação; o guarda de custo roda antes de cada chamada.
+- [ ] Os textos traduzidos entram `machine` e só chegam ao site depois de aprovados por quem tem `translation:approve`.
+- [ ] A tela é operável por teclado.
 
 ---
 

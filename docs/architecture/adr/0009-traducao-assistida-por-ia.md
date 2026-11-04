@@ -50,6 +50,10 @@
    - Publicar um idioma exige `approved` e as permissões `translation:approve` e `article:publish` (ou equivalente).
    - **Nada traduzido por máquina é publicado sem revisão humana.**
 9. **Revisão.** Interface lado a lado por segmento: original e tradução editável, destaque dos `outdated` e diff contra a tradução anterior. O slug traduzido é sugerido e editável.
+   - **Implementação (F09-T4):** a tradução é sempre reconstruída sobre a estrutura atual do original.
+   - **Bloco novo no original:** entra com o texto pt-BR, marcado `missing`, e bloqueia a aprovação até ser traduzido.
+   - **Retradução parcial:** traduz só os segmentos pedidos e devolve a tradução para revisão.
+   - **Forma de revisão:** a revisão humana edita o texto sem os placeholders de termo (`withoutTerms`); só o que vai ao modelo protege os termos.
 10. **Privacidade.** Só conteúdo destinado à publicação é enviado. Mensagens de contato, dados de usuário e rascunhos marcados como privados nunca vão para o provedor.
 11. **Ativação futura do Claude.**
     - Exige ADR de atualização, aprovação do owner, segredo configurado e teto mensal maior que zero.
