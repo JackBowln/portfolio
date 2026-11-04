@@ -5,7 +5,7 @@
 // ScrollTrigger refreshes once the fonts are ready. Nothing is imported with reduced motion
 import { MOTION_OK_CLASS, MOTION_REDUCE_EVENT, MOTION_STARTED } from '#shared/design/motion'
 import type { MotionApi, MotionPlugin } from './gsap'
-import type { SceneContext, SceneName } from './scenes/types'
+import type { Scene, SceneName } from './scenes/types'
 import { motionAllowed } from './preference'
 
 const IDLE_TIMEOUT_MS = 2000
@@ -43,7 +43,7 @@ export interface MotionOptions {
 }
 
 /** Starts the motion of a page (a scene by name, or a function in tests); returns the stop to call on unmount */
-export function startMotion(scope: () => Element | null, scene: SceneName | ((context: SceneContext) => void), options: MotionOptions = {}): () => void {
+export function startMotion(scope: () => Element | null, scene: SceneName | Scene, options: MotionOptions = {}): () => void {
   let context: { revert: () => void } | undefined
   let stopped = false
   const revert = () => {

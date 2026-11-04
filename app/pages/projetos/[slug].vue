@@ -47,7 +47,7 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => cleanup?.())
 
-// F10-T2: the page's motion (storyboard-home §9); its scene arrives with F10-T4. GSAP only after the load, never with reduced motion
+// The case study's motion (storyboard-home §9, F10-T4): the gallery and the highlight counters. GSAP only after the load, never with reduced motion
 useMotion(() => document.querySelector('main'), 'case-study', { plugins: ['ScrollTrigger'] })
 </script>
 

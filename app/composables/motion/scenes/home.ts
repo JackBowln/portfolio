@@ -11,7 +11,7 @@ const EASE = { out: 'power3.out', emphasis: 'expo.out', inOut: 'power3.inOut' } 
 const seconds = (ms: number) => ms / 1000
 const STAGGER = 0.06
 
-export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: SceneContext): void {
+export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: SceneContext): undefined {
   const all = (name: string) => [...scope.querySelectorAll<HTMLElement>(`[data-motion="${name}"]`)]
   const one = (name: string) => scope.querySelector<HTMLElement>(`[data-motion="${name}"]`)
   const media = gsap.matchMedia()
@@ -112,4 +112,5 @@ export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: S
     }
     return undefined
   })
+  return undefined
 }

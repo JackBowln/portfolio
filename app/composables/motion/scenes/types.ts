@@ -8,3 +8,6 @@ export interface SceneContext extends MotionApi {
 }
 
 export type SceneName = 'home' | 'case-study'
+
+/** A scene; what it returns runs when its gsap.context reverts (DOM it changed comes back) */
+export type Scene = (context: SceneContext) => (() => void) | undefined
