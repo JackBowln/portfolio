@@ -48,7 +48,10 @@ test('changing the AI section with an old sign-in asks for a new one', async ({ 
   expect((await page.context().request.post(`/api/_test/session?role=owner&ageSeconds=${20 * 60}`, { headers: ORIGIN })).status()).toBe(200)
   await page.goto('/admin/configuracoes')
   const ai = page.getByTestId('settings-ai_translation')
-  await ai.getByLabel('Modelo').fill('teste')
+  // F09-T3: the model is a choice among the evaluated ones; pick any other than the current one
+  const model = ai.getByLabel('Modelo')
+  const current = await model.inputValue()
+  await model.selectOption(current === '@cf/google/gemma-4-26b-a4b-it' ? '@cf/qwen/qwen3-30b-a3b-fp8' : '@cf/google/gemma-4-26b-a4b-it')
   await ai.getByRole('button', { name: 'Salvar Tradução por IA' }).click()
   await expect(ai.getByText(/entre de novo/)).toBeVisible()
 })

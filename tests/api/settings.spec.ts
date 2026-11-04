@@ -58,7 +58,13 @@ test('ai_translation needs a fresh session and keeps its limits', async ({ playw
   for (const value of [{ ...ai.value, provider: 'anthropic' }, { ...ai.value, dailyNeuronCap: 20_000 }, { ...ai.value, extra: true }]) {
     expect((await put(fresh, 'ai_translation', { version: ai.version, value })).status(), JSON.stringify(value)).toBe(400)
   }
-  expect((await put(fresh, 'ai_translation', { version: ai.version, value: ai.value })).status()).toBe(200)
+  // The translation specs (F09-T3) switch the AI on in parallel: a 409 means someone saved in between, so read again
+  let saved = await put(fresh, 'ai_translation', { version: ai.version, value: ai.value })
+  if (saved.status() === 409) {
+    const latest = await current(fresh, 'ai_translation')
+    saved = await put(fresh, 'ai_translation', { version: latest.version, value: latest.value })
+  }
+  expect(saved.status()).toBe(200)
 })
 
 test('input is strict per key', async ({ playwright, baseURL }) => {

@@ -31,7 +31,9 @@ test('dashboard → sessions → revoking the other session ends its access', as
   await page.goto('/admin')
   await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible()
   // F09-T1: the translations card became the pending-translations section
-  await expect(page.getByTestId('dashboard-card')).toHaveCount(3)
+  // F09-T3: the AI usage card shows real numbers
+  await expect(page.getByTestId('dashboard-card')).toHaveCount(2)
+  await expect(page.getByTestId('dashboard-ai-usage')).toContainText(/Hoje: [\d.]+ de [\d.]+ neurônios/)
   await expect(page.getByRole('heading', { level: 2, name: 'Traduções pendentes por idioma' })).toBeVisible()
   await expect(page.getByText('Conectado como TEST_AUTH user')).toBeVisible()
 
