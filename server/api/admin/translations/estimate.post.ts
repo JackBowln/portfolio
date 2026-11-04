@@ -1,0 +1,21 @@
+// Estimates an AI translation (F09-T3): tokens, neurons and the balance; records an `estimated` job to confirm
+import { z } from 'zod'
+import { TARGET_LOCALES } from '#shared/translation/glossary'
+import { providerFor } from '../../../services/translation/provider.ts'
+import { estimateTranslation } from '../../../services/translation/run.service.ts'
+
+const bodySchema = z.object({
+  entityType: z.enum(['article', 'project', 'page']),
+  entityId: z.string().min(1).max(64),
+  locale: z.enum(TARGET_LOCALES),
+})
+
+export default defineAdminHandler({
+  permission: { translation: ['run'] },
+  handler: async (event, auth) => {
+    const input = await readValidatedBodyStrict(event, bodySchema)
+    const job = await estimateTranslation(useDb(event), { provider: providerFor(useEnv(event)) }, auth.user.id, input)
+    await auditRequest(event, { action: 'translation.estimated', entityType: input.entityType, entityId: input.entityId, metadata: { job: job.id, locale: input.locale, neurons: job.estimate.neurons } })
+    return job
+  },
+})

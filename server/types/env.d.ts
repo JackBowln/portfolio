@@ -15,6 +15,8 @@ declare global {
     PREVIEW_TOKEN_SECRET?: string
     /** Turnstile's server-side key (F08-T3); without it the contact form fails closed */
     TURNSTILE_SECRET_KEY?: string
+    /** `fake` only in the local test build (F09-T3): the translation provider without network */
+    TRANSLATION_PROVIDER?: string
   }
 }
 

@@ -60,7 +60,7 @@ export function projectSegments(copy: { title?: unknown, summary?: unknown, role
 }
 
 // Page block fields that are choices or data, not text
-const PAGE_NON_TEXT = new Set(['target', 'updatedOn', 'url'])
+export const PAGE_NON_TEXT = new Set(['target', 'updatedOn', 'url'])
 
 function isDocument(value: unknown): value is DocumentJson {
   return typeof value === 'object' && value !== null && (value as { type?: unknown }).type === 'doc'

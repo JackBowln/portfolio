@@ -35,10 +35,10 @@ export function sourceCopyOf<R extends { locale: Locale }>(localizations: readon
   return current
 }
 
-/** A pt-BR slug from the title, with -2, -3… when it is taken; `fallback` when the title has no letter or digit */
-export async function freeSlug(db: Db, type: SluggedContentType, title: string, fallback: string): Promise<string> {
+/** A slug from the title (pt-BR unless told; a translation suggests its own, F09-T3), with -2, -3… when it is taken; `fallback` when the title has no letter or digit */
+export async function freeSlug(db: Db, type: SluggedContentType, title: string, fallback: string, locale: Locale = SOURCE_LOCALE): Promise<string> {
   const base = slugify(title, MAX_SLUG_LENGTH - 4) || fallback
-  const taken = await takenSlugs(db, type, SOURCE_LOCALE, base)
+  const taken = await takenSlugs(db, type, locale, base)
   let slug = base
   for (let n = 2; taken.has(slug); n++) {
     slug = `${base}-${n}`
