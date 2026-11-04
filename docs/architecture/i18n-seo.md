@@ -89,6 +89,10 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 - **Entram:** home, índices, artigos, projetos, temas com pelo menos 1 artigo publicado no idioma, sobre, contato e privacidade.
 - `lastmod`: `published_at` da revisão publicada; para índices, o mais recente dos itens.
 - **Não entram:** `/admin`, `/api`, `/preview`, páginas com `noindex`, paginação além da página 1.
+- **Desde a F11-T3:**
+  - o `noindex` vem do snapshot publicado;
+  - os temas entram nos idiomas em que têm nome aprovado e pelo menos 1 artigo publicado, e a página do tema traz os mesmos idiomas no hreflang;
+  - o robots por ambiente está em `shared/seo/robots.ts`.
 - RSS 2.0 por idioma em `/rss.xml`, `/en/rss.xml` etc., com os 20 artigos mais recentes, `<link rel="alternate" type="application/rss+xml">` no head do blog e cache tag `rss:{locale}`.
 
 ## 7. Mensagens de interface
@@ -101,7 +105,7 @@ O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SIT
 
 ## 8. Testes obrigatórios
 
-- Cada página publicada tem canonical para si mesma e hreflang recíproco só entre idiomas publicados (E2E percorrendo o sitemap).
+- Cada página publicada tem canonical para si mesma e hreflang recíproco só entre idiomas publicados (E2E percorrendo o sitemap). Desde a F11-T3: `tests/e2e/seo-crawl.spec.ts`, no build de teste com massa própria, e os feeds RSS validados por parser.
 - O seletor de idioma leva à página equivalente ou ao índice.
 - Nenhuma resposta pública contém `Set-Cookie` (teste de API).
 - O `check:i18n` passa no CI.

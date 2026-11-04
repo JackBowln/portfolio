@@ -112,7 +112,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F11-T1 | RF-01.9, RF-12.3, RF-12.4, RF-12.7 | `/i18n-manager` |
+| concluída | F11-T1 | RF-01.9, RF-12.3, RF-12.4, RF-12.7 | `/i18n-manager` |
 
 **Objetivo.** Ligar o sitemap às fontes dinâmicas de todas as entidades (alternates só dos idiomas publicados, `lastmod`, temas com ≥ 1 artigo no idioma) e aplicar as exclusões (noindex, fallback institucional, admin, api, preview). Revisar o `robots.txt` final, validar os feeds e testar o middleware de redirects.
 
@@ -121,9 +121,27 @@
 **Fora do escopo.** Envio ao Search Console (F12-T5, ação sua).
 
 **Critérios de aceite**
-- [ ] Um crawl automatizado do sitemap confirma, para cada URL: 200, canonical para si mesma, hreflang recíproco e nenhum `noindex`.
-- [ ] O sitemap não contém páginas em fallback, com `noindex` ou paginação além da 1.
-- [ ] Os feeds RSS são válidos (parser) e listam só artigos publicados no idioma.
+- [x] Um crawl automatizado do sitemap confirma, para cada URL: 200, canonical para si mesma, hreflang recíproco e nenhum `noindex`.
+- [x] O sitemap não contém páginas em fallback, com `noindex` ou paginação além da 1.
+- [x] Os feeds RSS são válidos (parser) e listam só artigos publicados no idioma.
+
+**Resultado (04/11/2026).**
+- **Exclusões:**
+  - artigos, projetos e páginas institucionais publicados com `noindex` saem do sitemap (`publishedIndexable`, que lê o `noindex` do snapshot publicado);
+  - fallback, `?page=N`, `/admin`, `/api` e `/preview` já ficavam fora, e o crawl prova isso.
+- **Temas:**
+  - entram nos idiomas em que têm nome aprovado e pelo menos 1 artigo publicado, com o `lastmod` do artigo mais recente (`publishedTopics`);
+  - decisão 1: a página do tema liga essas versões no hreflang e no seletor de idioma (o campo `alternates` da resposta), e os outros idiomas vão para o índice do blog;
+  - aprovar a tradução de um tema purga a tag `sitemap`.
+- **Robots:** `shared/seo/robots.ts`, testado em production, preview e local; a rota só o serve.
+- **Crawl** (`tests/e2e/seo-crawl.spec.ts`, decisão 3):
+  - roda no build de teste, com massa própria;
+  - cada URL do sitemap responde 200, tem canonical para si mesma, hreflang igual aos alternates do sitemap e nenhum `meta robots`;
+  - no banco local foram 568 URLs, em ~8 s;
+  - o crawl do `api-prod` segue para os headers de produção.
+- **RSS:** os 5 feeds são lidos com o `DOMParser`: RSS 2.0, `channel` completo, itens com `link` absoluto, `guid` e `pubDate` válida, do mais novo para o mais velho, iguais aos 20 primeiros da lista do blog no idioma.
+- **Redirects:** o teste de API cobre também o `HEAD` (301, cache e sem cookie). Um teste unitário confere os padrões de caminho de artigo e projeto nos 5 idiomas.
+- **Pendente para a F11-T4:** renomear um tema (`PATCH /api/admin/tags/:id`) não purga nada: nem as páginas do tema, nem os artigos, nem o sitemap.
 
 **Testes**
 - E2E: crawl de SEO (seo-crawl.spec).
@@ -146,6 +164,8 @@
 Comprovar no preview.
 
 **Arquivos prováveis.** `wrangler.jsonc`, `server/utils/cache.ts`, `server/plugins/cache-tags.ts`, `tests/api/cache.spec.ts`.
+
+**Herdado da F11-T3.** Renomear um tema (`PATCH /api/admin/tags/:id`) não purga nada; o evento entra na lista de purge (as páginas do tema, os artigos que o usam e o sitemap).
 
 **Fora do escopo.** Mudar a estratégia (isso exigiria um ADR novo).
 
