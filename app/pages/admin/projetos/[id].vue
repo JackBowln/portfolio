@@ -21,6 +21,7 @@ import SaveVersionDialog from '~/components/admin/history/SaveVersionDialog.vue'
 import MediaField from '~/components/admin/media/MediaField.vue'
 import GalleryField from '~/components/admin/projects/GalleryField.vue'
 import HighlightsEditor from '~/components/admin/projects/HighlightsEditor.vue'
+import OgImagePanel from '~/components/admin/seo/OgImagePanel.vue'
 import SerpPreview from '~/components/admin/seo/SerpPreview.vue'
 import { useAutosave } from '~/composables/admin/useAutosave'
 import type { SaveOutcome } from '~/composables/admin/useAutosave'
@@ -371,6 +372,12 @@ const unpublishedChanges = computed(() => {
 /** After a publish action: the server's view of the project; the draft (the same text) stays as typed */
 function published(detail: ProjectDetail) {
   project.value = detail
+  // F11-T2: publishing (or the button) may set a generated share image; the draft and the last save follow it
+  const ogImageMediaId = detail.localizations.find(item => item.locale === SOURCE_LOCALE)?.ogImageMediaId ?? null
+  if (draft.value && saved.value && saved.value.ogImageMediaId !== ogImageMediaId) {
+    draft.value.ogImageMediaId = ogImageMediaId
+    saved.value.ogImageMediaId = ogImageMediaId
+  }
 }
 
 /** Publishing acts on the saved text: what is pending is saved first */
@@ -805,6 +812,12 @@ useHead({ title: () => draft.value?.title || t('admin.projects.title'), meta: [{
           :remove="$t('admin.articles.edit.removeOgImage')"
           :error="errors.ogImageMediaId"
         />
+        <OgImagePanel
+          :target="{ type: 'project', id: project.id }"
+          :before-action="saveBeforePublish"
+          @updated="published($event as unknown as ProjectDetail)"
+          @conflict="openConflict"
+        />
         <label class="inline-flex min-h-(--target-min) items-center gap-2">
           <input
             v-model="draft.noindex"
@@ -838,6 +851,7 @@ useHead({ title: () => draft.value?.title || t('admin.projects.title'), meta: [{
           :copy="copy"
           :changed="unpublishedChanges"
           :before-action="saveBeforePublish"
+          :share-image="{ type: 'project', id: project.id }"
           @updated="published($event as unknown as ProjectDetail)"
           @conflict="openConflict"
         />

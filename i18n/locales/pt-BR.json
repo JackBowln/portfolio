@@ -704,6 +704,21 @@
       "descriptionLong": "A descrição passa de {max} caracteres e pode ser cortada.",
       "noindex": "Com “não indexar”, o artigo não aparece nos resultados."
     },
+    "ogImage": {
+      "title": "Imagem de compartilhamento gerada",
+      "hint": "Ao publicar, o título deste idioma vira uma imagem de 1200 × 630 para links compartilhados, se nenhuma imagem foi escolhida acima. Gerar agora substitui a escolhida.",
+      "preview": "Ver prévia",
+      "generate": "Gerar e usar",
+      "previewAlt": "Prévia da imagem de compartilhamento com o título salvo",
+      "previewReady": "Prévia pronta: é a imagem que seria gerada com o título salvo.",
+      "failed": "A imagem de compartilhamento não pôde ser gerada; o site usa a imagem padrão das configurações.",
+      "outcomes": {
+        "generated": "Imagem de compartilhamento gerada e definida.",
+        "reused": "A imagem já gerada para este título foi reaproveitada.",
+        "current": "A imagem de compartilhamento já corresponde ao título salvo.",
+        "manual": "A imagem escolhida foi mantida."
+      }
+    },
     "tags": {
       "title": "Temas",
       "intro": "Temas agrupam artigos no blog. Renomear um tema muda todos os artigos que o usam.",

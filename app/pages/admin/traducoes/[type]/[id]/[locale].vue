@@ -3,11 +3,13 @@
 // translation after it, so a screen reader reads them in that order; status, the text before the last change, and a
 // box to retranslate it. Actions: save (to review), retranslate the chosen or the outdated segments (AI, with an
 // estimate and a confirmation), approve (translation:approve), publish the locale (the publishing route and its
-// guards). The server checks every permission and every tag
+// guards; F11-T2: an article or a project makes the locale's share image first, and a failure there only warns). The
+// server checks every permission and every tag
 import { can } from '#shared/auth/permissions'
 import type { Locale, TranslationState } from '#shared/types/enums'
 import AiRunPanel from '~/components/admin/translation/AiRunPanel.vue'
 import StatusBadge from '~/components/admin/translation/StatusBadge.vue'
+import { useOgImage } from '~/composables/admin/useOgImage'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
 
 definePageMeta({ i18n: false, layout: 'admin', middleware: 'admin' })
@@ -46,8 +48,9 @@ const texts = reactive<Record<string, string>>({})
 const selected = reactive<Record<string, boolean>>({})
 const errors = reactive<Record<string, string | undefined>>({})
 const slug = ref('')
-const status = ref<{ tone: 'success' | 'danger', text: string } | null>(null)
+const status = ref<{ tone: 'success' | 'warning' | 'danger', text: string } | null>(null)
 const busy = ref(false)
+const og = useOgImage()
 const role = computed(() => user.value?.role ?? '')
 const canEdit = computed(() => can(role.value, { translation: ['review'] }))
 const canRun = computed(() => can(role.value, { translation: ['run'] }))
@@ -157,11 +160,26 @@ async function publish() {
   status.value = null
   const target = current.type === 'page' ? `/api/admin/pages/${current.pageKey}` : `/api/admin/${current.type}s/${encodeURIComponent(current.id)}`
   try {
-    await adminFetch(`${target}/publish`, { method: 'POST', body: { locale: current.locale, version: current.target.version } })
+    let version = current.target.version
+    let shareFailed = false
+    if (current.type !== 'page') {
+      try {
+        const { detail } = await og.ensure<{ localizations: { locale: Locale, version: number }[] }>({ type: current.type, id: current.id, locale: current.locale })
+        version = detail?.localizations.find(item => item.locale === current.locale)?.version ?? version
+      }
+      catch {
+        shareFailed = true
+      }
+    }
+    await adminFetch(`${target}/publish`, { method: 'POST', body: { locale: current.locale, version } })
     await load()
-    status.value = { tone: 'success', text: t('admin.translations.published', { locale: current.locale }) }
+    status.value = shareFailed
+      ? { tone: 'warning', text: `${t('admin.translations.published', { locale: current.locale })} ${t('admin.ogImage.failed')}` }
+      : { tone: 'success', text: t('admin.translations.published', { locale: current.locale }) }
   }
   catch (error) {
+    // The share image may have moved the version on before the publish was refused
+    await load()
     const issues = (error as { data?: { data?: { issues?: { path: string, message: string }[] } } }).data?.data?.issues ?? []
     const state = issues.find(issue => issue.path === 'translationState')?.message
     status.value = { tone: 'danger', text: state ? t(`admin.publish.errors.translationStates.${state}`, t('admin.publish.errors.translation')) : issues.some(issue => issue.path === 'source') ? t('admin.publish.errors.sourceNotPublished') : t('admin.common.unexpectedError') }

@@ -19,6 +19,7 @@ import ConflictDialog from '~/components/admin/history/ConflictDialog.vue'
 import HistoryPanel from '~/components/admin/history/HistoryPanel.vue'
 import SaveVersionDialog from '~/components/admin/history/SaveVersionDialog.vue'
 import MediaField from '~/components/admin/media/MediaField.vue'
+import OgImagePanel from '~/components/admin/seo/OgImagePanel.vue'
 import SerpPreview from '~/components/admin/seo/SerpPreview.vue'
 import { useAutosave } from '~/composables/admin/useAutosave'
 import type { SaveOutcome } from '~/composables/admin/useAutosave'
@@ -311,6 +312,12 @@ const unpublishedChanges = computed(() => {
 /** After a publish action: the server's view of the article; the draft (the same text) stays as typed */
 function published(detail: ArticleDetail) {
   article.value = detail
+  // F11-T2: publishing (or the button) may set a generated share image; the draft and the last save follow it
+  const ogImageMediaId = detail.localizations.find(item => item.locale === SOURCE_LOCALE)?.ogImageMediaId ?? null
+  if (draft.value && saved.value && saved.value.ogImageMediaId !== ogImageMediaId) {
+    draft.value.ogImageMediaId = ogImageMediaId
+    saved.value.ogImageMediaId = ogImageMediaId
+  }
 }
 
 /** The link shows the saved text: what is pending is saved first, and nothing is generated while it cannot be */
@@ -645,6 +652,12 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :remove="$t('admin.articles.edit.removeOgImage')"
           :error="errors.ogImageMediaId"
         />
+        <OgImagePanel
+          :target="{ type: 'article', id: article.id }"
+          :before-action="saveBeforePreview"
+          @updated="published($event as unknown as ArticleDetail)"
+          @conflict="openConflict"
+        />
         <label class="inline-flex min-h-(--target-min) items-center gap-2">
           <input
             v-model="draft.noindex"
@@ -677,6 +690,7 @@ useHead({ title: () => draft.value?.title || t('admin.articles.title'), meta: [{
           :copy="copy"
           :changed="unpublishedChanges"
           :before-action="saveBeforePreview"
+          :share-image="{ type: 'article', id: article.id }"
           @updated="published($event as unknown as ArticleDetail)"
           @conflict="openConflict"
         />

@@ -3,11 +3,15 @@
 // now (or publish the changes), take it off the site and, for articles, schedule it in the site's time zone or
 // cancel the schedule. The page saves
 // pending changes first (`beforeAction`); the server checks every rule again and the reasons it refuses (an image
-// without alt, a slug another article uses on the site) come back as messages here
+// without alt, a slug another article uses on the site) come back as messages here. F11-T2: publishing or scheduling
+// an article or a project first makes its share image (useOgImage); a failure there does not block, the site keeps the
+// default image and a warning says so
 import { can } from '#shared/auth/permissions'
 import { SOURCE_LOCALE } from '#shared/types/enums'
 import { formatInZone, SITE_TIME_ZONE, utcToZoned, zonedToUtc } from '#shared/utils/time-zone'
 import ConfirmDialog from '~/components/admin/ConfirmDialog.vue'
+import { useOgImage } from '~/composables/admin/useOgImage'
+import type { OgTarget } from '~/composables/admin/useOgImage'
 import type { ArticleLocalization } from '~/utils/admin/articles'
 import { apiError } from '~/utils/admin/articles'
 import { adminFetch, useAdminUser } from '~/utils/admin/session'
@@ -21,7 +25,9 @@ const props = withDefaults(defineProps<{
   copy: Pick<ArticleLocalization, 'status' | 'version' | 'publishedAt' | 'scheduledAt'>
   changed: boolean
   beforeAction: () => Promise<boolean>
-}>(), { resource: 'article' })
+  /** The item whose pt-BR share image is made before publishing (F11-T2); pages have none */
+  shareImage?: Omit<OgTarget, 'locale'> | undefined
+}>(), { resource: 'article', shareImage: undefined })
 const emit = defineEmits<{ updated: [detail: Detail], conflict: [] }>()
 
 const { t } = useI18n()
@@ -34,6 +40,8 @@ const text = (key: string, group = '') => (props.resource !== 'article' && TYPE_
 const canSchedule = computed(() => props.resource === 'article' && can(role.value, { article: ['schedule'] }))
 const at = ref(utcToZoned(new Date(Date.now() + 24 * 3600 * 1000)).slice(0, 11) + '09:00')
 const message = ref<{ tone: 'success' | 'danger', text: string }>()
+const shareWarning = ref(false)
+const og = useOgImage()
 const busy = ref(false)
 const atId = useId()
 const confirmUnpublish = useTemplateRef<InstanceType<typeof ConfirmDialog>>('confirmUnpublish')
@@ -81,8 +89,30 @@ function failure(error: unknown): string {
   return t('admin.common.unexpectedError')
 }
 
-async function act(path: string, body: Record<string, unknown>, done: string) {
+/** The version to publish: the copy's, or the one after its new share image. Only a version conflict stops here */
+async function withShareImage(): Promise<number> {
+  if (!props.shareImage) {
+    return props.copy.version
+  }
+  try {
+    const { detail } = await og.ensure<Detail & { localizations: { locale: string, version: number }[] }>({ ...props.shareImage, locale: SOURCE_LOCALE })
+    if (detail) {
+      emit('updated', detail)
+      return detail.localizations.find(item => item.locale === SOURCE_LOCALE)?.version ?? props.copy.version
+    }
+  }
+  catch (error) {
+    if (apiError(error).status === 409 && apiError(error).issues.some(issue => issue.path === 'version')) {
+      throw error
+    }
+    shareWarning.value = true
+  }
+  return props.copy.version
+}
+
+async function act(path: string, body: (version: number) => Record<string, unknown>, done: string, shareImage = false) {
   message.value = undefined
+  shareWarning.value = false
   if (busy.value) {
     return
   }
@@ -92,7 +122,8 @@ async function act(path: string, body: Record<string, unknown>, done: string) {
       message.value = { tone: 'danger', text: t('admin.preview.unsaved') }
       return
     }
-    const detail = await adminFetch<Detail>(`${props.apiBase}/${path}`, { method: 'POST', body })
+    const version = shareImage ? await withShareImage() : props.copy.version
+    const detail = await adminFetch<Detail>(`${props.apiBase}/${path}`, { method: 'POST', body: body(version) })
     emit('updated', detail)
     message.value = { tone: 'success', text: done }
   }
@@ -110,9 +141,9 @@ async function act(path: string, body: Record<string, unknown>, done: string) {
   }
 }
 
-const publish = () => act('publish', { locale: SOURCE_LOCALE, version: props.copy.version }, text('published', 'done.'))
-const unpublish = () => act('unpublish', { locale: SOURCE_LOCALE }, text('unpublished', 'done.'))
-const unschedule = () => act('unschedule', { locale: SOURCE_LOCALE }, t('admin.publish.done.unscheduled'))
+const publish = () => act('publish', version => ({ locale: SOURCE_LOCALE, version }), text('published', 'done.'), true)
+const unpublish = () => act('unpublish', () => ({ locale: SOURCE_LOCALE }), text('unpublished', 'done.'))
+const unschedule = () => act('unschedule', () => ({ locale: SOURCE_LOCALE }), t('admin.publish.done.unscheduled'))
 
 function schedule() {
   const when = zonedToUtc(at.value)
@@ -120,7 +151,7 @@ function schedule() {
     message.value = { tone: 'danger', text: t('admin.publish.errors.when') }
     return
   }
-  return act('schedule', { locale: SOURCE_LOCALE, version: props.copy.version, at: when.toISOString() }, t('admin.publish.done.scheduled', { date: formatInZone(when, 'pt-BR') }))
+  return act('schedule', version => ({ locale: SOURCE_LOCALE, version, at: when.toISOString() }), t('admin.publish.done.scheduled', { date: formatInZone(when, 'pt-BR') }), true)
 }
 </script>
 
@@ -202,6 +233,13 @@ function schedule() {
       :tone="message.tone"
     >
       {{ message.text }}
+    </UiStatusMessage>
+    <UiStatusMessage
+      v-if="shareWarning"
+      tone="warning"
+      data-testid="share-image-warning"
+    >
+      {{ $t('admin.ogImage.failed') }}
     </UiStatusMessage>
     <ConfirmDialog
       ref="confirmUnpublish"
