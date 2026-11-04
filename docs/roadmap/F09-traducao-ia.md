@@ -57,7 +57,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F09-T1 | RF-11.6, RF-11.7 | `/i18n-manager`, `/test-engineer` |
+| concluída | F09-T1 | RF-11.6, RF-11.7 | `/i18n-manager`, `/test-engineer` |
 
 **Objetivo.** Criar o `shared/content/segmenter.ts`:
 - **extrai** segmentos (blocos textuais por `id`, título, resumo, campos SEO, slug sugerido) com as marcas inline como tags-placeholder;
@@ -71,13 +71,30 @@ Incluir também o CRUD do glossário no admin.
 **Fora do escopo.** O provedor de IA (T3).
 
 **Critérios de aceite**
-- [ ] Ida e volta (extrair → reinserir sem alterar) = identidade para todos os tipos de nó do schema.
-- [ ] Placeholder faltando, sobrando ou trocado de ordem → segmento marcado como falho, sem corromper o documento.
-- [ ] Termos `doNotTranslate` e blocos de código nunca aparecem no payload enviado (verificado).
+- [x] Ida e volta (extrair → reinserir sem alterar) = identidade para todos os tipos de nó do schema.
+- [x] Placeholder faltando, sobrando ou trocado de ordem → segmento marcado como falho, sem corromper o documento.
+- [x] Termos `doNotTranslate` e blocos de código nunca aparecem no payload enviado (verificado).
 
 **Testes**
 - Unit: teste de propriedade (documentos aleatórios válidos pelo schema); casos de tags inválidas.
 - Cobertura ≥ 90% de branches no segmentador.
+
+**Resultado (04/11/2026).**
+- **Segmentador:** `shared/content/segmenter.ts` e `shared/content/inline-tags.ts`, funções puras.
+  - Extraem cada parágrafo e título (em listas, citações, callouts e células) e os textos de atributo de imagem, vídeo e embed, como texto com tags.
+  - Reinserem só com a mesma sequência de tags; senão o segmento fica falho, com o original.
+  - O documento volta validado pelo schema.
+  - Campos simples (título, resumo, SEO, nome de tema) usam `extractField` e `reinsertField`.
+- **O que nunca vai no payload:** blocos de código, código inline, URLs e termos `doNotTranslate` (por palavra inteira, o mais longo primeiro, com a regra de maiúsculas de cada termo).
+- **Glossário:**
+  - migração `0007` (`glossary_terms`; `translation_jobs` fica para a F09-T3, decisão 1);
+  - `server/services/translation/glossary.service.ts`, com `glossaryFor(locale)` para a F09-T3;
+  - rotas `server/api/admin/glossary/**` (ler com `translation:review`, editar com `translation:approve`, decisão 2);
+  - tela `/admin/glossario`.
+- **Testes:**
+  - `tests/unit/segmenter.test.ts`: propriedades em 300 documentos aleatórios com gerador próprio de semente fixa (decisão 3), cobrindo todos os tipos de nó, além de casos de tags inválidas;
+  - cobertura de branches: segmentador 93,75%, inline-tags 97,18%, com limite de 90% no `vitest.config`;
+  - `tests/workers/glossary.test.ts`, `tests/api/glossary.spec.ts`, `tests/e2e/glossary.spec.ts` e a tela no axe.
 
 ---
 

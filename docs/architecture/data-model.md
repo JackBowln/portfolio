@@ -256,7 +256,7 @@ Desde a F08-T1, os schemas ficam em `shared/settings/schemas.ts`: cada chave tem
 | Tabela | Colunas | Notas |
 |---|---|---|
 | `translation_jobs` | `id`, `entity_type`, `entity_id`, `target_locale`, `source_revision_id`, `provider`, `model`, `status` (`estimated`/`running`/`succeeded`/`failed`/`cancelled`), `segments_total`, `segments_done`, `estimated_input_tokens`, `estimated_output_tokens`, `estimated_neurons`, `estimated_cost_micro_usd`, `input_tokens`, `output_tokens`, `neurons`, `cost_micro_usd`, `usage_estimated` (boolean: o provedor não informou o uso real), `error` (sanitizado), `requested_by`, `created_at`, `started_at`, `finished_at` | Ledger de uso: as somas por dia UTC e por mês alimentam o guarda de custo |
-| `glossary_terms` | `id`, `term` (pt-BR), `locale` (nulo = todos), `translation` (nulo), `do_not_translate`, `case_sensitive`, `note`, auditoria | Aplicado no prompt e na proteção de segmentos |
+| `glossary_terms` | `id`, `term` (pt-BR), `locale` (nulo = todos), `translation` (nulo), `do_not_translate`, `case_sensitive`, `note`, `created_by`, `created_at`, `updated_by`, `updated_at` | Aplicado no prompt e na proteção de segmentos. Desde a F09-T2 (migração 0007):<br>• **Unicidade:** um termo por idioma, sem diferenciar maiúsculas; "todos os idiomas" conta como um idioma.<br>• **CHECK:** ou mantido (`do_not_translate`, sem tradução) ou traduzido, e nunca com `locale = pt-BR`.<br>• **Precedência:** a entrada de um idioma vence a de todos os idiomas. |
 
 ## 8. Máquinas de estado
 

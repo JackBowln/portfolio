@@ -26,6 +26,11 @@
    - **Marcas inline:** viram tags-placeholder (`<b>`, `<i>`, `<c>`, `<a1>`) que o modelo deve preservar.
    - **O que nunca é enviado:** código, URLs e termos `doNotTranslate` do glossário.
    - **Validação da volta:** quantidade e ordem das tags e o total de segmentos. Uma divergência marca o segmento como falho, para edição manual.
+   - **Implementação (F09-T2):** `shared/content/segmenter.ts` e `shared/content/inline-tags.ts`.
+     - Um segmento é cada parágrafo ou título, onde quer que esteja, mais os textos de atributo (legenda e `altOverride` de imagem, legenda de vídeo, título de embed).
+     - O id começa pelo bloco de nível superior (`block:<id>/…`), o segmento que a F09-T1 rastreia.
+     - **Marcas:** `<a1>` (link), `<b>`, `<i>`, `<s>`, `<br/>`; código inline e termos `doNotTranslate` viram `<x1/>`, por palavra inteira.
+     - Na volta, só a mesma sequência de tags é aceita, e o resultado passa de novo pelo `documentSchema`.
 4. **Prompt.**
    - Instruções fixas por idioma de destino: tom profissional; formalidade por idioma em `site_settings.ai_translation.style`, por exemplo "Sie" ou "du" em alemão; preservar placeholders; não traduzir nomes próprios.
    - Mais o glossário e a saída em JSON estruturado (`{ id, text }[]`).
