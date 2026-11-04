@@ -17,7 +17,7 @@
    - GSAP `~3.15` com ScrollTrigger e SplitText. Flip, DrawSVG ou MorphSVG só quando o storyboard pedir.
    - **Sem ScrollSmoother nem bibliotecas de smooth scroll**: preservam o scroll nativo, o teclado e as tecnologias assistivas.
    - A licença fica registrada; o uso num portfólio pessoal é permitido.
-2. **Carregamento.**
+2. **Carregamento.** *Implementação (F10-T2):* o `useMotion` de cada página importa no `onMounted`, só com o movimento permitido, um director em TypeScript puro (`app/composables/motion/director.ts`), que por sua vez importa o GSAP (`gsap.ts`). Uma ilha Vue carregada sob demanda fazia o empacotador dividir o chunk do runtime do Vue (+1,14 kB em toda rota), por isso o director não usa Vue. Como a home e o estudo de caso não hidratam o conteúdo, as cenas encontram os alvos por `data-motion`.
    - `import()` dinâmico dentro de `app/composables/motion/useMotion.ts`, só no cliente.
    - Dispara depois do `onMounted` e quando o navegador estiver ocioso, após o LCP (`requestIdleCallback`, com fallback por timeout).
    - Só nas rotas que usam motion (home, estudo de caso); **nunca no artigo do blog** (RX-04).

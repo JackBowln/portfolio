@@ -46,7 +46,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F10-T1, F03-T4 | RX-05, RNF-01, RNF-03 | `/motion-engineer`, `/architecture-guardian`, `/performance-audit` |
+| concluída | F10-T1, F03-T4 | RX-05, RNF-01, RNF-03 | `/motion-engineer`, `/architecture-guardian`, `/performance-audit` |
 
 **Objetivo.** Instalar `gsap ~3.15` (com a licença registrada) e criar `useMotion()`:
 - `import()` dinâmico depois do LCP ou no idle;
@@ -60,10 +60,30 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 **Fora do escopo.** Animações específicas (T3, T4).
 
 **Critérios de aceite**
-- [ ] Com `prefers-reduced-motion: reduce` ou o toggle ativo, o GSAP **não** é baixado (Network conferida e teste automatizado).
-- [ ] Sem JS, o conteúdo fica totalmente visível; se o motion não iniciar, a classe é removida em ≤ 3 s.
-- [ ] O artigo do blog não importa o motion (checagem do manifest).
-- [ ] Peso do motion medido e registrado (meta ≤ 60 KB gz, fora do caminho crítico).
+- [x] Com `prefers-reduced-motion: reduce` ou o toggle ativo, o GSAP **não** é baixado (Network conferida e teste automatizado).
+- [x] Sem JS, o conteúdo fica totalmente visível; se o motion não iniciar, a classe é removida em ≤ 3 s.
+- [x] O artigo do blog não importa o motion (checagem do manifest).
+- [x] Peso do motion medido e registrado (meta ≤ 60 KB gz, fora do caminho crítico).
+
+**Resultado (04/11/2026).**
+- **Dependência:** `gsap 3.15.1` (licença "Standard no charge", ADR-0011), importado só por `import()` em `app/composables/motion/gsap.ts`.
+- **Script inline** `MOTION_INIT_SCRIPT` (`shared/design/motion.ts`, com hash na CSP pelo plugin existente): `html.motion-ok` só com JS e movimento permitido, e o fallback de 3 s.
+- **Director:** `director.ts` é TypeScript puro, sem Vue, carregado no `onMounted` da página por `useMotion` só quando o movimento é permitido.
+  - Depois do `load`, quando o navegador está ocioso, carrega o GSAP e os plugins pedidos.
+  - Abre um `gsap.context` e faz `revert` no unmount e quando o visitante desliga o movimento; `ScrollTrigger.refresh()` depois das fontes.
+  - A ilha como componente Vue foi descartada: fazia o empacotador dividir o chunk do runtime (+1,14 kB em toda rota).
+- **Onde está montado:** home e estudo de caso, ainda sem cenas (decisão 1).
+- **Botão "Reduzir movimento"** no rodapé: só reduz; fica pressionado e desabilitado, com explicação, quando o sistema já pede (decisão 2). A escolha fica em `localStorage`.
+- **View Transitions:** `experimental.viewTransition` do Nuxt, com crossfade de `--dur-base`; desligadas com movimento reduzido, pelo sistema ou pelo botão (decisão 3).
+- **Peso medido:** 48,9 KB gz adiados (GSAP 27,3 + ScrollTrigger 17,4 + SplitText 3,4 + director e loader 0,9), dentro da meta de 60.
+  - O JS estático subiu ~1,5 kB em toda rota, e o owner revisou os orçamentos (performance-budgets.md).
+  - `check:budgets` ganhou `noMotion` na R3 e na R8.
+- **Lighthouse da R1** com o motion ativo (o GSAP baixou na medição): Performance mobile 99 e desktop 100, CLS 0, TBT 3 ms.
+- **Testes:**
+  - `tests/unit/motion-init.test.ts`;
+  - `noMotion` em `tests/unit/check-budgets.test.ts`;
+  - `tests/nuxt/motion.test.ts`;
+  - `tests/e2e/motion.spec.ts`, com desktop e mobile.
 
 **Testes**
 - Nuxt: `useMotion` com `matchMedia` mockado (reduzido → sem import); limpeza no unmount.
