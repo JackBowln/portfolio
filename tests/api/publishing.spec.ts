@@ -40,6 +40,11 @@ test('publish, change the slug and publish again: the old path answers a cached 
   expect(redirect.status()).toBe(301)
   expect(redirect.headers()).toMatchObject({ 'location': `/blog/${newSlug}`, 'cache-control': 'public, max-age=0, s-maxage=604800', 'cache-tag': 'redirects' })
   expect(redirect.headers()['set-cookie']).toBeUndefined()
+  // F11-T3: HEAD answers the same 301, cached, without a cookie
+  const head = await anonymous.head(`/blog/${oldSlug}`, { maxRedirects: 0 })
+  expect(head.status()).toBe(301)
+  expect(head.headers()).toMatchObject({ 'location': `/blog/${newSlug}`, 'cache-tag': 'redirects' })
+  expect(head.headers()['set-cookie']).toBeUndefined()
   // Paths that are not articles never reach the redirect table
   expect((await anonymous.get(`/blog/temas/${oldSlug}`, { maxRedirects: 0 })).status()).not.toBe(301)
 

@@ -103,7 +103,7 @@ describe('batch translation of short texts', () => {
     // Settings texts need settings:update; the others do not
     expect(await errorOf(approveTextItems(db, 'de', ['setting:seo_defaults'], false))).toMatchObject({ statusCode: 403 })
     const { purge } = await approveTextItems(db, 'de', [`tag:${topic.id}`, `media:${image}`, 'setting:seo_defaults'], true)
-    expect(purge.sort()).toEqual([`media:${image}`, 'settings', `tag:${topic.id}`].sort())
+    expect(purge.sort()).toEqual([`media:${image}`, 'settings', 'sitemap', `tag:${topic.id}`].sort())
     expect(await topicsIn(db, 'de', [topic.id])).toMatchObject([{ name: `[de] ${topic.name}` }])
     expect((await findReadyMediaWithText(db, [image])).localizations.map(row => row.locale).sort()).toEqual(['de', 'pt-BR'])
     expect((await publicSettings(db, 'de', 'http://x')).seo.titleTemplate).toBe('%s[de]  — Portfólio')

@@ -68,8 +68,9 @@ test('an article only in pt-BR and a topic: the switcher sends other locales to 
   // A page that exists in every locale keeps the equivalent links
   await page.goto('/blog/x')
   await expect(page.getByRole('link', { name: 'English' })).toHaveAttribute('href', '/en/blog/x')
+  // F11-T3: a topic links its translated versions too (the topic x is named and has an article in every locale)
   await page.goto('/blog/temas/x')
-  await expect(page.getByRole('link', { name: 'Deutsch' })).toHaveAttribute('href', '/de/blog')
+  await expect(page.getByRole('link', { name: 'Deutsch' })).toHaveAttribute('href', '/de/blog/themen/x')
 })
 
 test('a topic in pages of 10, with previous and next links', async ({ page }) => {
