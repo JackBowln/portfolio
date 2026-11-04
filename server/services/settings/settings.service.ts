@@ -72,6 +72,11 @@ export async function siteFeatures(db: Db): Promise<SettingGlobal<'features'>> {
   return globalOf('features', await findSettings(db, ['features']))
 }
 
+/** The AI translation limits and model (F09-T3); never sent to the site */
+export async function aiTranslationSettings(db: Db): Promise<SettingGlobal<'ai_translation'>> {
+  return globalOf('ai_translation', await findSettings(db, ['ai_translation']))
+}
+
 /** Where contact notifications go (F08-T3): the address set in the settings, verified in Email Routing */
 export async function contactAddress(db: Db): Promise<string | null> {
   return globalOf('contact', await findSettings(db, ['contact'])).email

@@ -3,6 +3,7 @@
 // back to pt-BR, then to the default). The defaults are what the site shows with an empty database: placeholders,
 // never invented content, and safe AI limits. Strict at every level, so the admin and the API apply the same rules
 import { z } from 'zod'
+import { AI_MODEL_IDS } from '../translation/models.ts'
 import { isUuidv7 } from '../utils/id.ts'
 import type { SiteSettingKey } from '../types/enums.ts'
 
@@ -71,10 +72,13 @@ export const settingSchemas = {
       enabled: z.boolean(),
       // 'anthropic' only after an ADR and the owner's approval (ADR-0009)
       provider: z.literal('workers-ai'),
-      model: text(120),
+      // Only a model with known rates (F09-T3); empty until the evaluation picks one, and the translation stays off
+      model: z.union([z.enum(AI_MODEL_IDS), z.literal('')]),
       dailyNeuronCap: z.int().min(0).max(NEURON_CAP_MAX),
       monthlyBudgetMicroUsd: z.int().min(0),
       perJobMaxMicroUsd: z.int().min(0),
+      // Workers AI costs no money on the Free plan, so a job is capped in neurons too (F09-T3, decision 4)
+      perJobNeuronCap: z.int().min(0).max(NEURON_CAP_MAX).default(2000),
       style: z.strictObject({ en: translationStyle, es: translationStyle, de: translationStyle, fr: translationStyle }),
     }),
     localized: null,
@@ -82,10 +86,11 @@ export const settingSchemas = {
       global: {
         enabled: false,
         provider: 'workers-ai' as const,
-        model: '',
+        model: '' as const,
         dailyNeuronCap: 8000,
         monthlyBudgetMicroUsd: 0,
         perJobMaxMicroUsd: 0,
+        perJobNeuronCap: 2000,
         style: { en: { formality: 'informal' as const }, es: { formality: 'informal' as const }, de: { formality: 'informal' as const }, fr: { formality: 'informal' as const } },
       },
       localized: null,
