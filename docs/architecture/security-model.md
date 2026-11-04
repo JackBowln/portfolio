@@ -72,6 +72,9 @@ A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/per
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`). Desde a F08-T2, ler exige `page:read`; editar e salvar versão, `page:update`; restaurar, `page:restore`; publicar e despublicar, `page:publish`. Uma página não tem autor (`authorId: null`), então `author` nunca a edita. Os blocos passam por schemas `strict`. Os links do sobre só aceitam `https:`, e os botões da home só apontam para páginas do site (`PAGE_LINK_TARGETS`). Sobre e privacidade usam o documento validado pelo renderer, e a rota pública devolve só o snapshot publicado.
 - **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
+- **Textos curtos em lote** (F09-T5):
+  - **Permissões:** ler e editar exigem `translation:review`; traduzir, `translation:run`; aprovar, `translation:approve`. Editar e aprovar textos de configurações exigem também `settings:update`, porque eles aparecem em todas as páginas.
+  - **Publicação:** nada chega ao site antes da aprovação.
 - **Revisão de tradução** (F09-T4):
   - **Permissões:** ler e salvar exigem `translation:review`; aprovar, `translation:approve`; publicar, `*:publish`, pelas rotas de publicação.
   - **Validação:** as tags de cada segmento são conferidas no servidor contra o original; o slug é validado e único por idioma.

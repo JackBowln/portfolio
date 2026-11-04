@@ -199,7 +199,7 @@ A tela de tradução em lote para temas, textos de mídia e configurações pass
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F09-T4 | RF-11.1, RF-11.2 | `/cms-engineer`, `/i18n-manager` |
+| concluída | F09-T4 | RF-11.1, RF-11.2 | `/cms-engineer`, `/i18n-manager` |
 
 **Objetivo.** Uma tela de tradução em lote para os textos curtos:
 - nomes de temas e tecnologias;
@@ -209,9 +209,27 @@ A tela de tradução em lote para temas, textos de mídia e configurações pass
 Ela deve ter estimativa e confirmação, os mesmos tetos de custo e a revisão humana antes de os textos chegarem ao site (F09-T1).
 
 **Critérios de aceite**
-- [ ] Traduzir em lote exige estimativa recente e confirmação; o guarda de custo roda antes de cada chamada.
-- [ ] Os textos traduzidos entram `machine` e só chegam ao site depois de aprovados por quem tem `translation:approve`.
-- [ ] A tela é operável por teclado.
+- [x] Traduzir em lote exige estimativa recente e confirmação; o guarda de custo roda antes de cada chamada.
+- [x] Os textos traduzidos entram `machine` e só chegam ao site depois de aprovados por quem tem `translation:approve`.
+- [x] A tela é operável por teclado.
+
+**Resultado (04/11/2026).**
+- **Serviço:** `server/services/translation/texts.service.ts`, com unidades por item e campo (`tag:<id>`, `media:<id>`, `setting:<key>`).
+  - Lista só o que o site mostra (decisão 1): temas usados por conteúdo publicado, imagens prontas e informativas em uso com alt em pt-BR, configurações localizadas com texto.
+- **Job em lote:** é o mesmo job da F09-T3, generalizado por "assunto" (`entity_type = 'texts'`, os campos escolhidos em `segmentIds`), com estimativa, confirmação, guarda de custo, retomada e ledger.
+  - O hash do original cobre só os campos escolhidos.
+  - O `%s` do modelo de título é protegido como um termo: uma tradução sem ele falha e o campo fica sem tradução.
+- **Resultado:** grava `machine`.
+- **Revisão:** edita e leva a `in_review`. O slug de tema é gerado do nome traduzido e é editável (decisão 3).
+- **Aprovação:** em lote, das linhas selecionadas (decisão 4), com purge de `tag:<id>`, `media:<id>` ou `settings`.
+- **Permissões:** os textos de configurações também exigem `settings:update` (decisão 2).
+- **Tela:** `/admin/traducoes/textos`.
+- **Testes:**
+  - `tests/workers/translation-texts.test.ts` (5);
+  - a matriz em `tests/api/translations.spec.ts`;
+  - `tests/e2e/translations-texts.spec.ts`;
+  - a tela em `tests/a11y/admin.spec.ts`.
+
 
 ---
 
