@@ -25,8 +25,8 @@ useHead({
   }],
 })
 
-// F10-T2: the page's motion (storyboard-home §1); no scenes yet (F10-T3/T4). GSAP only after the load, never with reduced motion
-useMotion(() => document.querySelector('main'), () => {}, { plugins: ['ScrollTrigger', 'SplitText'] })
+// The home's motion (storyboard-home §2–§6, F10-T3): the scene and GSAP only after the load, never with reduced motion
+useMotion(() => document.querySelector('main'), 'home', { plugins: ['ScrollTrigger', 'SplitText'] })
 </script>
 
 <template>

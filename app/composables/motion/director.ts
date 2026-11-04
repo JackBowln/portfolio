@@ -5,6 +5,7 @@
 // ScrollTrigger refreshes once the fonts are ready. Nothing is imported with reduced motion
 import { MOTION_OK_CLASS, MOTION_REDUCE_EVENT, MOTION_STARTED } from '#shared/design/motion'
 import type { MotionApi, MotionPlugin } from './gsap'
+import type { SceneContext, SceneName } from './scenes/types'
 import { motionAllowed } from './preference'
 
 const IDLE_TIMEOUT_MS = 2000
@@ -41,8 +42,8 @@ export interface MotionOptions {
   load?: (plugins: readonly MotionPlugin[]) => Promise<MotionApi>
 }
 
-/** Starts the motion of a page; returns the stop to call on unmount */
-export function startMotion(scope: () => Element | null, setup: (api: MotionApi) => void, options: MotionOptions = {}): () => void {
+/** Starts the motion of a page (a scene by name, or a function in tests); returns the stop to call on unmount */
+export function startMotion(scope: () => Element | null, scene: SceneName | ((context: SceneContext) => void), options: MotionOptions = {}): () => void {
   let context: { revert: () => void } | undefined
   let stopped = false
   const revert = () => {
@@ -55,15 +56,19 @@ export function startMotion(scope: () => Element | null, setup: (api: MotionApi)
       return
     }
     const load = options.load ?? (await import('./gsap')).loadGsap
-    const api = await load(options.plugins ?? [])
+    const [api, setup] = await Promise.all([
+      load(options.plugins ?? []),
+      typeof scene === 'function' ? scene : import('./scenes/index').then(module => module.loadScene(scene)),
+    ])
     const element = scope()
-    if (stopped || !motionAllowed() || !element) {
+    if (stopped || !motionAllowed() || !element || !setup) {
       return
     }
     const root = document.documentElement
-    root.classList.add(MOTION_OK_CLASS)
+    // After the 3 s fallback the content is already shown: the class stays off and the opening entrances are skipped
+    const entrance = root.classList.contains(MOTION_OK_CLASS)
     root.dataset.motion = MOTION_STARTED
-    context = api.gsap.context(() => setup(api), element)
+    context = api.gsap.context(() => setup({ ...api, scope: element, entrance }), element)
     if (api.ScrollTrigger) {
       void document.fonts.ready.then(() => api.ScrollTrigger?.refresh())
     }
