@@ -21,6 +21,8 @@ export interface RouteBudget {
   /** Limits in kB (1000 bytes) gzip */
   js: number
   css: number
+  /** The route must not reach GSAP even through dynamic imports (the blog article, RX-04, F10-T2) */
+  noMotion?: boolean
 }
 
 export interface RouteReport {
@@ -53,6 +55,23 @@ export function staticClosure(manifest: Manifest, roots: string[]): Set<string> 
   }
   return seen
 }
+
+/** Manifest keys reachable from `roots` through static and dynamic imports: everything the route could ever load */
+export function fullClosure(manifest: Manifest, roots: string[]): Set<string> {
+  const seen = new Set<string>()
+  const pending = [...roots]
+  while (pending.length > 0) {
+    const key = pending.pop()
+    if (key === undefined || seen.has(key) || !manifest[key]) {
+      continue
+    }
+    seen.add(key)
+    pending.push(...(manifest[key].imports ?? []), ...(manifest[key].dynamicImports ?? []))
+  }
+  return seen
+}
+
+const MOTION_MODULE = /(^|\/)node_modules\/gsap\/|composables\/motion\//
 
 /**
  * Strings that survive minification inside a library's code (F05-T3): a shared vendor chunk is keyed by a hash,
@@ -95,7 +114,10 @@ export function evaluateRoute(
 
   const jsKb = toKb(jsFiles)
   const cssKb = toKb(cssFiles)
+  // The entry reaches every page through the router, so the route's own page and layout are the roots here
+  const motion = budget.noMotion ? [...fullClosure(manifest, roots.slice(1))].filter(key => MOTION_MODULE.test(key)).map(key => `${key} (motion)`) : []
   const forbidden = [
+    ...motion,
     ...[...keys].filter(key => forbiddenPatterns.some(pattern => key.includes(pattern))),
     ...(content ? jsFiles.flatMap(file => content.markers.filter(marker => content.read(file).includes(marker)).map(marker => `${file} (${marker})`)) : []),
   ]
