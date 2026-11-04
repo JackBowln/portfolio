@@ -183,6 +183,67 @@
 }
 
 /*
+ * Motion starting states (F10-T3, storyboard-home): only under html.motion-ok, which the inline script sets when
+ * motion is allowed and drops within 3 s if nothing starts, so without JS, with reduced motion or on a failure
+ * everything shows. The LCP title is never hidden. The hairline draws itself in CSS; without the class it is drawn
+ */
+html.motion-ok [data-motion="hero-eyebrow"],
+html.motion-ok [data-motion="hero-subtitle"],
+html.motion-ok [data-motion="hero-cta"] {
+  opacity: 0;
+}
+
+[data-motion="hairline"] line {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 1;
+}
+
+html.motion-ok [data-motion="hairline"] line {
+  animation: hairline-draw var(--dur-cinematic) var(--ease-emphasis) both;
+}
+
+@keyframes hairline-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+[data-motion="story-progress"] {
+  display: none;
+}
+
+/* Pinned story (desktop, 3 or more steps): the steps share one grid cell from the first paint, so nothing moves when
+   GSAP arrives; the first shows, the others wait for the scrub. Their text stays in the DOM and in reading order */
+@media (min-width: 48rem) {
+  html.motion-ok [data-motion="story"][data-pin] {
+    grid-template-areas: "step";
+  }
+
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"] {
+    grid-area: step;
+  }
+
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"]:not(:first-of-type) {
+    opacity: 0;
+  }
+
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-progress"] {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--spacing) * -4);
+    display: block;
+    width: 1px;
+    background-color: var(--color-accent);
+    transform-origin: top;
+  }
+}
+
+/*
  * Page transitions (F10-T2, storyboard-home §8): a short crossfade between routes; none with reduced motion, from the
  * system or from the site's button (data-reduce-motion, set by the inline script and the button)
  */
