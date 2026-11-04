@@ -1,4 +1,4 @@
-// F03-T5 (+ F04-T4, F05-T3, F06-T1, F07-T1, F08-T1, F08-T2, F08-T3, F09-T2, F09-T4): the admin screens meet WCAG 2.2 AA (no serious or critical axe violations), in both themes
+// F03-T5 (+ F04-T4, F05-T3, F06-T1, F07-T1, F08-T1, F08-T2, F08-T3, F09-T2, F09-T4, F09-T5): the admin screens meet WCAG 2.2 AA (no serious or critical axe violations), in both themes
 import { expect, test } from '@playwright/test'
 import { SITE_ORIGIN } from '../support/auth'
 import { expectNoBlockingViolations } from '../support/axe'
@@ -20,6 +20,7 @@ const SCREENS = [
   { path: '/admin/mensagens', heading: 'Mensagens' },
   { path: '/admin/glossario', heading: 'Glossário' },
   { path: '/admin/traducoes', heading: 'Traduções' },
+  { path: '/admin/traducoes/textos', heading: 'Textos curtos' },
 ]
 
 for (const colorScheme of ['light', 'dark'] as const) {

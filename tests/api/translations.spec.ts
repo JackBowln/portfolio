@@ -87,3 +87,24 @@ test.describe('AI translation jobs', () => {
     expect(entries.find(entry => entry.entityId === id)?.metadata).toMatchObject({ job: estimate.id, locale: 'es' })
   })
 })
+
+// F09-T5: short texts in batch. Reading needs translation:review, approving translation:approve; settings texts also
+// need settings:update, so an editor cannot change them
+test('short texts: read, approve and settings permissions', async ({ playwright, baseURL }) => {
+  const headers = { origin: SITE_ORIGIN }
+  for (const role of ROLES) {
+    const request = await playwright.request.newContext({ baseURL })
+    expect((await request.post(`/api/_test/session?role=${role}`, { headers })).status()).toBe(200)
+    expect((await request.get('/api/admin/translations/texts?locale=de')).status(), role).toBe(can(role, { translation: ['review'] }) ? 200 : 403)
+    const approve = await request.post('/api/admin/translations/texts/approve', { headers, data: { locale: 'de', keys: ['setting:unknown'] } })
+    expect(approve.status(), role).toBe(can(role, { translation: ['approve'] }) ? 400 : 403)
+  }
+  const editor = await playwright.request.newContext({ baseURL })
+  await editor.post('/api/_test/session?role=editor', { headers })
+  const { items } = await (await editor.get('/api/admin/translations/texts?locale=de')).json() as { items: { key: string, kind: string, fields: { name: string }[] }[] }
+  const setting = items.find(item => item.kind === 'setting')
+  test.skip(!setting, 'needs a localized setting with a pt-BR text')
+  const response = await editor.patch('/api/admin/translations/texts', { headers, data: { locale: 'de', items: [{ key: setting!.key, fields: { [setting!.fields[0]!.name]: 'Text' } }] } })
+  expect(response.status()).toBe(403)
+  expect((await editor.get('/api/admin/translations/texts?locale=pt-BR')).status()).toBe(400)
+})
