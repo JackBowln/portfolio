@@ -6,6 +6,8 @@
 // reviews it (F09-T4). Only content fields are sent (source.ts)
 import { and, eq, gte, lt, sql } from 'drizzle-orm'
 import { withoutTerms } from '../../../shared/content/inline-tags.ts'
+import type { ProtectedTerm, TaggedText } from '../../../shared/content/inline-tags.ts'
+import type { Segment } from '../../../shared/content/segmenter.ts'
 import type { AiModel } from '../../../shared/translation/models.ts'
 import type { Locale } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
@@ -20,6 +22,7 @@ import type { TranslationProvider, TranslationRequest } from './providers/types.
 import { ProviderError, tokensOf } from './providers/types.ts'
 import { segmentSource } from './source.ts'
 import { loadSource, reviewTexts, topOf, writeTranslation } from './target.ts'
+import { textsSubject } from './texts.service.ts'
 import type { LoadedSource, TranslatableType } from './target.ts'
 
 export type { TranslatableType } from './target.ts'
@@ -39,7 +42,7 @@ type JobRow = typeof translationJobs.$inferSelect
 
 export interface JobView {
   id: string
-  entityType: TranslatableType
+  entityType: JobEntityType
   entityId: string
   locale: Locale
   status: JobRow['status']
@@ -115,17 +118,61 @@ function requestFor(locale: Locale, settings: Awaited<ReturnType<typeof aiTransl
   return (segments: TranslationRequest['segments']): TranslationRequest => ({ targetLocale: locale, segments, glossary, formality: style.formality, notes: style.notes })
 }
 
+/**
+ * What a job translates (F09-T5): a content item in a locale, or a batch of short texts. Both segment with the
+ * glossary's protected terms, are fingerprinted (a change after the estimate stops the job), and write their own result
+ */
+export interface JobSubject {
+  sourceHash: string
+  segments: Segment[]
+  accepts: (id: string, text: string) => boolean
+  taggedOf: (id: string) => TaggedText | undefined
+  /** Writes the review texts of the segments done (a failed one has none) */
+  finish: (texts: Record<string, string>, scope: string[] | undefined, userId: string | null) => Promise<void>
+}
+
+export type JobEntityType = TranslatableType | 'texts'
+
+async function contentSubject(db: Db, type: TranslatableType, entityId: string, locale: Locale, terms: ProtectedTerm[], partial: boolean): Promise<JobSubject> {
+  const source = await loadSource(db, type, entityId, locale)
+  assertTargetFree(source, partial)
+  const segmented = segmentSource(type, source.copy, terms)
+  return {
+    sourceHash: source.copy.workingHash,
+    segments: segmented.segments,
+    accepts: segmented.accepts,
+    taggedOf: segmented.taggedOf,
+    finish: async (translated, scope, userId) => {
+      const all = segmented.segments
+      const inScope = scope ? all.filter(segment => scope.includes(segment.id)) : all
+      await writeTranslation(db, source, locale, {
+        // Over what the translation already had, for a partial job
+        texts: { ...(scope ? reviewTexts(source) : {}), ...translated },
+        // A whole job makes a machine copy; retranslating part of a reviewed one sends it back to review
+        state: scope ? 'in_review' : 'machine',
+        touched: new Set(inScope.map(segment => topOf(segment.id))),
+        touchedState: 'machine',
+        userId,
+        kind: 'ai',
+      })
+    },
+  }
+}
+
+/** `scope`: the segments asked for, when not all of them */
+function loadSubject(db: Db, type: JobEntityType, entityId: string, locale: Locale, terms: ProtectedTerm[], scope: string[] | undefined): Promise<JobSubject> {
+  return type === 'texts' ? textsSubject(db, locale, terms, scope) : contentSubject(db, type, entityId, locale, terms, scope !== undefined)
+}
+
 /** Segments and prices a translation, and records the estimate; the person then confirms it to run */
-export async function estimateTranslation(db: Db, deps: RunDeps, userId: string, input: { entityType: TranslatableType, entityId: string, locale: Locale, segmentIds?: string[] | undefined }): Promise<JobView & { blocked: GuardRefusal | null }> {
+export async function estimateTranslation(db: Db, deps: RunDeps, userId: string, input: { entityType: JobEntityType, entityId: string, locale: Locale, segmentIds?: string[] | undefined }): Promise<JobView & { blocked: GuardRefusal | null }> {
   const now = deps.now?.() ?? new Date()
   const settings = await aiTranslationSettings(db)
-  const source = await loadSource(db, input.entityType, input.entityId, input.locale)
   const partial = input.segmentIds !== undefined
-  assertTargetFree(source, partial)
   const glossary = await glossaryFor(db, input.locale)
-  const all = segmentSource(input.entityType, source.copy, glossary.protected).segments
+  const subject = await loadSubject(db, input.entityType, input.entityId, input.locale, glossary.protected, input.segmentIds)
   // A partial job (F09-T4) retranslates only the segments asked for, and every one must exist in the source
-  const segments = partial ? all.filter(segment => input.segmentIds!.includes(segment.id)) : all
+  const segments = partial ? subject.segments.filter(segment => input.segmentIds!.includes(segment.id)) : subject.segments
   if (partial && segments.length !== new Set(input.segmentIds).size) {
     throw createAppError('bad_request', 'Invalid input', [{ path: 'segmentIds', message: 'unknown_segment' }])
   }
@@ -145,7 +192,7 @@ export async function estimateTranslation(db: Db, deps: RunDeps, userId: string,
     entityType: input.entityType,
     entityId: input.entityId,
     targetLocale: input.locale,
-    sourceHash: source.copy.workingHash,
+    sourceHash: subject.sourceHash,
     provider: provider.id,
     model: provider.model,
     segmentsTotal: segments.length,
@@ -186,18 +233,14 @@ export async function runTranslation(db: Db, deps: RunDeps, jobId: string): Prom
   if (job.status === 'estimated' && now().getTime() - job.createdAt.getTime() > ESTIMATE_TTL_MS) {
     throw refused('estimate', 'stale')
   }
-  const type = job.entityType
-  const source = await loadSource(db, type, job.entityId, job.targetLocale)
-  if (source.copy.workingHash !== job.sourceHash) {
+  const scope = job.results.scope
+  const settings = await aiTranslationSettings(db)
+  const glossary = await glossaryFor(db, job.targetLocale)
+  const segmented = await loadSubject(db, job.entityType, job.entityId, job.targetLocale, glossary.protected, scope)
+  if (segmented.sourceHash !== job.sourceHash) {
     await db.update(translationJobs).set({ status: 'cancelled', error: 'source_changed: the original changed after the estimate', finishedAt: now() }).where(eq(translationJobs.id, job.id))
     throw refused('source', 'changed')
   }
-  const scope = job.results.scope
-  assertTargetFree(source, scope !== undefined)
-
-  const settings = await aiTranslationSettings(db)
-  const glossary = await glossaryFor(db, job.targetLocale)
-  const segmented = segmentSource(type, source.copy, glossary.protected)
   const provider = deps.provider((settings.model || 'fake') as AiModel)
   const request = requestFor(job.targetLocale, settings, glossary.translations)
   const results = structuredClone(job.results)
@@ -275,17 +318,8 @@ export async function runTranslation(db: Db, deps: RunDeps, jobId: string): Prom
   }
   // The model's texts as review text, over what the translation already had for a partial job
   const translated = Object.fromEntries(Object.entries(results.done).map(([id, text]) => [id, withoutTerms(text, segmented.taggedOf(id)!)]))
-  // A failed segment has no text: it keeps the source and its block is `missing` until someone translates it
-  const texts = Object.fromEntries(Object.entries({ ...(scope ? reviewTexts(source) : {}), ...translated }).filter(([id]) => !results.failed.includes(id)))
-  await writeTranslation(db, source, job.targetLocale, {
-    texts,
-    // A whole job makes a machine copy; retranslating part of a reviewed one sends it back to review
-    state: scope ? 'in_review' : 'machine',
-    touched: new Set((scope ? inScope : segmented.segments).map(segment => topOf(segment.id))),
-    touchedState: 'machine',
-    userId: job.requestedBy,
-    kind: 'ai',
-  })
+  // A failed segment has no text: it keeps the source and stays `missing` until someone translates it
+  await segmented.finish(Object.fromEntries(Object.entries(translated).filter(([id]) => !results.failed.includes(id))), scope, job.requestedBy)
   await save({ status: 'succeeded', finishedAt: now() })
   return viewOf(state)
 }

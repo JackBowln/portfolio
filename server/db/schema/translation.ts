@@ -32,7 +32,8 @@ export const glossaryTerms = sqliteTable('glossary_terms', {
 ])
 
 export const TRANSLATION_JOB_STATUSES = ['estimated', 'running', 'succeeded', 'failed', 'cancelled'] as const
-export const TRANSLATION_ENTITY_TYPES = ['article', 'project', 'page'] as const
+// `texts`: a batch of short texts (F09-T5: topic names, media texts, settings), entity id `batch`
+export const TRANSLATION_ENTITY_TYPES = ['article', 'project', 'page', 'texts'] as const
 
 // Segments translated so far (id → tagged text) and the ones the provider got wrong; kept so a failed job resumes
 // `scope`: the segments a partial job retranslates (F09-T4); absent for a whole translation

@@ -5,7 +5,8 @@ import { providerFor } from '../../../services/translation/provider.ts'
 import { estimateTranslation } from '../../../services/translation/run.service.ts'
 
 const bodySchema = z.object({
-  entityType: z.enum(['article', 'project', 'page']),
+  // `texts`: a batch of short texts (F09-T5), entity id `batch`, with the chosen fields as segmentIds
+  entityType: z.enum(['article', 'project', 'page', 'texts']),
   entityId: z.string().min(1).max(64),
   locale: z.enum(TARGET_LOCALES),
   // F09-T4: retranslate only these segments of an existing translation
