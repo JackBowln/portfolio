@@ -231,7 +231,8 @@
       "technologies": "Tecnologias",
       "settings": "Configurações",
       "pages": "Páginas",
-      "contact": "Mensagens"
+      "contact": "Mensagens",
+      "glossary": "Glossário"
     },
     "dashboard": {
       "title": "Painel",
@@ -1181,6 +1182,45 @@
       "deleted": "Mensagem excluída.",
       "updated": "Estado alterado para {status}.",
       "notFound": "Mensagem não encontrada."
+    },
+    "glossary": {
+      "title": "Glossário",
+      "intro": "Termos que a tradução mantém como estão ou traduz sempre do mesmo jeito. Valem para as próximas traduções por IA.",
+      "newForm": "Novo termo",
+      "editForm": "Editar termo",
+      "term": "Termo em português",
+      "termHint": "Só a palavra ou expressão inteira é reconhecida, nunca parte de outra palavra.",
+      "locale": "Idioma",
+      "allLocales": "Todos os idiomas",
+      "doNotTranslate": "Manter como está (não traduzir)",
+      "translation": "Tradução",
+      "caseSensitive": "Diferenciar maiúsculas e minúsculas",
+      "exactCase": "Maiúsculas exatas",
+      "note": "Observação",
+      "rule": "Regra",
+      "keep": "Mantido como está",
+      "actions": "Ações",
+      "add": "Adicionar termo",
+      "save": "Salvar",
+      "cancel": "Cancelar edição",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "editTerm": "Editar o termo {term}",
+      "deleteTerm": "Excluir o termo {term}",
+      "empty": "O glossário está vazio.",
+      "created": "Termo “{term}” adicionado.",
+      "updated": "Termo “{term}” salvo.",
+      "deleted": "Termo “{term}” excluído.",
+      "confirmTitle": "Excluir o termo?",
+      "confirmText": "“{term}” deixa de valer para as próximas traduções.",
+      "errors": {
+        "required": "Preencha este campo.",
+        "tooLong": "Use no máximo {max} caracteres.",
+        "taken": "Este termo já está no glossário para este idioma.",
+        "notWithKeep": "Um termo mantido como está não tem tradução.",
+        "invalid": "Confira este campo.",
+        "fix": "Corrija os campos marcados."
+      }
     }
   },
   "contact": {
