@@ -250,6 +250,7 @@ export async function publicPage(db: Db, key: PageKey, locale: Locale): Promise<
     },
     media,
     ...(home ? { home } : {}),
+    ...(chosen?.publishedAt ? { publishedAt: chosen.publishedAt.toISOString() } : {}),
     cacheTags: [...new Set(tags)],
   }
 }

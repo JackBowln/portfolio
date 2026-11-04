@@ -67,6 +67,11 @@ export async function publicSettings(db: Db, locale: Locale, mediaBaseUrl: strin
   }
 }
 
+/** The site's name alone (one row), for JSON-LD breadcrumbs (F11-T1) */
+export async function siteName(db: Db): Promise<string> {
+  return globalOf('identity', await findSettings(db, ['identity'])).name
+}
+
 /** The feature switches alone (one row), for routes that depend on them */
 export async function siteFeatures(db: Db): Promise<SettingGlobal<'features'>> {
   return globalOf('features', await findSettings(db, ['features']))

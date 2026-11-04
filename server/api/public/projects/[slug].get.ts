@@ -2,8 +2,12 @@
 // there
 import { z } from 'zod'
 import { slugField } from '#shared/content/article-input'
+import { cacheTags as tagsOf } from '#shared/cache/tags'
 import { LOCALES } from '#shared/types/enums'
 import { publicProject } from '../../../services/content/projects-public.service.ts'
+
+import { projectJsonLd } from '../../../services/seo/jsonld.service.ts'
+import { siteName } from '../../../services/settings/settings.service.ts'
 
 const paramsSchema = z.object({ slug: slugField })
 const querySchema = z.object({ locale: z.enum(LOCALES) })
@@ -15,6 +19,9 @@ export default defineEventHandler(async (event) => {
   if (!project) {
     throw createAppError('not_found')
   }
+  // F11-T1: the JSON-LD, with the site's name in the breadcrumbs (a settings change purges it)
+  project.jsonLd = projectJsonLd(seoContext(event), project, await siteName(useDb(event)))
+  project.cacheTags = [...new Set([...project.cacheTags, tagsOf.settings()])]
   cachePublicly(event, project.cacheTags)
   return project
 })

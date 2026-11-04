@@ -20,3 +20,10 @@ export function projectPath(locale: Locale, slug: string): string {
 
 /** Paths that can be a project: /projetos/{slug}, /en/projects/{slug}… */
 export const PROJECT_PATH = /^(?:\/projetos|\/en\/projects|\/es\/proyectos|\/de\/projekte|\/fr\/projets)\/[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** The topics segment per locale under /blog (app/pages/blog/temas) */
+export const TOPICS_SEGMENT: Record<Locale, string> = { 'pt-BR': 'temas', 'en': 'topics', 'es': 'temas', 'de': 'themen', 'fr': 'sujets' }
+
+export function topicPath(locale: Locale, slug: string): string {
+  return `${locale === SOURCE_LOCALE ? '' : `/${locale}`}/blog/${TOPICS_SEGMENT[locale]}/${slug}`
+}

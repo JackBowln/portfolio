@@ -31,6 +31,8 @@ export interface BlogList {
   pages: number
   total: number
   topics: BlogTopic[]
+  /** JSON-LD, serialized on the server (F11-T1); the page puts it in <head> as it is */
+  jsonLd?: string
   cacheTags: string[]
 }
 
@@ -53,6 +55,8 @@ export interface BlogArticle {
   /** Published locales and their slugs, for hreflang and the language switcher */
   alternates: { locale: Locale, slug: string }[]
   seo: { title: string, description: string, noindex: boolean }
+  /** JSON-LD, serialized on the server (F11-T1); the page puts it in <head> as it is */
+  jsonLd?: string
   cacheTags: string[]
 }
 

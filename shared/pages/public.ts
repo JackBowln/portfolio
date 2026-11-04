@@ -18,6 +18,10 @@ export interface PublicPage<B = unknown> {
   media: PublicMediaMap
   /** The home's featured projects and latest articles (decision 2) */
   home?: { projects: ProjectCard[], articles: BlogCard[] }
+  /** When the copy shown was published (F11-T1, the about page's dateModified) */
+  publishedAt?: string
+  /** JSON-LD, serialized on the server (F11-T1); the page puts it in <head> as it is */
+  jsonLd?: string
   cacheTags: string[]
 }
 
