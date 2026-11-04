@@ -33,6 +33,10 @@
       "x": "X",
       "youtube": "YouTube",
       "website": "Website"
+    },
+    "reduceMotion": {
+      "label": "Bewegung reduzieren",
+      "system": "Ihr System verlangt bereits reduzierte Bewegung."
     }
   },
   "errors": {

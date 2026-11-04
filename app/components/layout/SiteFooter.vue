@@ -15,7 +15,10 @@ const social = computed(() => (settings.value.footer.showSocial ? settings.value
         :label="$t('layout.footer.nav')"
         with-privacy
       />
-      <LayoutLanguageSwitcher />
+      <div class="grid gap-3">
+        <LayoutLanguageSwitcher />
+        <LayoutReduceMotionToggle />
+      </div>
       <p
         v-if="settings.footer.text"
         class="md:col-span-2"
