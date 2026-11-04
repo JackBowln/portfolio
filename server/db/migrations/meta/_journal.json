@@ -50,6 +50,13 @@
       "when": 1793455704291,
       "tag": "0006_segments_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1793791177637,
+      "tag": "0007_glossary",
+      "breakpoints": true
     }
   ]
 }
