@@ -24,7 +24,7 @@ const SIZES = {
   <button
     :type="type"
     :disabled="disabled"
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-control border font-strong leading-none transition-colors duration-(--dur-instant) ease-out disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)"
+    class="press inline-flex cursor-pointer items-center justify-center gap-2 rounded-control border font-strong leading-none transition-colors duration-(--dur-instant) ease-out disabled:cursor-not-allowed disabled:opacity-(--opacity-disabled)"
     :class="[VARIANTS[variant], SIZES[size]]"
   >
     <slot />

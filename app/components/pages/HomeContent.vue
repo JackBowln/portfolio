@@ -14,7 +14,7 @@ defineProps<{ page: PublicPage<PageBlocks<'home'>> & { blocks: PageBlocks<'home'
 const settings = useSiteSettings()
 const LINKS = { projects: '/projetos', blog: '/blog', about: '/sobre', contact: '/contato' } as const
 const ids = { featured: useId(), articles: useId() }
-const button = 'inline-flex min-h-(--target-comfortable) items-center justify-self-start border border-text px-5 font-strong hover:border-accent hover:text-accent'
+const button = 'press inline-flex min-h-(--target-comfortable) items-center justify-self-start border border-text px-5 font-strong hover:border-accent hover:text-accent'
 </script>
 
 <template>

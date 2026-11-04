@@ -244,6 +244,61 @@ html.motion-ok [data-motion="hairline"] line {
 }
 
 /*
+ * Microinteractions (F10-T4, storyboard-home §7), CSS only: links change color and underline in --dur-instant; a
+ * button (.press) settles to scale(0.98) while pressed. With reduced motion (the system or the site's button) the
+ * changes are instant and nothing scales. The focus ring is never animated
+ */
+a {
+  transition-property: color, text-decoration-color;
+  transition-duration: var(--dur-instant);
+  transition-timing-function: var(--ease-out);
+}
+
+.press {
+  transition-property: color, background-color, border-color, transform;
+  transition-duration: var(--dur-instant);
+  transition-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduce-motion]) .press:not(:disabled):active {
+    transform: scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a,
+  .press {
+    transition-duration: 0s;
+  }
+}
+
+html[data-reduce-motion] a,
+html[data-reduce-motion] .press {
+  transition-duration: 0s;
+}
+
+/*
+ * The shared element (F10-T4, storyboard-home §8): a project's card cover and its case study image carry the same
+ * view-transition name (project-<slug>, one per project on any page), so the card becomes the image. On mobile the
+ * name goes and the page only crossfades; with reduced motion nothing animates (below)
+ */
+.vt-project {
+  display: block;
+}
+
+::view-transition-group(*) {
+  animation-duration: var(--dur-cinematic);
+  animation-timing-function: var(--ease-in-out);
+}
+
+@media (max-width: 47.99rem) {
+  .vt-project {
+    view-transition-name: none !important;
+  }
+}
+
+/*
  * Page transitions (F10-T2, storyboard-home §8): a short crossfade between routes; none with reduced motion, from the
  * system or from the site's button (data-reduce-motion, set by the inline script and the button)
  */

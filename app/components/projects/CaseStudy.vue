@@ -12,6 +12,8 @@ import ProjectCard from './ProjectCard.vue'
 const props = defineProps<{ project: PublicProject }>()
 const formatPeriod = useFormatPeriod()
 const ids = { details: useId(), results: useId(), narrative: useId(), gallery: useId(), related: useId() }
+// The slug in this locale, for the view-transition name it shares with the project's cards
+const slug = computed(() => props.project.alternates.find(item => item.locale === props.project.locale)?.slug ?? 'project')
 const period = computed(() => formatPeriod(props.project.periodStart, props.project.periodEnd))
 const links = computed(() => [
   ...(props.project.repoUrl ? [{ href: props.project.repoUrl, label: 'projects.repo' }] : []),
@@ -118,11 +120,14 @@ const links = computed(() => [
       </section>
     </header>
 
+    <!-- The same view-transition name as the project's card cover: the card becomes this image (F10-T4) -->
     <ResponsiveImage
       v-if="project.cover"
       :image="project.cover"
       :sizes="IMAGE_SIZES.wide"
       priority
+      class="vt-project"
+      :style="{ viewTransitionName: `project-${slug}` }"
     />
 
     <section
@@ -146,7 +151,10 @@ const links = computed(() => [
           <dt class="font-mono text-step--1 text-text-muted uppercase">
             {{ item.label }}
           </dt>
-          <dd class="font-display text-step-4 wrap-anywhere">
+          <dd
+            class="font-display text-step-4 wrap-anywhere"
+            data-motion="highlight-value"
+          >
             {{ item.value }}
           </dd>
           <dd
@@ -182,6 +190,7 @@ const links = computed(() => [
       v-if="project.gallery"
       class="grid max-w-(--container-reading) gap-6"
       :aria-labelledby="ids.gallery"
+      data-motion="gallery"
     >
       <UiHeading
         :id="ids.gallery"

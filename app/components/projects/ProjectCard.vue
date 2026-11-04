@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // One project in a list (F07-T2): the cover, the title as the link, the summary, the period and the technologies.
-// `wide` for the featured first card, which spans the container; `priority` for the card whose cover is the LCP
+// `wide` for the featured first card, which spans the container; `priority` for the card whose cover is the LCP.
+// The cover shares its view-transition name with the case study's image, one per project (F10-T4, storyboard-home §8)
 import { IMAGE_SIZES } from '#shared/design/tokens'
 import type { ProjectCard } from '#shared/content/projects-public'
 import ResponsiveImage from '~/components/media/ResponsiveImage.vue'
@@ -16,6 +17,8 @@ const formatPeriod = useFormatPeriod()
       :image="card.cover"
       :sizes="wide ? IMAGE_SIZES.wide : IMAGE_SIZES.half"
       :priority="priority"
+      class="vt-project"
+      :style="{ viewTransitionName: `project-${card.slug}` }"
     />
     <UiHeading
       :level="level"
