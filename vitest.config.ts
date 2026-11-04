@@ -14,6 +14,9 @@ export default defineConfig({
       thresholds: {
         'shared/content/document-schema.ts': { branches: 90 },
         'shared/content/hast.ts': { branches: 90 },
+        // F09-T2: the segmenter decides what reaches the AI and what comes back into a document
+        'shared/content/segmenter.ts': { branches: 90 },
+        'shared/content/inline-tags.ts': { branches: 90 },
       },
     },
     projects: [
