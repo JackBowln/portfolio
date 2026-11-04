@@ -38,6 +38,8 @@ export interface BlogList {
 
 export interface BlogTopicPage extends BlogList {
   topic: BlogTopic
+  /** Locales where the topic has a name and a published article, with its slug there (F11-T3), for hreflang */
+  alternates: { locale: Locale, slug: string }[]
 }
 
 export interface BlogArticle {

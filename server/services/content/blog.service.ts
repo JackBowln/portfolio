@@ -8,7 +8,7 @@ import type { PublicMediaMap } from '../../../shared/media/public.ts'
 import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import type { BlogListItem } from './blog.repo.ts'
-import { findPublishedArticle, findTopic, listBlogPage, relatedArticles, topicsIn, topicsWithArticles } from './blog.repo.ts'
+import { findPublishedArticle, findTopic, listBlogPage, publishedTopics, relatedArticles, topicsIn, topicsWithArticles } from './blog.repo.ts'
 import { resolveDocumentMedia, resolveMedia, resolveShareImage } from './document-media.ts'
 import { listPublishedAlternates } from './localized.repo.ts'
 
@@ -53,7 +53,10 @@ export async function topicPage(db: Db, locale: Locale, slug: string, page: numb
   if (!topic) {
     return null
   }
-  const { items, total } = await listBlogPage(db, locale, { offset: (page - 1) * BLOG_PAGE_SIZE, limit: BLOG_PAGE_SIZE, tagId: topic.id })
+  const [{ items, total }, alternates] = await Promise.all([
+    listBlogPage(db, locale, { offset: (page - 1) * BLOG_PAGE_SIZE, limit: BLOG_PAGE_SIZE, tagId: topic.id }),
+    publishedTopics(db, topic.id),
+  ])
   const pages = pageCount(total)
   if (total === 0 || page > pages) {
     return null
@@ -61,6 +64,7 @@ export async function topicPage(db: Db, locale: Locale, slug: string, page: numb
   const media = await resolveMedia(db, coverIds(items), locale)
   return {
     topic: { name: topic.name, slug: topic.slug },
+    alternates: alternates.map(({ locale: code, slug: topicSlug }) => ({ locale: code, slug: topicSlug })),
     items: cards(items, media),
     page,
     pages,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // A topic (F06-T5): its published articles in the locale, paginated like the blog. Exists only in a locale where
-// the topic has a name and at least one article (topic names are translated with F09; until then, pt-BR only)
+// the topic has a name and at least one article; hreflang and the language switcher link the locales where it exists
+// (F11-T3), and send the others to the blog
 import type { BlogTopicPage } from '#shared/content/blog'
-import type { Locale } from '#shared/types/enums'
 import { parsePage, priorityCover } from '#shared/content/blog'
 import BlogCard from '~/components/blog/BlogCard.vue'
 import BlogPagination from '~/components/blog/BlogPagination.vue'
@@ -21,15 +21,15 @@ if (page === null) {
 }
 const data = await usePublicData<BlogTopicPage>(`topic:${locale.value}:${slug}:${page}`, `/api/public/blog/topics/${encodeURIComponent(slug)}`, { locale: locale.value, page })
 
-// Topic slugs are per locale; only the current one is known to exist, so the switcher sends the others to the blog
+// Topic slugs are per locale
 const setI18nParams = useSetI18nParams()
-setI18nParams({ [locale.value]: { slug } })
-useLocaleFallback([locale.value as Locale], '/blog')
+setI18nParams(Object.fromEntries(data.value.alternates.map(alternate => [alternate.locale, { slug: alternate.slug }])))
+useLocaleFallback(data.value.alternates.map(alternate => alternate.locale), '/blog')
 
 usePageSeo({
   title: () => t('blog.topicTitle', { name: data.value.topic.name }),
   description: () => t('blog.topicIntro', { name: data.value.topic.name }),
-  published: () => [locale.value as Locale],
+  published: () => data.value.alternates.map(alternate => alternate.locale),
   page,
 })
 // JSON-LD from the response (F11-T1)
