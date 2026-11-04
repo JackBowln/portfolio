@@ -137,7 +137,7 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F10-T3 | RX-02, RX-05 | `/motion-engineer`, `/frontend-design` |
+| concluída | F10-T3 | RX-02, RX-05 | `/motion-engineer`, `/frontend-design` |
 
 **Objetivo.** Implementar:
 - hover e foco de links, botões e cards (CSS, 120–200 ms);
@@ -150,9 +150,32 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 **Fora do escopo.** Efeito 3D (T5).
 
 **Critérios de aceite**
-- [ ] Sem suporte a View Transitions, a navegação é instantânea, sem erro.
-- [ ] Com movimento reduzido, as transições são instantâneas e não há hover magnético.
-- [ ] O foco nunca fica escondido ou deslocado por animação; INP ≤ 200 ms em interações de hover e clique (medido).
+- [x] Sem suporte a View Transitions, a navegação é instantânea, sem erro.
+- [x] Com movimento reduzido, as transições são instantâneas e não há hover magnético.
+- [x] O foco nunca fica escondido ou deslocado por animação; INP ≤ 200 ms em interações de hover e clique (medido).
+
+**Resultado (04/11/2026).**
+- **Elemento compartilhado sem JS** (decisão 1): a capa de cada card de projeto e a imagem do estudo de caso têm `view-transition-name: project-<slug>`, um nome por projeto.
+  - O morph dura `--dur-cinematic`; o resto da página faz o crossfade da F10-T2.
+  - No mobile o nome sai e fica só o crossfade.
+  - Sem suporte, o Nuxt navega direto; com movimento reduzido do sistema, nem chama a API; com o botão do site, o CSS zera as animações.
+- **Microinterações em CSS:** links com cor e sublinhado em `--dur-instant`; botões (`.press`) com `scale(0.98)` ao pressionar (decisão 3), desligado com movimento reduzido. O anel de foco nunca anima.
+- **Cena do estudo de caso** (`scenes/case-study.ts`, sob demanda):
+  - **Galeria:** reveal com `clip-path` no desktop e fade no mobile.
+  - **Contadores:** só para valores escritos como número (`parseCount`, decisão 2). Durante a contagem os dígitos ficam `aria-hidden` e o valor final fica disponível numa cópia visualmente oculta; o texto original volta no fim e no `revert`.
+- **Hover magnético:** já existia na chamada final (F10-T3), só com `pointer: fine`.
+- **INP com CPU 4×** (3 execuções por variante, navegador novo):
+  - R1: abaixo de 16 ms (o limiar de registro) em desktop e mobile;
+  - R5: 32–40 ms em desktop e mobile;
+  - interações: tema, hover, Tab, card → estudo de caso, scroll com contadores, voltar.
+- **Lighthouse** (prod-like com conteúdo):
+  - R1 mobile 98 e desktop 100; R5 mobile 98 e desktop 100;
+  - 100 nas demais categorias;
+  - CLS 0, exceto o 0,055 no desktop da R5, que já existia na F07.
+- **JS estático:** nenhum novo (R1 122,99 kB, R5 122,61 kB).
+- **Testes:**
+  - `tests/unit/motion-count.test.ts`;
+  - `tests/e2e/transitions.spec.ts`: com e sem suporte, movimento reduzido com o foco visível, nomes únicos por página, mobile sem morph, contadores terminando no texto original.
 
 **Testes**
 - E2E: navegação card → estudo de caso com e sem suporte a View Transitions.
