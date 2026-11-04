@@ -9,7 +9,7 @@ import type { ProjectCard, ProjectList, ProjectTechnology, PublicProject } from 
 import type { PublicMediaMap } from '../../../shared/media/public.ts'
 import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
-import { resolveDocumentMedia, resolveMedia } from './document-media.ts'
+import { resolveDocumentMedia, resolveMedia, resolveShareImage } from './document-media.ts'
 import { listPublishedAlternates } from './localized.repo.ts'
 import type { ProjectListRow, TechnologyRow } from './projects-public.repo.ts'
 import { findPublishedProject, findTechnology, listPublishedProjects, relatedProjects, technologiesOf, technologiesWithProjects } from './projects-public.repo.ts'
@@ -70,19 +70,21 @@ function galleryDocument(ids: readonly string[]): DocumentJson | null {
   return { type: 'doc', attrs: { schemaVersion: CURRENT_SCHEMA_VERSION }, content: [block] }
 }
 
-export async function publicProject(db: Db, locale: Locale, slug: string): Promise<PublicProject | null> {
+/** `mediaBaseUrl` makes the share image's URL absolute (the route passes the site's) */
+export async function publicProject(db: Db, locale: Locale, slug: string, mediaBaseUrl = ''): Promise<PublicProject | null> {
   const project = await findPublishedProject(db, locale, slug)
   if (!project) {
     return null
   }
   const { localization, entity } = project.snapshot
   const gallery = galleryDocument(entity.galleryMediaIds)
-  const [bodyMedia, galleryMedia, techs, related, alternates] = await Promise.all([
+  const [bodyMedia, galleryMedia, techs, related, alternates, share] = await Promise.all([
     resolveDocumentMedia(db, localization.body, locale, entity.coverMediaId ? [entity.coverMediaId] : []),
     gallery ? resolveDocumentMedia(db, gallery, locale) : Promise.resolve({} as PublicMediaMap),
     technologiesOf(db, locale, [project.projectId]),
     relatedProjects(db, locale, project.projectId, RELATED_PROJECTS),
     listPublishedAlternates(db, 'project', project.projectId),
+    resolveShareImage(db, localization.ogImageMediaId, locale, mediaBaseUrl, localization.title),
   ])
   const relatedCards = await cards(db, locale, related)
   const media = { ...bodyMedia, ...galleryMedia }
@@ -104,7 +106,7 @@ export async function publicProject(db: Db, locale: Locale, slug: string): Promi
     technologies: techs.map(technology),
     related: relatedCards.cards,
     alternates,
-    seo: { title: localization.seoTitle ?? localization.title, description: localization.seoDescription ?? localization.summary, noindex: localization.noindex },
+    seo: { title: localization.seoTitle ?? localization.title, description: localization.seoDescription ?? localization.summary, noindex: localization.noindex, image: share?.image ?? null },
     cacheTags: [
       cacheTags.project(project.projectId),
       cacheTags.projectLocale(project.projectId, locale),
@@ -113,6 +115,7 @@ export async function publicProject(db: Db, locale: Locale, slug: string): Promi
       ...techs.map(item => cacheTags.tag(item.id)),
       ...Object.keys(media).map(cacheTags.media),
       ...relatedCards.mediaIds.map(cacheTags.media),
+      ...(share ? [cacheTags.media(share.mediaId)] : []),
     ],
   }
 }

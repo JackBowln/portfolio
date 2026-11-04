@@ -9,7 +9,7 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import type { BlogListItem } from './blog.repo.ts'
 import { findPublishedArticle, findTopic, listBlogPage, relatedArticles, topicsIn, topicsWithArticles } from './blog.repo.ts'
-import { resolveDocumentMedia, resolveMedia } from './document-media.ts'
+import { resolveDocumentMedia, resolveMedia, resolveShareImage } from './document-media.ts'
 import { listPublishedAlternates } from './localized.repo.ts'
 
 function cards(items: BlogListItem[], media: PublicMediaMap): BlogCard[] {
@@ -70,17 +70,19 @@ export async function topicPage(db: Db, locale: Locale, slug: string, page: numb
   }
 }
 
-export async function blogArticle(db: Db, locale: Locale, slug: string): Promise<BlogArticle | null> {
+/** `mediaBaseUrl` makes the share image's URL absolute (the route passes the site's) */
+export async function blogArticle(db: Db, locale: Locale, slug: string, mediaBaseUrl = ''): Promise<BlogArticle | null> {
   const article = await findPublishedArticle(db, locale, slug)
   if (!article) {
     return null
   }
   const { localization, entity } = article.snapshot
-  const [media, topics, related, alternates] = await Promise.all([
+  const [media, topics, related, alternates, share] = await Promise.all([
     resolveDocumentMedia(db, localization.body, locale, entity.coverMediaId ? [entity.coverMediaId] : []),
     topicsIn(db, locale, entity.tagIds),
     relatedArticles(db, locale, article.articleId, RELATED_LIMIT),
     listPublishedAlternates(db, 'article', article.articleId),
+    resolveShareImage(db, localization.ogImageMediaId, locale, mediaBaseUrl, localization.title),
   ])
   const relatedMedia = await resolveMedia(db, coverIds(related), locale)
   const cover = entity.coverMediaId ? media[entity.coverMediaId] : undefined
@@ -97,7 +99,7 @@ export async function blogArticle(db: Db, locale: Locale, slug: string): Promise
     topics: topics.map(({ name, slug: topicSlug }) => ({ name, slug: topicSlug })),
     related: cards(related, relatedMedia),
     alternates,
-    seo: { title: localization.seoTitle ?? localization.title, description: localization.seoDescription ?? localization.excerpt, noindex: localization.noindex },
+    seo: { title: localization.seoTitle ?? localization.title, description: localization.seoDescription ?? localization.excerpt, noindex: localization.noindex, image: share?.image ?? null },
     cacheTags: [
       cacheTags.article(article.articleId),
       cacheTags.articleLocale(article.articleId, locale),
@@ -106,6 +108,7 @@ export async function blogArticle(db: Db, locale: Locale, slug: string): Promise
       ...entity.tagIds.map(cacheTags.tag),
       ...Object.keys(media).map(cacheTags.media),
       ...Object.keys(relatedMedia).map(cacheTags.media),
+      ...(share ? [cacheTags.media(share.mediaId)] : []),
     ],
   }
 }

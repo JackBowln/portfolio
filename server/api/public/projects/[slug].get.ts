@@ -15,7 +15,7 @@ const querySchema = z.object({ locale: z.enum(LOCALES) })
 export default defineEventHandler(async (event) => {
   const params = paramsSchema.safeParse(getRouterParams(event, { decode: true }))
   const { locale } = getValidatedQueryStrict(event, querySchema)
-  const project = params.success ? await publicProject(useDb(event), locale, params.data.slug) : null
+  const project = params.success ? await publicProject(useDb(event), locale, params.data.slug, seoContext(event).mediaBaseUrl) : null
   if (!project) {
     throw createAppError('not_found')
   }

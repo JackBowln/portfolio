@@ -24,6 +24,7 @@ usePageSeo({
   noindex: () => data.value.seo.noindex,
   publishedTime: () => data.value.firstPublishedAt,
   modifiedTime: () => data.value.publishedAt,
+  image: () => data.value.seo.image,
 })
 // JSON-LD from the response (F11-T1)
 useJsonLd(() => data.value.jsonLd)

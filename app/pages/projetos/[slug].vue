@@ -35,6 +35,7 @@ usePageSeo({
   description: () => data.value.seo.description,
   published: () => data.value.alternates.map(alternate => alternate.locale),
   noindex: () => data.value.seo.noindex,
+  image: () => data.value.seo.image,
 })
 // JSON-LD from the response (F11-T1)
 useJsonLd(() => data.value.jsonLd)

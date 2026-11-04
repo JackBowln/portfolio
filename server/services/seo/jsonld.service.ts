@@ -6,7 +6,7 @@ import type { PublicProject } from '../../../shared/content/projects-public.ts'
 import { localizedPath } from '../../../shared/i18n/locales.ts'
 import { STATIC_PAGE_PATHS } from '../../../shared/i18n/routes.ts'
 import type { StaticPage } from '../../../shared/i18n/routes.ts'
-import { mediaUrl } from '../../../shared/media/public.ts'
+import { shareImage } from '../../../shared/media/public.ts'
 import type { PublicImage } from '../../../shared/media/public.ts'
 import { blogPosting, breadcrumbList, collectionPage, creativeWork, person, profilePage, serializeJsonLd, website } from '../../../shared/seo/jsonld.ts'
 import { SECTION_NAMES } from '../../../shared/seo/sections.ts'
@@ -23,8 +23,7 @@ const staticUrl = (context: SeoContext, page: StaticPage, locale: Locale) => abs
 
 /** The largest JPEG up to 1200 px wide, as og:image takes it */
 function imageUrl(context: SeoContext, image: PublicImage | null | undefined): string | undefined {
-  const variant = image?.variants.filter(item => item.format === 'jpeg' && item.width <= 1200).sort((a, b) => b.width - a.width)[0]
-  return variant ? mediaUrl(context.mediaBaseUrl, variant.key) : undefined
+  return image ? shareImage(image, context.mediaBaseUrl)?.url : undefined
 }
 
 const home = (context: SeoContext, locale: Locale, name: string) => ({ name, url: staticUrl(context, 'home', locale) })
@@ -60,7 +59,7 @@ export function articleJsonLd(context: SeoContext, article: BlogArticle, siteNam
       siteUrl: context.siteUrl,
       datePublished: article.firstPublishedAt,
       dateModified: article.publishedAt,
-      image: imageUrl(context, article.cover),
+      image: imageUrl(context, article.cover) ?? article.seo.image?.url,
       keywords: article.topics.map(topic => topic.name),
     }),
     breadcrumbList({ url, items: [home(context, article.locale, siteName), { name: SECTION_NAMES.blog[article.locale], url: staticUrl(context, 'blog', article.locale) }, { name: article.title, url }] }),
@@ -77,7 +76,7 @@ export function projectJsonLd(context: SeoContext, project: PublicProject, siteN
       description: project.summary || undefined,
       locale: project.locale,
       siteUrl: context.siteUrl,
-      image: imageUrl(context, project.cover),
+      image: imageUrl(context, project.cover) ?? project.seo.image?.url,
       keywords: project.technologies.map(technology => technology.name),
       codeRepository: project.repoUrl,
     }),

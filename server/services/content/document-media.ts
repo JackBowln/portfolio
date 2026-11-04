@@ -3,8 +3,8 @@
 // the renderer skips their blocks
 import type { DocumentJson } from '../../../shared/content/document-schema.ts'
 import { deriveDocument } from '../../../shared/content/derive.ts'
-import { toPublicImage } from '../../../shared/media/public.ts'
-import type { PublicMediaMap } from '../../../shared/media/public.ts'
+import { shareImage, toPublicImage } from '../../../shared/media/public.ts'
+import type { PublicMediaMap, ShareImage } from '../../../shared/media/public.ts'
 import type { Locale } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { findReadyMediaWithText } from '../media/media.repo.ts'
@@ -48,4 +48,18 @@ export async function resolveMedia(db: Db, ids: readonly string[], locale: Local
     }
   }
   return map
+}
+
+/**
+ * The page's own share image (F11-T2), ready for og:image, and its media id for the cache tags; null without one,
+ * when it is no longer a ready image, or when it has no JPEG up to 1200 px. `fallbackAlt` (the title) when it has no
+ * alt, as the generated ones are decorative
+ */
+export async function resolveShareImage(db: Db, mediaId: string | null, locale: Locale, mediaBaseUrl: string, fallbackAlt: string): Promise<{ image: ShareImage, mediaId: string } | null> {
+  if (!mediaId) {
+    return null
+  }
+  const found = (await resolveMedia(db, [mediaId], locale))[mediaId]
+  const image = found?.kind === 'image' ? shareImage(found.image, mediaBaseUrl, fallbackAlt) : null
+  return image ? { image, mediaId } : null
 }

@@ -1,6 +1,6 @@
 // What the public projects API returns (F07-T2): only published content, media in the public shape, and the cache
 // tags the page sets on its own response, so a purge reaches the HTML as well as the data
-import type { PublicImage, PublicMediaMap } from '../media/public.ts'
+import type { PublicImage, PublicMediaMap, ShareImage } from '../media/public.ts'
 import type { Locale } from '../types/enums.ts'
 import type { DocumentJson } from './document-schema.ts'
 
@@ -57,7 +57,8 @@ export interface PublicProject {
   related: ProjectCard[]
   /** Published locales and their slugs, for hreflang and the language switcher */
   alternates: { locale: Locale, slug: string }[]
-  seo: { title: string, description: string, noindex: boolean }
+  /** `image`: the page's own share image (F11-T2); without one, the page uses the settings' default */
+  seo: { title: string, description: string, noindex: boolean, image: ShareImage | null }
   /** JSON-LD, serialized on the server (F11-T1); the page puts it in <head> as it is */
   jsonLd?: string
   cacheTags: string[]
