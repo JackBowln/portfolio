@@ -51,6 +51,12 @@
    - Gerada no admin por Canvas na publicação de cada idioma: 1200×630, com título, nome do site e acento visual, enviada como mídia `og`.
    - Fallback: OG padrão por idioma nas configurações.
    - O `nuxt-og-image` não é usado em runtime.
+   - **Implementado na F11-T2:**
+     - o template fica em `app/utils/admin/og-image.ts` (Canvas 2D, fontes do site);
+     - o arquivo é um JPEG ≤ 300 KB e passa pelo pipeline com uma variante extra na largura do original (`withOriginalWidth`), para existir o `jpeg-1200`;
+     - o nome `og-<tipo>-<id>-<idioma>-<hash>.jpg` identifica a imagem gerada e o título desenhado;
+     - a mídia é marcada decorativa, porque o `og:image:alt` usa o título;
+     - uma OG escolhida à mão nunca é substituída ao publicar.
 8. **Ciclo de vida.**
    - Mídia em uso (`media_usages`) não pode ser apagada (409).
    - Exclusão lógica; o cron remove os objetos do R2 30 dias depois, com auditoria.

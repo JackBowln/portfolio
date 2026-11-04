@@ -57,6 +57,7 @@ Os caminhos não incluem o prefixo; o módulo aplica `/en`, `/es`, `/de` e `/fr`
 | `link rel=alternate hreflang` | Uma por idioma **publicado** da entidade, incluindo o próprio; recíprocas |
 | `hreflang="x-default"` | Versão `en` se publicada; senão `pt-BR` |
 | `og:title`, `og:description`, `og:url`, `og:type` (`website`/`article`/`profile`), `og:image` (1200×630) com `og:image:alt`, `og:locale` + `og:locale:alternate` | Por idioma |
+| `og:image` de artigos e projetos (F11-T2) | A imagem do idioma no snapshot publicado (gerada no admin ou escolhida à mão), com `og:image:width`, `og:image:height` e `og:image:alt` (o alt da mídia ou o título); sem ela, a OG padrão de `seo_defaults`. O JSON-LD usa a mesma imagem quando não há capa |
 | `twitter:card=summary_large_image` | Sempre |
 | `meta robots` | `noindex` quando `noindex = true`, em preview ou fora de produção |
 | `article:published_time` / `modified_time` | Artigos |

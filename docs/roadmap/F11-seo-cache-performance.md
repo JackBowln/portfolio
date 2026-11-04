@@ -56,7 +56,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F11-T1 | RF-07.2, RF-12.5 | `/cms-engineer`, `/frontend-design` |
+| concluída | F11-T1 | RF-07.2, RF-12.5 | `/cms-engineer`, `/frontend-design` |
 
 **Objetivo.** Criar o template de Canvas 1200×630 (título do idioma, nome do site, acento visual, fontes do site), gerado no navegador ao publicar cada idioma (ou pelo botão "gerar OG") e enviado como mídia `og`; `og:image` com dimensões e `og:image:alt`; fallback para a OG padrão das configurações.
 
@@ -65,9 +65,42 @@
 **Fora do escopo.** Renderização de OG no servidor (proibida no Free, ADR-0007).
 
 **Critérios de aceite**
-- [ ] Títulos longos quebram em até 3 linhas e são truncados com reticências; diacríticos dos 5 idiomas renderizados.
-- [ ] A OG é gerada uma vez por revisão publicada e reaproveitada se o título não mudou.
-- [ ] O tamanho do arquivo fica ≤ 300 KB.
+- [x] Títulos longos quebram em até 3 linhas e são truncados com reticências; diacríticos dos 5 idiomas renderizados.
+- [x] A OG é gerada uma vez por revisão publicada e reaproveitada se o título não mudou.
+- [x] O tamanho do arquivo fica ≤ 300 KB.
+
+**Resultado (04/11/2026).**
+- **Template** (`app/utils/admin/og-image.ts`, decisão 4):
+  - Canvas 2D de 1200×630 no tema escuro da direção visual: fundo azul-noite, hairline e nome do site em rosa (JetBrains Mono), título em Fraunces e host em Inter;
+  - o título fica em até 3 linhas: 76 px, ou 64 px quando não cabe; depois disso é cortado com reticências, de preferência no último espaço;
+  - a quebra é por palavra, e por caractere quando uma palavra sozinha não cabe, sobre o texto em NFC;
+  - o gerador espera `document.fonts.load` das três fontes com os caracteres do título antes de desenhar.
+- **Arquivo:** JPEG com a maior qualidade que cabe em 300 KB (de 0,9 a 0,5). Ele passa pelo pipeline da F04 com a nova opção `withOriginalWidth`, que gera a variante `jpeg-1200`, também conferida em ≤ 300 KB. Medido: 24 KB com um título curto e 76 KB com um longo.
+- **Uma por título** (`useOgImage`):
+  - o nome `og-<tipo>-<id>-<idioma>-<hash>.jpg` leva o hash do que é desenhado;
+  - republicar com o mesmo título não gera nada;
+  - um arquivo já enviado com esse nome é reaproveitado, e os mesmos bytes sob outro nome também (o 409 de SHA-256 devolve a mídia existente);
+  - a mídia é marcada decorativa, porque o `og:image:alt` usa o título, e por isso fica fora dos textos em lote.
+- **Servidor:**
+  - `GET` e `PUT /api/admin/{articles,projects}/{id}/og-image` (`share-image.service.ts`);
+  - o `PUT` grava só o campo, com guarda de versão e `working_hash`, e troca o uso `og` do idioma;
+  - um save do pt-BR deixa de apagar os usos das traduções.
+- **Quando gera:**
+  - **Publicar ou agendar** no editor (pt-BR) e **publicar** na revisão de tradução (o idioma). Uma OG escolhida à mão é mantida (decisão 2), e uma falha só avisa; a publicação segue com a OG padrão (decisão 3).
+  - **Botões** "Ver prévia" e "Gerar e usar" no painel de SEO (`OgImagePanel.vue`). "Gerar e usar" substitui a escolhida. A prévia usa uma data URL, porque a CSP não aceita imagens `blob:`.
+- **Site:**
+  - artigo e projeto trazem `seo.image` (URL absoluta, dimensões e alt) do snapshot publicado, com a tag da mídia;
+  - o `usePageSeo` usa essa imagem antes da OG padrão;
+  - o JSON-LD usa a mesma imagem quando não há capa.
+- **Alcance** (decisão 1): artigos e projetos. As páginas institucionais continuam com a OG padrão.
+- **Limitação:**
+  - o agendamento gera a OG na hora em que é agendado;
+  - se o título mudar depois sem um novo agendamento, o cron publica a imagem do título anterior; a próxima publicação manual corrige.
+- **Testes:**
+  - `tests/unit/og-image.test.ts`: quebra, truncamento, diacríticos, nome, qualidade, variante e alt;
+  - `tests/workers/share-image.test.ts`: versão, mídia, usos por idioma, publicação e a resposta pública;
+  - `tests/e2e/share-image.spec.ts`: publicar → `og:image`; reaproveitar; título novo; escolhida à mão; prévia com axe.
+  - O teste Nuxt da prévia foi trocado pelo E2E, porque o happy-dom não tem Canvas.
 
 **Testes**
 - Nuxt e unit: quebra de linha e truncamento.
