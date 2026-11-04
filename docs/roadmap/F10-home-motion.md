@@ -95,7 +95,7 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F10-T2, F08-T2 | RF-01.1, RX-02, RX-05 | `/motion-engineer`, `/frontend-design`, `/performance-audit` |
+| concluída (LCP mobile ≤ 1,8 s e VoiceOver pendentes) | F10-T2, F08-T2 | RF-01.1, RX-02, RX-05 | `/motion-engineer`, `/frontend-design`, `/performance-audit` |
 
 **Objetivo.** Implementar o hero (SSR estático: o elemento LCP nunca começa oculto) e as seções narrativas do storyboard: reveals com SplitText (`aria`), imagem com `clip-path`, pin + scrub só no desktop e destaques de projetos e artigos vindos do CMS.
 
@@ -104,10 +104,27 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 **Fora do escopo.** Transições entre páginas (T4).
 
 **Critérios de aceite**
-- [ ] O LCP é texto ou imagem do hero, visível sem esperar animação; LCP de laboratório (mobile) ≤ 1,8 s.
-- [ ] Mobile com as timelines simplificadas do storyboard; a versão reduzida é estática ou com fades curtos.
-- [ ] Sem long tasks acima de 50 ms na inicialização do motion; CLS 0.
-- [ ] O texto dividido é lido como frase única (VoiceOver conferido).
+- [~] O LCP é texto ou imagem do hero, visível sem esperar animação; LCP de laboratório (mobile) ≤ 1,8 s.
+- [x] Mobile com as timelines simplificadas do storyboard; a versão reduzida é estática ou com fades curtos.
+- [x] Sem long tasks acima de 50 ms na inicialização do motion; CLS 0.
+- [~] O texto dividido é lido como frase única (VoiceOver conferido).
+
+**Resultado (04/11/2026).**
+- **Cenas:** `app/composables/motion/scenes/home.ts`, carregada pelo director por nome, sob demanda (decisão 1).
+  - abertura com hairline em CSS, sobretítulo, realce em linhas do título (SplitText com `aria`, revertido), subtítulo e botão;
+  - storytelling das seções, fixado com scrub no desktop a partir de 3 seções; as etapas ficam empilhadas na mesma célula de grid por CSS sob `motion-ok` desde o primeiro paint (decisão 2);
+  - reveal das capas dos projetos com `clip-path`; fade dos artigos;
+  - chamada final em linhas, com botão magnético só com `pointer: fine`.
+- **Mobile:** só fades, sem pin nem split. Movimento reduzido e sem JS: tudo visível e estático, com a hairline desenhada.
+- **Fallback:** se o fallback de 3 s já mostrou o conteúdo, o director não recoloca a classe e pula as entradas da abertura.
+- **O título (LCP) nunca fica oculto.**
+- **Medição (prod-like com a home publicada, 3 seções, projetos e artigos):**
+  - JS estático da R1 inalterado (123,00 kB); as cenas são adiadas (~1,5 KB gz; total adiado ~50,4 KB).
+  - Lighthouse R1: mobile 98, desktop 100, 100 nas demais categorias, CLS 0.
+  - **LCP mobile de laboratório (critério ≤ 1,8 s):** mediana de 10 execuções de 1.993 ms com motion e 1.973,5 ms sem a chamada do motion (o mesmo build com e sem o `useMotion` da home). O motion não pesa no LCP. O critério não é cumprido pela página com conteúdo em si (o CSS bloqueante pesa ~306 ms na simulação; na F08-T2 a mediana já era 1.838 ms). Fica para o passe de performance da F11.
+  - **Long tasks com CPU 4× e navegador novo a cada execução:** com motion, 0 a 92 ms; sem motion, 0 a 70 ms, nos mesmos instantes depois do `load`. São da própria página, não da inicialização do motion. CLS 0 em todas.
+- **VoiceOver:** a árvore de acessibilidade lê o título dividido como frase única (E2E). A checagem manual com VoiceOver fica com o owner (decisão 4).
+- **Testes:** `tests/e2e/home-motion.spec.ts` (as quatro variantes, capturas em `reports/motion/`, axe com motion e reduzido) e `tests/nuxt/motion.test.ts` atualizado. A fixture publica a home com 3 seções `[PLACEHOLDER]`.
 
 **Testes**
 - E2E: home nas variantes desktop, mobile, reduzida e sem JS (screenshots no relatório).

@@ -118,6 +118,11 @@ Comprovar no preview.
 
 **Arquivos prováveis.** `.github/workflows/lighthouse.yml`, `performance-budgets.json`, `docs/quality/perf-log.md`, correções pontuais nas páginas.
 
+**Herdado da F10-T3 (owner, 04/11/2026).**
+- O LCP mobile de laboratório da R1 com conteúdo tem mediana de ~1,99 s, acima dos 1,8 s do critério da F10-T3.
+- A medição A/B mostrou que o motion não pesa; o gargalo é o CSS bloqueante (~306 ms na simulação).
+- Este passe avalia o CSS crítico inline ou a divisão do CSS por rota.
+
 **Fora do escopo.** Remover conteúdo ou recursos para ganhar nota (proibido).
 
 **Critérios de aceite**
