@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F10 (gate) | RF-12.6 | `/i18n-manager` |
+| concluída (Rich Results Test pendente: precisa de URL pública) | F10 (gate) | RF-12.6 | `/i18n-manager` |
 
 **Objetivo.** Implementar os helpers tipados (`WebSite`, `Person`, `ProfilePage`, `BlogPosting`, `CreativeWork` + `SoftwareSourceCode`, `CollectionPage`, `BreadcrumbList`) conforme o i18n-seo §5, com `@id` estáveis e `inLanguage`, e serialização segura (escape de `</script>`).
 
@@ -23,9 +23,28 @@
 **Fora do escopo.** Tipos que não refletem conteúdo visível.
 
 **Critérios de aceite**
-- [ ] Cada template emite só os tipos da tabela, com campos de conteúdo visível.
-- [ ] Os blocos JSON-LD válidos passam pelo Rich Results Test em 1 artigo e em 1 estudo de caso (prints no relatório; verificação manual).
-- [ ] Um título com `</script>` não quebra o HTML (teste).
+- [x] Cada template emite só os tipos da tabela, com campos de conteúdo visível.
+- [~] Os blocos JSON-LD válidos passam pelo Rich Results Test em 1 artigo e em 1 estudo de caso (prints no relatório; verificação manual).
+- [x] Um título com `</script>` não quebra o HTML (teste).
+
+**Resultado (04/11/2026).**
+- **Helpers** (`shared/seo/jsonld.ts`): `website`, `person`, `profilePage`, `blogPosting`, `creativeWork` (`SoftwareSourceCode` quando há repositório), `collectionPage` e `breadcrumbList`.
+  - `@id` estáveis (`#person`, `#website`, a URL canônica com `#page`, `#article`, `#work` ou `#breadcrumbs`), `inLanguage` e nenhum campo vazio.
+  - `serializeJsonLd` escapa `<`, `>`, `&`, U+2028 e U+2029.
+- **Montagem no servidor** (decisão 1): `server/services/seo/jsonld.service.ts` monta o JSON-LD e as respostas públicas (página, artigo, projeto, listas e tema) trazem um campo `jsonLd` pronto. A página só o coloca no `<head>` (`useJsonLd`), também numa navegação no cliente.
+  - **Só o visível:**
+    - **Person:** `jobTitle` do cargo; `sameAs` só quando o rodapé mostra as redes.
+    - **Artigo:** `image` só com capa, `keywords` dos temas, as datas que o artigo mostra.
+    - **Projeto:** resumo, capa, tecnologias e repositório.
+  - **Breadcrumbs** (decisão 3): o nome do site, a seção e a página. Os nomes das seções vêm de `shared/seo/sections.ts`, conferidos contra o i18n por teste.
+  - Contato e privacidade não emitem JSON-LD. As respostas com JSON-LD levam a tag `settings`, para o nome do site purgar o cache.
+- **Caminhos:** `shared/content/paths.ts` ganhou `topicPath` (o segmento de tema por idioma), que a F11-T3 reaproveita.
+- **Rich Results Test** (decisão 2): fica para quando houver uma URL pública (deploy do preview, ação do owner). A estrutura está coberta por testes.
+- **Orçamento:** R2 revisada para 127 KB (performance-budgets.md).
+- **Testes:**
+  - `tests/unit/jsonld.test.ts`;
+  - `tests/api/jsonld.spec.ts`: os tipos por template e o título com `</script>` verificado num navegador, sem alerta e sem script executável;
+  - `tests/e2e/jsonld.spec.ts`: o bloco acompanha a navegação no cliente.
 
 **Testes**
 - Unit: helpers e escape.

@@ -73,6 +73,15 @@ Os caminhos não incluem o prefixo; o módulo aplica `/en`, `/es`, `/de` e `/fr`
 
 O JSON-LD só descreve o que é visível na página. O `@id` é estável: `${SITE_URL}/#person`, `${SITE_URL}/#website`.
 
+**Implementação (F11-T1).**
+- **Onde é montado:** no servidor (`server/services/seo/jsonld.service.ts`). As respostas públicas trazem o campo `jsonLd` já serializado e escapado, e a página o põe no `<head>` (`useJsonLd`).
+- **Breadcrumbs:** o nome do site › a seção (`shared/seo/sections.ts`) › a página.
+- **Campos condicionais:**
+  - `sameAs` só quando o rodapé mostra as redes;
+  - `image` só com capa;
+  - um projeto é `SoftwareSourceCode` quando tem repositório.
+- **Sem JSON-LD:** contato e privacidade.
+
 ## 6. Sitemap e feeds
 
 - `/sitemap.xml`: sitemap único com `xhtml:link` de alternates e `x-default`, servido por endpoint próprio (`server/routes/sitemap.xml.ts`; decisão da F02-T3 no ADR-0008). Desde a F06-T5, lista o índice do blog nos idiomas com artigo e cada artigo publicado, com os alternates dos idiomas publicados e `lastmod` da versão publicada; desde a F07-T2, o índice de projetos e os projetos publicados da mesma forma. A lista de projetos filtrada (`?tech=`) é `noindex`, com o canonical na lista inteira. Os nomes de tecnologia aparecem em pt-BR em todos os idiomas até a F09 (nomes próprios).
