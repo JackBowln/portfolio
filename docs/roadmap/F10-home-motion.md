@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F01 (gate) | RX-02, RX-03, RX-05 | `/motion-engineer`, `/frontend-design` |
+| concluída (aprovada em 04/11/2026) | F01 (gate) | RX-02, RX-03, RX-05 | `/motion-engineer`, `/frontend-design` |
 
 **Objetivo.** Preencher o template de storyboard (motion-principles §6) para cada seção da home e para a transição card → estudo de caso, nas variantes desktop, mobile, reduzida e sem JS, e decidir, com justificativa, se haverá efeito 3D/SVG (RX-03).
 
@@ -23,10 +23,19 @@
 **Fora do escopo.** Implementação.
 
 **Critérios de aceite**
-- [ ] Cada seção tem intenção, gatilho, timeline com tokens e as quatro variantes.
-- [ ] A decisão sobre 3D foi tomada (sim ou não), com o ganho narrativo e o custo estimado.
-- [ ] O orçamento de motion (≤ 60 KB gz adiados) é respeitado no plano.
-- [ ] **Você aprova** o storyboard (registro de data no documento).
+- [x] Cada seção tem intenção, gatilho, timeline com tokens e as quatro variantes.
+- [x] A decisão sobre 3D foi tomada (sim ou não), com o ganho narrativo e o custo estimado.
+- [x] O orçamento de motion (≤ 60 KB gz adiados) é respeitado no plano.
+- [x] **Você aprova** o storyboard (registro de data no documento).
+
+**Resultado (04/11/2026).**
+- [storyboard-home.md](../design/storyboard-home.md): abertura, seções de texto (storytelling fixado com scrub), projetos em destaque, últimos artigos, chamada final, microinterações, transições de página e estudo de caso, cada um com as quatro variantes.
+- **Decisões do plano:**
+  - **3D:** não; a F10-T5 fica descartada.
+  - **SVG:** só uma hairline em CSS.
+  - **Seções de texto:** pin com scrub a partir de 3 seções e de `md`.
+  - **"Reduzir movimento":** botão no rodapé.
+- **Orçamento previsto:** ~46 KB gz adiados (meta ≤ 60) e ~2–3 KB no JS estático, medidos na F10-T2.
 
 **Testes**
 - Não se aplica (documento). A revisão é feita com a checklist do `/motion-engineer`.
@@ -118,7 +127,7 @@ Criar também o script inline `motion-ok` (com hash na CSP) e o fallback de 3 s,
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F10-T3 | RX-03 | `/motion-engineer`, `/performance-audit` |
+| descartada (storyboard F10-T1: sem 3D) | F10-T3 | RX-03 | `/motion-engineer`, `/performance-audit` |
 
 **Objetivo.** Se a F10-T1 aprovou o efeito: implementar um componente client-only com `import('three')` (ou SVG com DrawSVG/MorphSVG), iniciado por IntersectionObserver e pausado fora da tela, com DPR limitado a 1,5–2, `dispose` no unmount e poster estático como fallback (sem WebGL, movimento reduzido, `saveData`, `deviceMemory` < 4). Se não foi aprovado: marcar a tarefa como "não aplicável" com a justificativa.
 

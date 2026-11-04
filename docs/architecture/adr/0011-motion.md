@@ -41,7 +41,7 @@
    - Inicialização sem long tasks acima de 50 ms; INP ≤ 200 ms; CLS 0.
    - Pins do ScrollTrigger só no desktop, a partir de `md`. No mobile, timelines simplificadas.
 8. **SplitText.** Com `aria: 'auto'` (ou equivalente). A divisão é revertida depois da animação quando possível, e `autoSplit` + `onSplit` cuidam do redimensionamento.
-9. **3D (Three.js) é condicional.** Só entra se o storyboard (F10-T1) mostrar um ganho narrativo que SVG ou CSS não alcançam. Nesse caso:
+9. **3D (Three.js) é condicional.** Só entra se o storyboard (F10-T1) mostrar um ganho narrativo que SVG ou CSS não alcançam. **Decisão do storyboard, aprovada pelo owner em 04/11/2026: não haverá 3D** ([storyboard-home §10](../../design/storyboard-home.md#10-decisões-aprovadas-no-plano-da-f10-t1)); o único efeito SVG é uma hairline em CSS. Se um dia houver 3D:
    - componente client-only com `import('three')`, iniciado por IntersectionObserver e pausado fora da tela;
    - `devicePixelRatio` limitado a 1,5–2 e `dispose()` ao desmontar;
    - **poster estático** como fallback para sem WebGL, movimento reduzido, `saveData` ou `deviceMemory < 4`.
