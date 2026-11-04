@@ -152,8 +152,9 @@ test('the media screen works by keyboard', async ({ page }) => {
   await signIn(page)
   await page.goto('/admin/midia')
   const input = page.getByLabel('Escolher imagem')
-  // Skip link, then the header (navigation and sign-out), then the first control of the page
-  for (let step = 0; step < 15 && !(await input.evaluate(element => element === document.activeElement)); step++) {
+  // Skip link, then the header (navigation and sign-out), then the first control of the page; the navigation grows
+  // with each admin screen (F09-T2: the glossary), so the bound leaves room
+  for (let step = 0; step < 25 && !(await input.evaluate(element => element === document.activeElement)); step++) {
     await page.keyboard.press('Tab')
   }
   await expect(input).toBeFocused()
