@@ -63,17 +63,19 @@ async function ensureProjectFixture(db: Db, userId: string): Promise<void> {
   }
 }
 
-/** Home and about published in pt-BR only, with placeholder blocks */
+/** Home and about published in pt-BR only, with placeholder blocks; the home has 3 sections, for its pinned story (F10-T3) */
 async function ensurePagesFixture(db: Db, userId: string): Promise<void> {
   const actor = { userId, ip: null, ipHashSalt: undefined }
   const blocks = {
-    home: { hero: { eyebrow: '[PLACEHOLDER]', title: '[PLACEHOLDER] Título da home', subtitle: '[PLACEHOLDER]', cta: { label: '[PLACEHOLDER] Projetos', target: 'projects' as const } }, sections: [{ title: '[PLACEHOLDER] Seção', text: '[PLACEHOLDER]' }], featuredTitle: '', articlesTitle: '', closing: { title: '', text: '', cta: { label: '', target: 'contact' as const } } },
+    home: { hero: { eyebrow: '[PLACEHOLDER]', title: '[PLACEHOLDER] Título da home', subtitle: '[PLACEHOLDER]', cta: { label: '[PLACEHOLDER] Projetos', target: 'projects' as const } }, sections: [1, 2, 3].map(n => ({ title: `[PLACEHOLDER] Seção ${n}`, text: `[PLACEHOLDER] Texto da seção ${n}.` })), featuredTitle: '', articlesTitle: '', closing: { title: '', text: '', cta: { label: '', target: 'contact' as const } } },
     about: { intro: body, timeline: [{ period: '[PLACEHOLDER]', title: '[PLACEHOLDER] Item', text: '' }], skills: [], links: [] },
   }
   for (const key of ['home', 'about'] as const) {
     const page = await getPage(db, key)
     const copy = page.localizations.find(item => item.locale === SOURCE_LOCALE)!
-    if (copy.publishedRevisionId) {
+    // A home published before F10-T3 had one section: it is published again with three
+    const sections = (copy.publishedSnapshot?.localization.blocks as { sections?: unknown[] } | undefined)?.sections?.length ?? 0
+    if (copy.publishedRevisionId && (key !== 'home' || sections >= 3)) {
       continue
     }
     try {
