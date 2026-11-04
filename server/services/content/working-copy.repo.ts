@@ -4,6 +4,7 @@
 import { and, eq, exists, gt, inArray, isNull, lt, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
 import type { ContentType, SluggedContentType } from '../../../shared/content/snapshot.ts'
+import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { Locale, MediaUsageContext } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { chunked } from '../../db/in-limit.ts'
@@ -97,7 +98,8 @@ export function saveStatements(db: Db, type: SluggedContentType, save: WorkingCo
       .where(and(eq(localizations.id, save.localizationId), eq(localizations.version, save.version), isNull(localizations.deletedAt)))
       .returning({ id: localizations.id }),
     db.update(entity).set(save.entity).where(and(eq(entity.id, save.entityId), saved)),
-    db.delete(mediaUsages).where(and(eq(mediaUsages.entityType, type), eq(mediaUsages.entityId, save.entityId), saved)),
+    // The pt-BR save owns the shared uses and its own; a translation's share image (F11-T2) stays
+    db.delete(mediaUsages).where(and(eq(mediaUsages.entityType, type), eq(mediaUsages.entityId, save.entityId), or(isNull(mediaUsages.locale), eq(mediaUsages.locale, SOURCE_LOCALE)), saved)),
     // Every use in one statement, read from a JSON parameter
     db.insert(mediaUsages).select(db.select({
       mediaId: sql<string>`json_extract(value, '$.mediaId')`.as('media_id'),
@@ -108,6 +110,44 @@ export function saveStatements(db: Db, type: SluggedContentType, save: WorkingCo
     }).from(sql`json_each(${JSON.stringify(save.uses)})`).where(saved)),
     ...(save.revision ? [insertRevisionStatement(db, type, save.revision, saved)] : []),
     ...outdatedStatements(db, type, save.outdated ?? [], saved),
+  ] as const
+}
+
+export interface ShareImageWrite {
+  entityId: string
+  localizationId: string
+  locale: Locale
+  /** The version the caller read */
+  version: number
+  workingHash: string
+  mediaId: string
+  userId: string
+}
+
+/**
+ * F11-T2: only the share image of one localization, guarded by the version like a save, and its `og` use replaced
+ * under the same guard. The first result is the updated localization, empty on a conflict
+ */
+export function shareImageStatements(db: Db, type: SluggedContentType, write: ShareImageWrite) {
+  const { localizations } = tablesOf(type)
+  const saved = exists(db.select({ one: sql`1` }).from(localizations).where(and(
+    eq(localizations.id, write.localizationId),
+    eq(localizations.version, write.version + 1),
+    eq(localizations.workingHash, write.workingHash),
+  )))
+  const use: MediaUse = { mediaId: write.mediaId, locale: write.locale, context: 'og' }
+  return [
+    db.update(localizations).set({ ogImageMediaId: write.mediaId, workingHash: write.workingHash, version: write.version + 1, updatedBy: write.userId })
+      .where(and(eq(localizations.id, write.localizationId), eq(localizations.version, write.version), isNull(localizations.deletedAt)))
+      .returning({ id: localizations.id }),
+    db.delete(mediaUsages).where(and(eq(mediaUsages.entityType, type), eq(mediaUsages.entityId, write.entityId), eq(mediaUsages.locale, write.locale), eq(mediaUsages.context, 'og'), saved)),
+    db.insert(mediaUsages).select(db.select({
+      mediaId: sql<string>`json_extract(value, '$.mediaId')`.as('media_id'),
+      entityType: sql<string>`${type}`.as('entity_type'),
+      entityId: sql<string>`${write.entityId}`.as('entity_id'),
+      locale: sql<Locale | null>`json_extract(value, '$.locale')`.as('locale'),
+      context: sql<MediaUsageContext>`json_extract(value, '$.context')`.as('context'),
+    }).from(sql`json_each(${JSON.stringify([use])})`).where(saved)),
   ] as const
 }
 

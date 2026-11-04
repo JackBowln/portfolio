@@ -101,6 +101,13 @@ export const articlePublishSchema = z.strictObject({
   version: z.int().min(1),
 })
 
+/** F11-T2: the share image generated in the admin for one localization, on top of the version read */
+export const shareImageSchema = z.strictObject({
+  locale: z.enum(LOCALES),
+  version: z.int().min(1),
+  mediaId,
+})
+
 export const articleLocaleSchema = z.strictObject({
   locale: z.enum(LOCALES),
 })
