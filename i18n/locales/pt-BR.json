@@ -232,7 +232,8 @@
       "settings": "Configurações",
       "pages": "Páginas",
       "contact": "Mensagens",
-      "glossary": "Glossário"
+      "glossary": "Glossário",
+      "translations": "Traduções"
     },
     "dashboard": {
       "title": "Painel",
@@ -1225,6 +1226,85 @@
         "notWithKeep": "Um termo mantido como está não tem tradução.",
         "invalid": "Confira este campo.",
         "fix": "Corrija os campos marcados."
+      }
+    },
+    "translations": {
+      "title": "Traduções",
+      "intro": "O que está no site em português e o estado de cada idioma. Abra um item para traduzir com IA, revisar, aprovar e publicar.",
+      "empty": "Nada publicado em português ainda.",
+      "item": "Item",
+      "open": " — revisar {title}",
+      "types": {
+        "article": "Artigo",
+        "project": "Projeto",
+        "page": "Página"
+      },
+      "back": "Voltar para as traduções",
+      "reviewTitle": "{title} — {locale}",
+      "onSite": "Publicada no site",
+      "tagsHint": "Mantenha as marcas como {tags} na mesma ordem: elas são o negrito, os links e o código do original.",
+      "segments": "Segmentos da tradução",
+      "slug": "Endereço no idioma",
+      "slugHint": "Letras, números e hífens; acentos viram letras simples.",
+      "original": "Original (português)",
+      "translation": "Tradução ({locale})",
+      "previous": "Texto anterior",
+      "select": "Retraduzir: {label}",
+      "status": {
+        "outdated": "Desatualizado",
+        "missing": "Sem tradução"
+      },
+      "fields": {
+        "title": "Título",
+        "excerpt": "Resumo",
+        "summary": "Resumo",
+        "role": "Papel",
+        "seoTitle": "Título para buscadores",
+        "seoDescription": "Descrição para buscadores",
+        "highlight": "Destaque {n}",
+        "block": "Trecho {n}"
+      },
+      "save": "Salvar revisão",
+      "saved": "Revisão salva. A tradução está em revisão.",
+      "approve": "Aprovar tradução",
+      "approved": "Tradução aprovada.",
+      "publish": "Publicar em {locale}",
+      "published": "Publicada em {locale}.",
+      "translateAll": "Traduzir com IA",
+      "retranslateChosen": "Retraduzir {count} trecho escolhido | Retraduzir {count} trechos escolhidos",
+      "retranslateOutdated": "Retraduzir {count} trecho pendente | Retraduzir {count} trechos pendentes",
+      "estimate": "{segments} trechos, cerca de {neurons} neurônios.",
+      "confirm": "Confirmar e traduzir",
+      "resume": "Retomar a tradução",
+      "running": "Traduzindo…",
+      "progress": "{done} de {total} trechos",
+      "succeeded": "Tradução pronta para revisão. | Tradução pronta para revisão; {failed} trecho voltou com problema e ficou em português. | Tradução pronta para revisão; {failed} trechos voltaram com problema e ficaram em português.",
+      "failed": "A tradução parou: {error}. Os trechos já traduzidos foram guardados.",
+      "blocked": {
+        "disabled": "A tradução por IA está desligada nas configurações.",
+        "no_model": "Nenhum modelo escolhido nas configurações.",
+        "daily_neurons": "O limite diário de neurônios seria ultrapassado.",
+        "job_neurons": "Esta tradução passa do limite de neurônios por tradução.",
+        "monthly_budget": "O orçamento mensal seria ultrapassado.",
+        "job_budget": "Esta tradução passa do limite de custo por tradução."
+      },
+      "refused": {
+        "translation_approved": "Esta tradução já foi aprovada: escolha os trechos para retraduzir.",
+        "translation_in_review": "Esta tradução está em revisão: escolha os trechos para retraduzir.",
+        "translation_outdated": "Esta tradução está desatualizada: retraduza os trechos pendentes.",
+        "translation_missing": "Ainda não há tradução neste idioma.",
+        "empty": "O original não tem texto para traduzir.",
+        "unknown_segment": "Um dos trechos não existe mais no original.",
+        "unavailable": "O provedor de IA não está disponível neste ambiente."
+      },
+      "errors": {
+        "tags": "As marcas não conferem com o original.",
+        "unknown_segment": "Este trecho não existe mais no original.",
+        "invalid": "Confira este trecho.",
+        "fix": "Corrija os trechos marcados.",
+        "slugTaken": "Este endereço já é usado neste idioma.",
+        "approve": "Não foi possível aprovar. Salve a revisão primeiro.",
+        "missing": "{count} trecho ainda está sem tradução. | {count} trechos ainda estão sem tradução."
       }
     }
   },

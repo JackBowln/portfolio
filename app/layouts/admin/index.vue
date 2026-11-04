@@ -19,6 +19,7 @@ const links = computed(() => [
   { to: '/admin/paginas', label: 'admin.layout.pages' },
   { to: '/admin/tecnologias', label: 'admin.layout.technologies' },
   { to: '/admin/midia', label: 'admin.layout.media' },
+  ...(canReviewTranslations.value ? [{ to: '/admin/traducoes', label: 'admin.layout.translations' }] : []),
   ...(canReviewTranslations.value ? [{ to: '/admin/glossario', label: 'admin.layout.glossary' }] : []),
   ...(canReadContact.value ? [{ to: '/admin/mensagens', label: 'admin.layout.contact' }] : []),
   ...(canReadSettings.value ? [{ to: '/admin/configuracoes', label: 'admin.layout.settings' }] : []),
