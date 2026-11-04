@@ -7,7 +7,8 @@ export const TRANSLATION_TRANSITIONS: Record<TranslationState, readonly Translat
   missing: ['machine', 'in_review'],
   machine: ['in_review', 'approved'],
   in_review: ['approved'],
-  approved: ['outdated'],
+  // Editing an approved translation sends it back to review (F09-T4)
+  approved: ['outdated', 'in_review'],
   outdated: ['in_review'],
 }
 

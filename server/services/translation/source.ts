@@ -82,6 +82,8 @@ export interface SegmentedSource {
   rebuild: (translations: Readonly<Record<string, string>>) => { values: Record<string, unknown>, failed: string[] }
   /** Whether a translated text keeps the tags of its segment (checked as each batch comes back) */
   accepts: (id: string, text: string) => boolean
+  /** The tagged source of a segment, to turn a translation into review text (inline-tags.ts, withoutTerms) */
+  taggedOf: (id: string) => TaggedText | undefined
 }
 
 function setAt(target: Record<string, unknown>, path: Path, value: unknown): void {
@@ -113,6 +115,7 @@ export function segmentSource(type: ContentType, copy: Record<string, unknown>, 
 
   return {
     segments,
+    taggedOf: id => tagged.get(id),
     accepts: (id, text) => {
       const source = tagged.get(id)
       return source !== undefined && untagInline(text, source).ok

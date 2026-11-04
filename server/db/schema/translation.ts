@@ -35,7 +35,8 @@ export const TRANSLATION_JOB_STATUSES = ['estimated', 'running', 'succeeded', 'f
 export const TRANSLATION_ENTITY_TYPES = ['article', 'project', 'page'] as const
 
 // Segments translated so far (id → tagged text) and the ones the provider got wrong; kept so a failed job resumes
-const jobResults = z.strictObject({ done: z.record(z.string(), z.string()), failed: z.array(z.string()) })
+// `scope`: the segments a partial job retranslates (F09-T4); absent for a whole translation
+const jobResults = z.strictObject({ done: z.record(z.string(), z.string()), failed: z.array(z.string()), scope: z.array(z.string()).optional() })
 
 export const translationJobs = sqliteTable('translation_jobs', {
   id: text().primaryKey().$defaultFn(() => uuidv7()),

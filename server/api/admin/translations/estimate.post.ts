@@ -8,6 +8,8 @@ const bodySchema = z.object({
   entityType: z.enum(['article', 'project', 'page']),
   entityId: z.string().min(1).max(64),
   locale: z.enum(TARGET_LOCALES),
+  // F09-T4: retranslate only these segments of an existing translation
+  segmentIds: z.array(z.string().min(1).max(200)).min(1).max(2000).optional(),
 })
 
 export default defineAdminHandler({

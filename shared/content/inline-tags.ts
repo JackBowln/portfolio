@@ -256,3 +256,23 @@ export function untagPlainText(translated: string, source: TaggedText): { ok: tr
   }
   return { ok: true, text: result.content.map(node => (node.type === 'text' ? node.text : '')).join('') }
 }
+
+/**
+ * A translation tagged with protected terms, as review text: each term placeholder becomes the term itself (people
+ * edit around it), code placeholders are renumbered as a term-free tagging numbers them. The review screen and every
+ * write of a translation use term-free tagging (F09-T4); only what is sent to the model protects the terms
+ */
+export function withoutTerms(translated: string, source: TaggedText): string {
+  let code = 0
+  return translated.replace(/<x(\d+)\/>/g, (placeholder, index: string) => {
+    const slot = source.slots[Number(index) - 1]
+    if (!slot) {
+      return placeholder
+    }
+    if (slot.kind === 'term') {
+      return escape(slot.text)
+    }
+    code++
+    return `<x${code}/>`
+  })
+}

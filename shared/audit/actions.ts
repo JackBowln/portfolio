@@ -44,6 +44,8 @@ export const AUDIT_ACTIONS = [
   'translation.estimated',
   'translation.completed',
   'translation.failed',
+  'translation.reviewed',
+  'translation.approved',
   'tag.created',
   'tag.updated',
   'tag.deleted',

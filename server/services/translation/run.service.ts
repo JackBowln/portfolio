@@ -5,29 +5,13 @@
 // it stopped. When every segment is done, the target copy is written as `machine`: nothing is published, a person
 // reviews it (F09-T4). Only content fields are sent (source.ts)
 import { and, eq, gte, lt, sql } from 'drizzle-orm'
-import { contentHash } from '../../../shared/content/canonical-json.ts'
-import type { DocumentJson } from '../../../shared/content/document-schema.ts'
-import { deriveDocument } from '../../../shared/content/derive.ts'
-import { hashSegments } from '../../../shared/content/segment-hash.ts'
-import type { SegmentsMeta } from '../../../shared/content/segment-hash.ts'
-import { snapshotOf } from '../../../shared/content/snapshot.ts'
-import type { ContentType } from '../../../shared/content/snapshot.ts'
+import { withoutTerms } from '../../../shared/content/inline-tags.ts'
 import type { AiModel } from '../../../shared/translation/models.ts'
-import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import type { Locale } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import type { Db } from '../../db/client.ts'
-import { pages } from '../../db/schema/content.ts'
 import { translationJobs } from '../../db/schema/translation.ts'
 import { createAppError } from '../../utils/errors.ts'
-import { articleEntity, getArticle } from '../content/articles.service.ts'
-import { createLocalization } from '../content/localized.repo.ts'
-import { insertPageLocalization } from '../content/pages.repo.ts'
-import { getPage } from '../content/pages.service.ts'
-import { getProject, projectEntity } from '../content/projects.service.ts'
-import { contentTables } from '../content/content-tables.ts'
-import type { ContentTables } from '../content/content-tables.ts'
-import { freeSlug } from '../content/working-copy.ts'
 import { aiTranslationSettings } from '../settings/settings.service.ts'
 import { checkCost, batches, utcWindows } from './cost-guard.ts'
 import type { GuardRefusal } from './cost-guard.ts'
@@ -35,9 +19,10 @@ import { glossaryFor } from './glossary.service.ts'
 import type { TranslationProvider, TranslationRequest } from './providers/types.ts'
 import { ProviderError, tokensOf } from './providers/types.ts'
 import { segmentSource } from './source.ts'
-import { contentSegments } from './state.repo.ts'
+import { loadSource, reviewTexts, topOf, writeTranslation } from './target.ts'
+import type { LoadedSource, TranslatableType } from './target.ts'
 
-export type TranslatableType = 'article' | 'project' | 'page'
+export type { TranslatableType } from './target.ts'
 
 /** How long an estimate stays good for running (RF-11.3: the person confirms what they just saw) */
 export const ESTIMATE_TTL_MS = 15 * 60 * 1000
@@ -86,47 +71,18 @@ const viewOf = (row: JobRow): JobView => ({
 
 const refused = (path: string, message: string) => createAppError('conflict', 'Cannot translate', [{ path, message }])
 
-interface LoadedSource {
-  copy: Record<string, unknown> & { id: string, workingHash: string }
-  /** The target copy, when there is one */
-  target: (Record<string, unknown> & { id: string, version: number, translationState: string, slug?: string }) | undefined
-  entity: object
-}
-
-async function loadSource(db: Db, type: TranslatableType, entityId: string, locale: Locale): Promise<LoadedSource> {
-  let localizations: { locale: Locale }[]
-  let entity: object
-  if (type === 'article') {
-    const item = await getArticle(db, entityId)
-    localizations = item.localizations
-    entity = articleEntity(item)
-  }
-  else if (type === 'project') {
-    const item = await getProject(db, entityId)
-    localizations = item.localizations
-    entity = projectEntity(item)
-  }
-  else {
-    const [row] = await db.select({ key: pages.key }).from(pages).where(eq(pages.id, entityId))
-    if (!row) {
-      throw createAppError('not_found')
-    }
-    localizations = (await getPage(db, row.key)).localizations
-    entity = {}
-  }
-  const copy = localizations.find(item => item.locale === SOURCE_LOCALE) as LoadedSource['copy'] | undefined
-  if (!copy) {
-    throw createAppError('not_found')
-  }
-  return { copy, target: localizations.find(item => item.locale === locale) as LoadedSource['target'], entity }
-}
-
 /**
- * A job may write only where nothing human would be lost: no translation yet, or a machine one. An approved,
- * in-review or outdated copy is retranslated by segment from the review screen (F09-T4, decision 1)
+ * A whole translation is written only where nothing human would be lost: no translation yet, or a machine one. Any
+ * existing translation can have chosen segments retranslated (F09-T4): the rest of it is kept, and it goes to review
  */
-function assertTargetFree(source: LoadedSource): void {
+function assertTargetFree(source: LoadedSource, partial: boolean): void {
   const state = source.target?.translationState
+  if (partial) {
+    if (!source.target) {
+      throw refused('locale', 'translation_missing')
+    }
+    return
+  }
   if (state !== undefined && state !== 'missing' && state !== 'machine') {
     throw refused('locale', `translation_${state}`)
   }
@@ -160,13 +116,19 @@ function requestFor(locale: Locale, settings: Awaited<ReturnType<typeof aiTransl
 }
 
 /** Segments and prices a translation, and records the estimate; the person then confirms it to run */
-export async function estimateTranslation(db: Db, deps: RunDeps, userId: string, input: { entityType: TranslatableType, entityId: string, locale: Locale }): Promise<JobView & { blocked: GuardRefusal | null }> {
+export async function estimateTranslation(db: Db, deps: RunDeps, userId: string, input: { entityType: TranslatableType, entityId: string, locale: Locale, segmentIds?: string[] | undefined }): Promise<JobView & { blocked: GuardRefusal | null }> {
   const now = deps.now?.() ?? new Date()
   const settings = await aiTranslationSettings(db)
   const source = await loadSource(db, input.entityType, input.entityId, input.locale)
-  assertTargetFree(source)
+  const partial = input.segmentIds !== undefined
+  assertTargetFree(source, partial)
   const glossary = await glossaryFor(db, input.locale)
-  const { segments } = segmentSource(input.entityType, source.copy, glossary.protected)
+  const all = segmentSource(input.entityType, source.copy, glossary.protected).segments
+  // A partial job (F09-T4) retranslates only the segments asked for, and every one must exist in the source
+  const segments = partial ? all.filter(segment => input.segmentIds!.includes(segment.id)) : all
+  if (partial && segments.length !== new Set(input.segmentIds).size) {
+    throw createAppError('bad_request', 'Invalid input', [{ path: 'segmentIds', message: 'unknown_segment' }])
+  }
   if (segments.length === 0) {
     throw refused('source', 'empty')
   }
@@ -191,6 +153,7 @@ export async function estimateTranslation(db: Db, deps: RunDeps, userId: string,
     estimatedOutputTokens: estimate.outputTokens,
     estimatedNeurons: estimate.neurons,
     estimatedCostMicroUsd: estimate.costMicroUsd,
+    results: { done: {}, failed: [], ...(partial ? { scope: segments.map(segment => segment.id) } : {}) },
     requestedBy: userId,
     createdAt: now,
   }).returning()
@@ -229,7 +192,8 @@ export async function runTranslation(db: Db, deps: RunDeps, jobId: string): Prom
     await db.update(translationJobs).set({ status: 'cancelled', error: 'source_changed: the original changed after the estimate', finishedAt: now() }).where(eq(translationJobs.id, job.id))
     throw refused('source', 'changed')
   }
-  assertTargetFree(source)
+  const scope = job.results.scope
+  assertTargetFree(source, scope !== undefined)
 
   const settings = await aiTranslationSettings(db)
   const glossary = await glossaryFor(db, job.targetLocale)
@@ -237,7 +201,8 @@ export async function runTranslation(db: Db, deps: RunDeps, jobId: string): Prom
   const provider = deps.provider((settings.model || 'fake') as AiModel)
   const request = requestFor(job.targetLocale, settings, glossary.translations)
   const results = structuredClone(job.results)
-  const pending = segmented.segments.filter(segment => !(segment.id in results.done) && !results.failed.includes(segment.id))
+  const inScope = scope ? segmented.segments.filter(segment => scope.includes(segment.id)) : segmented.segments
+  const pending = inScope.filter(segment => !(segment.id in results.done) && !results.failed.includes(segment.id))
   let state: JobRow = { ...job, results, status: 'running', error: null, startedAt: job.startedAt ?? now() }
 
   const save = async (changes: Partial<JobRow>) => {
@@ -305,41 +270,22 @@ export async function runTranslation(db: Db, deps: RunDeps, jobId: string): Prom
     })
   }
 
-  if (state.segmentsDone < segmented.segments.length) {
+  if (state.segmentsDone < inScope.length) {
     return viewOf(state)
   }
-  await writeTarget(db, type, job.targetLocale, source, segmented.rebuild(results.done).values, source.copy)
+  // The model's texts as review text, over what the translation already had for a partial job
+  const translated = Object.fromEntries(Object.entries(results.done).map(([id, text]) => [id, withoutTerms(text, segmented.taggedOf(id)!)]))
+  // A failed segment has no text: it keeps the source and its block is `missing` until someone translates it
+  const texts = Object.fromEntries(Object.entries({ ...(scope ? reviewTexts(source) : {}), ...translated }).filter(([id]) => !results.failed.includes(id)))
+  await writeTranslation(db, source, job.targetLocale, {
+    texts,
+    // A whole job makes a machine copy; retranslating part of a reviewed one sends it back to review
+    state: scope ? 'in_review' : 'machine',
+    touched: new Set((scope ? inScope : segmented.segments).map(segment => topOf(segment.id))),
+    touchedState: 'machine',
+    userId: job.requestedBy,
+    kind: 'ai',
+  })
   await save({ status: 'succeeded', finishedAt: now() })
   return viewOf(state)
-}
-
-const tablesOf = (type: ContentType) => contentTables[type] as unknown as ContentTables['article']
-
-/** The translated copy, as `machine`; its segments meta records the source each segment was translated from */
-async function writeTarget(db: Db, type: TranslatableType, locale: Locale, source: LoadedSource, values: Record<string, unknown>, copy: Record<string, unknown>): Promise<void> {
-  const hashes = await hashSegments(contentSegments(type, copy))
-  const segmentsMeta: SegmentsMeta = Object.fromEntries(Object.entries(hashes).map(([id, sourceHash]) => [id, { sourceHash, state: 'machine' as const }]))
-  const body = type === 'page' ? undefined : deriveDocument(values.body as DocumentJson, locale)
-  const derived = body ? { wordCount: body.wordCount, readingTimeMin: body.readingTimeMin, toc: body.toc } : {}
-  const fields = { ...values, ...derived, translationState: 'machine' as const, segmentsMeta, seoTitle: values.seoTitle ?? null, seoDescription: values.seoDescription ?? null }
-
-  if (source.target) {
-    const { localizations } = tablesOf(type)
-    const next = { ...source.target, ...fields }
-    const workingHash = await contentHash(snapshotOf(type, source.entity as never, next))
-    const updated = await db.update(localizations).set({ ...fields, workingHash, version: source.target.version + 1 } as never)
-      .where(and(eq(localizations.id, source.target.id), eq(localizations.version, source.target.version))).returning({ id: localizations.id })
-    if (updated.length === 0) {
-      throw refused('version', 'stale')
-    }
-    return
-  }
-  if (type === 'page') {
-    const row = { id: uuidv7(), pageId: (copy as { pageId: string }).pageId, locale, ...fields }
-    await insertPageLocalization(db, { ...row, workingHash: await contentHash(snapshotOf('page', {}, row)) } as never)
-    return
-  }
-  const entityKey = contentTables[type].entityKey
-  const slug = await freeSlug(db, type, String(values.title ?? ''), String(copy.slug ?? 'item'), locale)
-  await createLocalization(db, type, { [entityKey]: (copy as Record<string, unknown>)[entityKey], locale, slug, ...fields } as never, source.entity as never)
 }
