@@ -102,7 +102,7 @@ Incluir também o CRUD do glossário no admin.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F09-T2 | RF-11.1, RF-11.3, RNF-08 | `/i18n-manager`, `/security-audit`, `/architecture-guardian` |
+| concluída (avaliação de modelos e chamada real pendentes no preview) | F09-T2 | RF-11.1, RF-11.3, RNF-08 | `/i18n-manager`, `/security-audit`, `/architecture-guardian` |
 
 **Objetivo.** Implementar:
 - a interface `TranslationProvider` (`estimate`, `translate`), com `WorkersAiProvider` (saída JSON estruturada) e `FakeTranslationProvider` para os testes;
@@ -117,16 +117,34 @@ Fazer a **avaliação de modelos** (3 artigos × 4 idiomas: qualidade de 1 a 5, 
 **Fora do escopo.** Provedor Claude (exige ADR e aprovação; fica no backlog).
 
 **Critérios de aceite**
-- [ ] Executar exige uma estimativa recente e confirmação explícita; job acima do saldo → bloqueado **antes** de qualquer chamada (testado com o fake).
-- [ ] O ledger registra os valores estimados e os reais (ou o estimado, com a flag `usage_estimated`); as somas por dia UTC e por mês aparecem no dashboard.
-- [ ] Erro do provedor → job `failed` com mensagem sanitizada; os lotes já concluídos são preservados e a execução é retomável.
-- [ ] A avaliação de modelos está registrada; o modelo padrão fica configurado em `ai_translation.model`.
-- [ ] Nenhum dado de contato ou de usuário entra no payload.
+- [x] Executar exige uma estimativa recente e confirmação explícita; job acima do saldo → bloqueado **antes** de qualquer chamada (testado com o fake).
+- [x] O ledger registra os valores estimados e os reais (ou o estimado, com a flag `usage_estimated`); as somas por dia UTC e por mês aparecem no dashboard.
+- [x] Erro do provedor → job `failed` com mensagem sanitizada; os lotes já concluídos são preservados e a execução é retomável.
+- [~] A avaliação de modelos está registrada; o modelo padrão fica configurado em `ai_translation.model`.
+- [x] Nenhum dado de contato ou de usuário entra no payload.
 
 **Testes**
 - Unit: o guarda de custo (limites, virada do dia UTC e do mês) e o chunking.
 - Workers: o ledger e a retomada com o provedor fake.
 - Teste manual registrado da chamada real ao Workers AI no preview, com sua autorização.
+
+**Resultado (04/11/2026).**
+- **Provedores:** interface `TranslationProvider`, `WorkersAiProvider` (saída JSON estruturada, neurons pela tabela de tarifas) e `FakeTranslationProvider`.
+- **Guarda de custo:** tetos diário e por job em neurons (decisão 4) e tetos em US$, verificados antes de cada lote.
+- **Ledger:** `translation_jobs`, migração 0008.
+- **Fluxo:** `POST /api/admin/translations/estimate` e `/run` (com `confirm: true`), `GET …/jobs/[id]` e `…/usage`.
+  - Lotes de ~3 mil tokens, até 20 chamadas por request, com retomada.
+  - O resultado é uma cópia `machine` de artigo, projeto ou página.
+  - A retradução por segmento fica para a F09-T4 (decisão 1).
+- **Dashboard:** neurons de hoje (UTC) contra o teto, e do mês.
+- **Provedor nos testes:** o build de teste usa o fake por `TRANSLATION_PROVIDER` (decisão 2).
+- **Modelo:** `ai_translation.model` aceita só os 4 candidatos e fica vazio até a avaliação (decisão 3).
+- **Pendente (com a sua autorização):** a avaliação de modelos e o teste manual da chamada real no preview.
+- **Testes:**
+  - `tests/unit/translation-cost.test.ts`;
+  - `tests/workers/translation-run.test.ts` (9);
+  - a parte de jobs em `tests/api/translations.spec.ts`;
+  - `tests/e2e/admin-shell.spec.ts` e `tests/e2e/settings.spec.ts` atualizados.
 
 ---
 

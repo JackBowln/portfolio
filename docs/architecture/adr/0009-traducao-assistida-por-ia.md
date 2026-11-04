@@ -85,7 +85,20 @@
 
 | Avaliação F09-T3 | Modelo | Qualidade (1–5) por idioma | Neurons/artigo | Data |
 |---|---|---|---|---|
-| _pendente_ | | | | |
+| _pendente: exige chamadas reais no preview, com autorização do owner_ | | | | |
+
+**Implementação (F09-T3).**
+- **Provedores:** `server/services/translation/providers/` (`types`, `prompt`, `workers-ai`, `fake`).
+  - O Workers AI usa saída `json_schema`, validada por zod como dado.
+  - Neurons pela tabela de tarifas (`shared/translation/models.ts`), pelo maior entre o uso informado e o estimado.
+  - Uma falha vira um código (`unavailable`, `rate_limited`, `invalid_output`), sem o texto do provedor.
+- **Guarda de custo** (`cost-guard.ts`): `enabled`, modelo, teto diário de neurons (dia UTC), teto por job em neurons (`perJobNeuronCap`) e os tetos em US$ (que só pesam para provedor pago). Roda antes de cada lote.
+- **Execução** (`run.service.ts`):
+  - estimativa válida por 15 minutos e vinda do mesmo original;
+  - `confirm: true` obrigatório;
+  - lotes de ~3.000 tokens, até 20 chamadas por request, e retomada a partir do que já foi feito.
+- **Fim do job:** grava uma cópia `machine`, sem publicar. Nunca escreve sobre uma tradução `approved`, `in_review` ou `outdated`.
+- **Modelo:** `ai_translation.model` aceita só os 4 candidatos, e fica vazio (tradução parada) até a avaliação.
 
 ## Referências
 

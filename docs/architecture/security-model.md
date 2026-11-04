@@ -72,6 +72,12 @@ A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/per
 
 - **Páginas** não têm `create`: as chaves são fixas (`PAGE_KEYS`). Desde a F08-T2, ler exige `page:read`; editar e salvar versão, `page:update`; restaurar, `page:restore`; publicar e despublicar, `page:publish`. Uma página não tem autor (`authorId: null`), então `author` nunca a edita. Os blocos passam por schemas `strict`. Os links do sobre só aceitam `https:`, e os botões da home só apontam para páginas do site (`PAGE_LINK_TARGETS`). Sobre e privacidade usam o documento validado pelo renderer, e a rota pública devolve só o snapshot publicado.
 - **Temas e tecnologias** (`tag`, F06-T1, F07-T1): ler segue `article:read`; o `author` cria temas e tecnologias para marcar o próprio artigo ou projeto, mas renomear e excluir afetam todos os itens que os usam, por isso ficam com `editor` para cima.
+- **Tradução por IA** (F09-T3):
+  - **Permissões:** estimar e executar exigem `translation:run`; o job e o uso, `translation:review`.
+  - **Execução:** exige `confirm: true` numa estimativa recente, e o guarda de custo roda no servidor antes de cada chamada.
+  - **Payload:** só campos de conteúdo (sem contato, usuário ou configurações); a saída do modelo é validada como dado.
+  - **Erros:** os jobs guardam um código, nunca a resposta do provedor.
+  - **Provedor fake:** só com `TRANSLATION_PROVIDER=fake` e `ENVIRONMENT=local` (o build de teste); em preview ou produção é recusado.
 - **Glossário** (F09-T2): ler exige `translation:review`; criar, editar e excluir exigem `translation:approve`, porque mudam o que toda tradução seguinte envia e pede. Entrada `strict`; a auditoria (`glossary.*`) guarda só o id.
 - **Estados de tradução** (F09-T1): o resumo do dashboard (`GET /api/admin/translations/summary`) exige `translation:review`. A aprovação de textos de mídia segue `translation:approve`, decidida no servidor pelo papel. O site nunca mostra uma tradução que não esteja `approved`.
 - **Mensagens de contato** (F08-T3): `contact:read`, `contact:update` e `contact:delete` só para owner e admin, porque são dados pessoais. A lista e a mensagem nunca devolvem o `ip_hash`. Excluir apaga de vez, e a auditoria (`contact.status_changed`, `contact.deleted`) guarda só o id e o estado. A notificação vai só ao endereço verificado (binding `send_email` com `destination_address`), com o assunto em uma linha (sem injeção de cabeçalho).

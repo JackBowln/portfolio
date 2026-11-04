@@ -35,6 +35,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | `BOOTSTRAP_TOKEN` | segredo | temporário | Só até criar o owner; apagar depois. Com menos de 32 caracteres o bootstrap não abre. Os testes usam um valor falso (`pnpm preview:test`) |
 | `PREVIEW_TOKEN_SECRET` | segredo | preview e produção (local opcional) | HMAC dos links de preview (≥ 32 caracteres). Sem ele, preview e produção falham fechados; o local usa um valor aleatório por isolate, e o build de teste recebe um valor fixo por `--var` (`pnpm preview:test`). Trocar o valor invalida todos os links |
 | `IP_HASH_SALT` | segredo | todos | Chave do HMAC-SHA256 dos IPs no `audit_log` (rotação anual). Sem ela, o `ip_hash` fica nulo: nunca há hash sem chave nem IP em claro. Os testes usam um valor falso (`pnpm preview:test`) |
+| `TRANSLATION_PROVIDER` | var | só o build de teste | `fake` no `pnpm preview:test` (F09-T3): tradução sem rede. Recusado fora de `ENVIRONMENT=local` |
 | `TURNSTILE_SECRET_KEY` | segredo | todos | Validação do Turnstile. Sem ele, o contato falha fechado (500). O build de teste recebe a chave de teste oficial, que sempre passa, por `--var` (`pnpm preview:test`) |
 | `CF_API_TOKEN_PURGE` | segredo | só se usar o fallback | Purge por tag via API (ADR-0003) |
 | `ANTHROPIC_API_KEY` | segredo | futuro | Só com ADR e aprovação (ADR-0009) |
