@@ -1,0 +1,50 @@
+# Weekly backup (F12-T4, ADR-0014 §5, backup-restore §1): the D1 export and the media manifest go to the private R2
+# bucket portfolio-backups (d1/<env>/<date>.sql, media/<env>/manifest-<date>.json), the run of 12 weeks ago is removed
+# and every upload is read back and compared by SHA-256 (scripts/ops/backup.ts). Needs the CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID secrets of the GitHub Environment it runs in, which only the owner configures.
+name: Backup
+
+on:
+  schedule:
+    # Mondays, 06:17 UTC
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to back up
+        type: choice
+        options: [preview, production]
+        default: preview
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-${{ inputs.environment || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    # The schedule backs up production once it exists (vars.PRODUCTION_READY, set by the owner at launch)
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.PRODUCTION_READY == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: ${{ inputs.environment || 'production' }}
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - name: Export, manifest, store, verify and prune
+        run: node scripts/ops/backup.ts --env "${{ inputs.environment || 'production' }}"

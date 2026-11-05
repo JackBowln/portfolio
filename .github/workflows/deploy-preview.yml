@@ -1,0 +1,56 @@
+# Preview deploy (F12-T4, ADR-0014 §3): build → remote migrations → new version → deploy at 100% → smoke. By hand, or
+# on every push to main once the owner sets vars.PREVIEW_AUTO_DEPLOY to 'true'. Needs the CLOUDFLARE_API_TOKEN and
+# CLOUDFLARE_ACCOUNT_ID secrets of the GitHub Environment `preview`, which only the owner configures.
+name: Deploy preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-preview
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.PREVIEW_AUTO_DEPLOY == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: preview
+      url: https://portfolio-preview.vinivdias.workers.dev
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm check:prod-build
+      # Expand/contract keeps the running version compatible with the new schema (ADR-0004)
+      - run: pnpm exec wrangler d1 migrations apply DB --remote --env preview --config wrangler.jsonc
+      - name: Upload a new version
+        id: upload
+        run: |
+          pnpm exec wrangler versions upload --config .output/server/wrangler.json --env preview --message "${GITHUB_SHA::12}" | tee upload.txt
+          version=$(grep -oE 'Worker Version ID: [0-9a-f-]{36}' upload.txt | grep -oE '[0-9a-f-]{36}$')
+          test -n "$version" || { echo "::error::no version id in the upload output"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Deploy it at 100%
+        run: pnpm exec wrangler versions deploy "${{ steps.upload.outputs.version }}@100%" --config .output/server/wrangler.json --env preview --message "${GITHUB_SHA::12}" --yes
+      - name: Smoke
+        run: node scripts/ops/smoke.ts --base https://portfolio-preview.vinivdias.workers.dev

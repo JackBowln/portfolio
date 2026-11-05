@@ -5,12 +5,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The production deploy runs these same checks first (F12-T4, deploy-production.yml)
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -1,6 +1,7 @@
 // Bindings source of truth (ADR-0002); Nitro's cloudflare_module preset merges this file and fills `main`/`assets`.
 // Names follow docs/operations/environments.md. Bindings are not inherited by `env.*`, so each environment lists them all.
-// Not yet configured: send_email/CONTACT_EMAIL (Q-05), BACKUPS bucket (F12).
+// Not yet configured: send_email/CONTACT_EMAIL (Q-05). Backups go to the R2 bucket portfolio-backups through wrangler
+// in .github/workflows/backup.yml, never through a Worker binding (F12-T4).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
 
