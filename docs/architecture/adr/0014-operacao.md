@@ -28,7 +28,7 @@
      4. `versions upload`;
      5. `versions deploy` (100%);
      6. smoke;
-     7. purge, se `cross_version_cache` estiver ligado.
+     7. sem purge: o `cross_version_cache` fica desligado (ADR-0003, F11-T4), e cada versão começa com o cache frio. Para um purge geral fora do deploy, existe `POST /api/admin/cache/purge` (owner ou admin, auditado), que purga a tag `site`.
    - O token da Cloudflare para o CI tem escopo mínimo (Workers Scripts:Edit, D1:Edit e, se precisar, Cache Purge) e fica nos secrets do GitHub.
 4. **Migrações.** Expand/contract: adicionar (colunas anuláveis ou tabelas novas) → backfill → código novo → remover em deploy posterior. Sempre aplicar no preview antes da produção. Nunca editar uma migração já aplicada.
 5. **Backups.**

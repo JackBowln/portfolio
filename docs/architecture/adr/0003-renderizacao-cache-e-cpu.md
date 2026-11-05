@@ -108,7 +108,7 @@ Se algum critério falhar, aplica-se o fallback correspondente e o owner é cons
 **Seguir no Workers Free.** Em MISS, o SSR de um artigo passa de 10 ms de CPU, mas com o Workers Cache cada página só renderiza uma vez por publicação, purge ou deploy, e todo o resto é HIT, sem CPU. O Free tolerou os 400 misses seguidos sem erro 1102. Requisitos que viram trabalho nas fases seguintes:
 
 1. **`Cache-Control` das páginas públicas:** `public, max-age=0, s-maxage=604800`, com cache compartilhado de 7 dias e revalidação no navegador. O purge por evento (§3) torna o TTL longo seguro. Implementação na F02-T4.
-2. **`cross_version_cache: true` em produção**, para o deploy não esfriar o cache, com purge geral nos deploys que mudarem templates (F11/F12).
+2. **`cross_version_cache: true` em produção**, para o deploy não esfriar o cache, com purge geral nos deploys que mudarem templates (F11/F12). **Revisto na F11-T4 (owner, 2026-11-04): fica desligado.** Os assets de cada versão saem do ar no deploy, então um HTML de uma versão anterior servido do cache quebraria o JS até o purge. Com o cache frio por deploy, cada página paga um MISS, o que o Free tolerou no spike.
 3. **Chave de cache normalizada:** query strings desconhecidas não podem gerar misses. Elas devem ser ignoradas ou redirecionadas para a URL canônica (F11), porque misses em massa são o que pode levar ao 1102.
 4. **Renderer sem o documento no payload** (F05). O spike mediu o pior caso, com o documento inteiro serializado pelo `useFetch` (HTML de 155 KB brutos). Remedir a CPU do R3 com o renderer real na F05/F11.
 5. **Monitorar o 1102** no Workers Observability. Se aparecer de forma recorrente, aplicam-se os fallbacks 2 e 3 do §7, com consulta ao owner antes de qualquer custo.
@@ -123,3 +123,23 @@ Se algum critério falhar, aplica-se o fallback correspondente e o owner é cons
 - carga: `node scripts/spikes/ssr-load.mjs --base https://portfolio-preview.vinivdias.workers.dev --path /spike/article --count 200 --label article` (e `--path / --label home`), com query string única por requisição para forçar o miss;
 - CPU por requisição: `pnpm exec wrangler tail portfolio-preview --format json` (campos `cpuTime` e `wallTime`), filtrando pelo valor `spike=<label>-<n>`;
 - a página do spike foi descartada depois da medição (regra da fase).
+
+**Implementação (F11-T4, 2026-11-04):**
+- **Tag `site` em toda resposta pública** (`server/plugins/cache-policy.ts`), menos nos arquivos de mídia imutáveis, que são endereçados por conteúdo. Ela serve ao purge geral (`POST /api/admin/cache/purge`, `settings:update`, auditado como `cache.purged`).
+- **Redirects:** os 301 dos middlewares saem antes do `beforeResponse`, então os próprios middlewares acrescentam `site` (o de slug antigo e o de query).
+- **Erros e `no-store` não levam tags:** isso vale também para a página de erro que o handler do Nuxt monta depois de uma página lançar um 404 (hook `error`).
+- **Eventos sem publicação** em `shared/cache/purge.ts`:
+
+  | Evento | Tags purgadas |
+  |---|---|
+  | Renomear um tema ou uma tecnologia | `tag:{id}`, `list:blog:{l}` e `list:projects:{l}` dos 5 idiomas, `sitemap` |
+  | Metadados de mídia (alt, legenda, crédito, decorativa, ponto focal) | `media:{id}` |
+  | Ordem manual dos projetos, ou mudança no destaque de um projeto | `list:projects:{l}` e `page:home:{l}` dos 5 idiomas |
+  | Aprovar a tradução de um tema (F11-T3) | `tag:{id}`, `sitemap` |
+
+- **Chave normalizada (decisão 3 do spike):** `server/middleware/02.canonical-query.ts` responde um 301 em cache para a URL sem os parâmetros que a página não lê. Ficam só `page` no blog e nos temas e `tech` em projetos (`shared/seo/canonical-query.ts`).
+- **Testes:** `tests/api/cache.spec.ts` varre todas as URLs do sitemap, os dados públicos, feeds, sitemap e robots. Ele exige `Cache-Control` público, `Cache-Tag` válido com `site` e nenhum `Set-Cookie`; confere que erros são `no-store` sem tags; e confere que as páginas afetadas por cada evento levam uma das tags purgadas.
+- **Pendente no preview (ação do owner, com deploy autorizado):**
+  - publicar e medir o tempo até o reflexo na página e nas listas (meta ≤ 60 s);
+  - confirmar um HIT sem execução do Worker (`Cf-Cache-Status: HIT` e nenhuma invocação no tail);
+  - registrar os dois nesta seção.

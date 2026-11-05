@@ -153,7 +153,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F11-T3 | RNF-05 | `/performance-audit`, `/architecture-guardian` |
+| concluída no código (preview pendente) | F11-T3 | RNF-05 | `/performance-audit`, `/architecture-guardian` |
 
 **Objetivo.** Aplicar a decisão do F00-T6:
 - Workers Cache (ou o fallback escolhido) por ambiente;
@@ -170,9 +170,19 @@ Comprovar no preview.
 **Fora do escopo.** Mudar a estratégia (isso exigiria um ADR novo).
 
 **Critérios de aceite**
-- [ ] Todas as respostas públicas têm `Cache-Control` e `Cache-Tag` válidos; nenhuma tem `Set-Cookie` (teste varrendo todas as rotas do sitemap).
+- [x] Todas as respostas públicas têm `Cache-Control` e `Cache-Tag` válidos; nenhuma tem `Set-Cookie` (teste varrendo todas as rotas do sitemap).
 - [ ] No preview (com sua autorização para o deploy): publicar → a página e as listas refletem a mudança em ≤ 60 s; o tempo medido vai para o ADR-0003.
 - [ ] Hit sem execução do Worker comprovado (`Cf-Cache-Status` ou métricas).
+
+**Resultado (04/11/2026).**
+- **Decisões:**
+  - query desconhecida → 301 (decisão 1);
+  - `cross_version_cache` desligado, revisando o ADR-0003 (decisão 2);
+  - purge geral por rota do admin (decisão 3);
+  - entrega no código, com o preview pendente (decisão 4).
+- **Implementado:** a tag `site` em toda resposta pública, o purge dos eventos sem publicação, erros sem tags, o middleware de query e a rota de purge geral. Os detalhes estão no ADR-0003 (Implementação F11-T4).
+- **Varredura:** `tests/api/cache.spec.ts` cobre todas as URLs do sitemap e as respostas públicas.
+- **Pendentes (seus, no preview):** os dois critérios de reflexo e de HIT. O roteiro está no ADR-0003.
 
 **Testes**
 - API: headers de cache em todas as rotas públicas.
