@@ -26,6 +26,7 @@
     "test:e2e": "playwright test --project e2e --project e2e-mobile --project auth-flow",
     "test:a11y": "playwright test --project a11y && playwright test --config playwright.dev.config.ts",
     "check:budgets": "node scripts/check-budgets.ts",
+    "check:prod-build": "node scripts/check-prod-build.ts",
     "check:contrast": "node scripts/check-contrast.ts",
     "check:i18n": "node scripts/check-i18n.ts",
     "lighthouse": "node scripts/lighthouse.ts",
@@ -95,12 +96,8 @@
     ],
     "overrides": {
       "@cloudflare/vitest-plugin>zod": "~4.6.7",
-      "miniflare>undici": "~7.30.1"
-    },
-    "auditConfig": {
-      "ignoreGhsas": [
-        "GHSA-86w9-cpqp-85rv"
-      ]
+      "miniflare>undici": "~7.30.1",
+      "listhen>node-forge": "1.4.2"
     }
   }
 }
