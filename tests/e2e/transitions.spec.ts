@@ -4,6 +4,8 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import { ensureBlogFixture } from '../support/blog'
+import { ORIGIN, unique } from '../support/journeys'
+import { readyImage } from '../support/media-api'
 
 // Counts the transitions the page starts (or removes the API, to see the fallback)
 async function trackTransitions(page: Page, supported: boolean) {
@@ -32,8 +34,19 @@ async function hydrated(page: Page) {
   await expect.poll(() => page.evaluate(() => Boolean((document.querySelector('#__nuxt') as { __vue_app__?: unknown } | null)?.__vue_app__))).toBe(true)
 }
 
+// A published project with a cover and a result, made here: the fixture's example project has no cover, and the
+// test data starts empty on every run (F12-T1)
+let covered = ''
 test.beforeAll(async ({ request }) => {
   await ensureBlogFixture(request)
+  expect((await request.post('/api/_test/session?role=owner', { headers: ORIGIN })).status()).toBe(200)
+  const cover = await readyImage(request, `capa-transicao-${unique()}.jpg`)
+  expect((await request.patch(`/api/admin/media/${cover}`, { headers: ORIGIN, data: { localizations: { 'pt-BR': { alt: 'Capa do projeto com transição' } } } })).status()).toBe(200)
+  const created = await (await request.post('/api/admin/projects', { headers: ORIGIN, data: { title: `Com capa ${unique()}` } })).json() as { id: string, localizations: { slug: string }[] }
+  const saved = await request.patch(`/api/admin/projects/${created.id}`, { headers: ORIGIN, data: { version: 1, summary: 'Resumo', coverMediaId: cover, highlights: [{ label: 'Resultado', value: '42%' }] } })
+  expect(saved.status()).toBe(200)
+  expect((await request.post(`/api/admin/projects/${created.id}/publish`, { headers: ORIGIN, data: { locale: 'pt-BR', version: 2 } })).status()).toBe(200)
+  covered = created.localizations[0]!.slug
 })
 
 test('with support: the card cover becomes the case study image through a view transition', async ({ page, isMobile }) => {
@@ -44,14 +57,15 @@ test('with support: the card cover becomes the case study image through a view t
   const listed = await names(page)
   expect(listed.length).toBeGreaterThan(0)
   expect(new Set(listed).size).toBe(listed.length)
-  // A card with a cover (the fixture's example project has none)
-  const slug = listed[0]!.replace(/^project-/, '')
+  expect(listed).toContain(`project-${covered}`)
+  const slug = covered
   await page.locator(`article:has(.vt-project) a[href$="/projetos/${slug}"]`).first().click()
   await expect(page).toHaveURL(new RegExp(`/projetos/${slug}$`))
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   expect(await transitions(page)).toBeGreaterThan(0)
   const onPage = await names(page)
-  expect(onPage[0]).toBe(`project-${slug}`)
+  // Its own name, once (related projects carry theirs)
+  expect(onPage).toContain(`project-${slug}`)
   expect(new Set(onPage).size).toBe(onPage.length)
   expect(errors).toEqual([])
 })
@@ -89,9 +103,7 @@ test('on mobile the shared names are off: only the crossfade', async ({ page, is
 
 test('the case study starts its motion and every highlight ends on its original text', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Once is enough')
-  await page.goto('/projetos')
-  const slug = (await names(page))[0]!.replace(/^project-/, '')
-  await page.goto(`/projetos/${slug}`)
+  await page.goto(`/projetos/${covered}`)
   const values = page.locator('[data-motion="highlight-value"]')
   const before = await values.allTextContents()
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'started', { timeout: 10_000 })

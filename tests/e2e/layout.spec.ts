@@ -132,6 +132,8 @@ test('no horizontal scroll at 360 px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 })
   for (const path of ['/', '/de/ueber-mich', '/fr/blog/x', '/de/does-not-exist']) {
     await page.goto(path)
+    // WebKit counts the router's replaceState during hydration as a navigation: the next goto waits for it
+    await hydrated(page)
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
     expect(overflow, path).toBe(0)
   }

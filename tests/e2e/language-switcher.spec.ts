@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { ensureBlogFixture } from '../support/blog'
+import { hydrated } from '../support/journeys'
 
 test.beforeAll(async ({ playwright, baseURL }) => {
   const request = await playwright.request.newContext({ baseURL })
@@ -76,5 +77,7 @@ test('dates are formatted with Intl in the active language and the site time zon
   for (const [locale, text] of Object.entries(expected)) {
     await page.goto(`${locale === 'pt-BR' ? '' : `/${locale}`}/blog/x`)
     await expect(page.getByText(text)).toBeVisible()
+    // WebKit counts the router's replaceState during hydration as a navigation: the next goto waits for it
+    await hydrated(page)
   }
 })
