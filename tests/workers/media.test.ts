@@ -17,6 +17,7 @@ import {
   softDeleteMedia,
   updateMedia,
 } from '../../server/services/media/media.repo'
+import { createMedia } from '../../server/services/media/media.service'
 import { uuidv7 } from '../../shared/utils/id'
 
 const db = createDb(env.DB)
@@ -132,5 +133,33 @@ describe('media repository', () => {
     const left = await db.select().from(mediaLocalizations)
     expect(left.filter(entry => entry.mediaId === item.id)).toEqual([])
     expect(await listUsages(db, item.id)).toEqual([])
+  })
+})
+
+// F12-T2: the same file uploaded from two tabs at once. The hash check and the insert are not one step, so the
+// unique hash decides: one item is created, the other request gets the same 409 as a later upload, naming it
+describe('createMedia with the same file twice at once', () => {
+  it('creates one item and answers the other with a conflict that names it', async () => {
+    const hash = sha()
+    const manifest = {
+      kind: 'image' as const,
+      mimeType: 'image/jpeg' as const,
+      originalFilename: 'duas-abas.jpg',
+      size: 1000,
+      width: 640,
+      height: 480,
+      sha256: hash,
+      placeholderDataUrl: 'data:image/png;base64,iVBORw0KGgo=',
+      dominantColor: '#1a2b3c',
+      variants: (['avif', 'webp', 'jpeg'] as const).flatMap(format => [320, 640].map(width => ({ format, width, height: width * 0.75, size: 500 }))),
+    }
+    const results = await Promise.allSettled([createMedia(db, userId, manifest), createMedia(db, userId, manifest)])
+    const created = results.filter(result => result.status === 'fulfilled')
+    const refused = results.filter(result => result.status === 'rejected')
+    expect(created).toHaveLength(1)
+    expect(refused).toHaveLength(1)
+    const id = (created[0] as PromiseFulfilledResult<{ id: string }>).value.id
+    expect((refused[0] as PromiseRejectedResult).reason).toMatchObject({ statusCode: 409, data: { issues: [{ path: 'sha256', message: `Already uploaded as media ${id}` }] } })
+    expect(await findMediaIdBySha256(db, hash)).toBe(id)
   })
 })

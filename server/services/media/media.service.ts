@@ -8,7 +8,7 @@ import type { Locale } from '../../../shared/types/enums.ts'
 import { SOURCE_LOCALE } from '../../../shared/types/enums.ts'
 import { uuidv7 } from '../../../shared/utils/id.ts'
 import type { Db } from '../../db/client.ts'
-import { createAppError } from '../../utils/errors.ts'
+import { createAppError, isUniqueViolation } from '../../utils/errors.ts'
 import {
   findMedia,
   findMediaIdBySha256,
@@ -43,9 +43,10 @@ const publicUpload = ({ name, contentType, size }: ExpectedUpload) => ({ name, c
 
 /** Registers a pending item and returns the uploads it expects; the same file (by hash) is never stored twice */
 export async function createMedia(db: Db, userId: string, manifest: MediaManifest) {
+  const alreadyUploaded = (existing: string) => createAppError('conflict', 'Media already uploaded', [{ path: 'sha256', message: `Already uploaded as media ${existing}` }])
   const existing = await findMediaIdBySha256(db, manifest.sha256)
   if (existing) {
-    throw createAppError('conflict', 'Media already uploaded', [{ path: 'sha256', message: `Already uploaded as media ${existing}` }])
+    throw alreadyUploaded(existing)
   }
   if (manifest.kind === 'video' && !await findReadyImage(db, manifest.posterMediaId)) {
     throw createAppError('bad_request', 'Invalid input', [{ path: 'posterMediaId', message: 'Must be a ready image' }])
@@ -57,6 +58,8 @@ export async function createMedia(db: Db, userId: string, manifest: MediaManifes
   const keyOf = (name: string) => plan.find(upload => upload.name === name)!.key
 
   const id = uuidv7()
+  // The same file from two tabs at once (F12-T2): the unique hash refuses the second insert, which answers like the
+  // check above instead of a 500
   await insertMedia(db, {
     id,
     kind: manifest.kind,
@@ -74,7 +77,10 @@ export async function createMedia(db: Db, userId: string, manifest: MediaManifes
     posterMediaId: manifest.kind === 'video' ? manifest.posterMediaId : null,
     createdBy: userId,
     updatedBy: userId,
-  }, tracks.map(track => ({ locale: track.locale, kind: track.kind, label: track.label, size: track.size, key: keyOf(`${track.kind}-${track.locale}`) })))
+  }, tracks.map(track => ({ locale: track.locale, kind: track.kind, label: track.label, size: track.size, key: keyOf(`${track.kind}-${track.locale}`) }))).catch(async (error: unknown) => {
+    const winner = isUniqueViolation(error) ? await findMediaIdBySha256(db, manifest.sha256) : undefined
+    throw winner ? alreadyUploaded(winner) : error
+  })
 
   return { id, status: 'pending' as const, uploads: plan.map(publicUpload) }
 }
