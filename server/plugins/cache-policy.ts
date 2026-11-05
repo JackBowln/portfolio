@@ -15,12 +15,22 @@ function isPublicPage(path: string): boolean {
 }
 
 export default defineNitroPlugin((nitroApp) => {
+  // A page that throws (a 404 or 500 in its setup) is answered by the error handler, outside beforeResponse: tags its
+  // first render already set (the layout's `settings`) would stay on a response nobody stores
+  nitroApp.hooks.hook('error', (_error, { event }) => {
+    if (event) {
+      removeResponseHeader(event, 'cache-tag')
+    }
+  })
+
   nitroApp.hooks.hook('beforeResponse', (event) => {
     const path = event.path.split('?')[0] ?? event.path
     const status = getResponseStatus(event)
 
     if (status >= 400 || (!isPublicPage(path) && !getResponseHeader(event, 'cache-control'))) {
       setCachePolicy(event, 'none')
+      // Nothing stored, nothing to purge (an error page still renders the layout, which tags `settings`)
+      removeResponseHeader(event, 'cache-tag')
       return
     }
 
@@ -43,7 +53,9 @@ export default defineNitroPlugin((nitroApp) => {
       logger.error('cache.public_set_cookie_stripped', { requestId: event.context.requestId, route: path })
       removeResponseHeader(event, 'set-cookie')
     }
-    if (!getResponseHeader(event, 'cache-tag')) {
+    // F11-T4: `site` on every public response, so one purge after a deploy reaches them all; content-addressed
+    // media files (immutable) never go stale
+    if (!String(getResponseHeader(event, 'cache-control')).includes('immutable')) {
       setCacheTags(event, [cacheTags.site()])
     }
   })

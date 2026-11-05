@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
     return
   }
   setCachePolicy(event, 'public')
-  setCacheTags(event, [cacheTags.redirects()])
+  // A redirect is sent before beforeResponse, so `site` (F11-T4) is set here
+  setCacheTags(event, [cacheTags.redirects(), cacheTags.site()])
   return sendRedirect(event, redirect.toPath, redirect.statusCode)
 })
