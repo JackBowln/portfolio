@@ -25,8 +25,9 @@ export function useLocaleSwitchHref(path: () => string): (locale: Locale) => str
   const localePath = useLocalePath()
   return (locale) => {
     const fallback = state.value
+    // A page with no route (the 404) has no equivalent: the home of that locale (F12-T1), never a link without href
     return fallback && fallback.path === path() && !fallback.available.includes(locale)
       ? localePath(fallback.fallback, locale)
-      : switchLocalePath(locale)
+      : switchLocalePath(locale) || localePath('/', locale)
   }
 }
