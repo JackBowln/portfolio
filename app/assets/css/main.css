@@ -328,6 +328,13 @@ html[data-reduce-motion]::view-transition-new(*) {
     scroll-padding-block-start: calc(var(--spacing) * 4);
   }
 
+  /* F12-T2 (1.4.10): a one-column grid without declared columns sizes its track to the widest content, so an image
+     that fails to load (laid out at its width attribute) or a long word widened the whole page on a phone. Zero
+     specificity: any grid-cols-* still wins */
+  :where(.grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-text);
