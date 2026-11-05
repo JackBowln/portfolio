@@ -86,7 +86,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F12-T1 | RNF-06, RNF-07, RNF-12 | `/security-audit` |
+| concluída (headers no preview pendentes com o owner) | F12-T1 | RNF-06, RNF-07, RNF-12 | `/security-audit` |
 
 **Objetivo.** Rodar o `/security-audit` no escopo completo (security-model §2 e §5) e, além dele:
 - `pnpm audit`;
@@ -100,9 +100,19 @@
 **Fora do escopo.** Testes de intrusão em infraestrutura da Cloudflare.
 
 **Critérios de aceite**
-- [ ] Nenhum achado alto ou crítico aberto; os médios têm plano e data.
-- [ ] O build de produção não contém o endpoint de login de teste (busca no output).
-- [ ] Nenhum segredo no repositório nem no histórico.
+- [x] Nenhum achado alto ou crítico aberto; os médios têm plano e data.
+- [x] O build de produção não contém o endpoint de login de teste (busca no output).
+- [x] Nenhum segredo no repositório nem no histórico.
+
+**Resultado (05/11/2026).** O relatório completo está em [security-audit-2026-11-05](../operations/security-audit-2026-11-05.md).
+- **Achados:** críticos 0, altos 0, médios 2.
+  - A passkey sem verificação do usuário foi corrigida: o servidor exige a flag UV.
+  - O aviso do `nuxt` < 4.6.3 foi aceito pelo owner: o desvio não é explorável aqui, e o 4.6.3 estoura o R7.
+- **`node-forge`:** forçado para 1.4.2; o `pnpm audit --audit-level high` está limpo e a exceção antiga saiu.
+- **Segredos:** o `gitleaks` varreu 301 commits, sem vazamento.
+- **`pnpm check:prod-build`:** novo, no CI; nenhum código de teste no build de produção.
+- **Headers:** fixados em `tests/api-prod/headers.spec.ts`.
+- **Matriz:** as 76 rotas do admin foram conferidas contra ela.
 
 **Testes**
 - Os testes de segurança da estratégia passam (API: authz, CSRF, rate limit, headers, uploads).

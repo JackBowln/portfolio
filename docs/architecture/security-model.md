@@ -93,6 +93,12 @@ A tabela é a especificação de `shared/auth/permissions.ts`: o `tests/unit/per
 - **`media:delete` 🟡:** o author apaga só o que enviou (`created_by`); mídia em uso responde 409 para qualquer papel. Enviar arquivos e finalizar um item `pending` cabe só a quem o criou.
 - **`session`:** cada pessoa lista e revoga só as próprias sessões, inclusive o owner. As sessões de outros usuários são `user:revoke-session`.
 - **`admin` (exceto owner):** não age sobre um owner nem concede o papel `owner` (`canManageUser`).
+- **Purge geral** (`POST /api/admin/cache/purge`, F11-T4): `settings:update` (owner e admin), auditado como `cache.purged`.
+- **Passkey com verificação do usuário** (F12-T3):
+  - o registro pede `userVerification: 'required'`;
+  - o servidor recusa registro e login sem a flag UV (`requireUserVerified` nos ganchos `afterVerification`), porque o plugin verifica com `requireUserVerification: false`;
+  - uma chave só de presença (sem PIN nem biometria) não serve para o admin.
+- **Build de produção sem código de teste** (F12-T3): `pnpm check:prod-build` procura no `.output` os marcadores do login de teste e das rotas `_test` e roda no job de Lighthouse do CI, depois do build de produção.
 
 ## 5. Controles por camada (checklist resumido)
 
