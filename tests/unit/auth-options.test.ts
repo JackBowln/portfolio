@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AuditEvent } from '../../server/services/audit/audit.service'
-import { authOptions, passkeyOptions, resolveAuthSecret, withoutOAuthTokens } from '../../server/services/auth/options'
+import { authOptions, passkeyOptions, requireUserVerified, resolveAuthSecret, withoutOAuthTokens } from '../../server/services/auth/options'
 import type { AuthPorts } from '../../server/services/auth/options'
 import { BOOTSTRAP_COOKIE, createBootstrapGrant } from '../../server/services/auth/policies'
 
@@ -152,6 +152,16 @@ describe('passkeyOptions', () => {
       authenticatorSelection: { residentKey: 'required' },
     })
     expect(passkeyOptions({ SITE_URL: 'http://localhost:8787' })).toMatchObject({ rpID: 'localhost', origin: 'http://localhost:8787' })
+  })
+
+  it('requires user verification on registration and sign-in (F12-T3)', () => {
+    const options = passkeyOptions({ SITE_URL: 'https://example.dev' })
+    expect(options.authenticatorSelection.userVerification).toBe('required')
+    expect(() => options.registration.afterVerification({ verification: { registrationInfo: { userVerified: false } } })).toThrow('must verify you')
+    expect(() => options.authentication.afterVerification({ verification: { authenticationInfo: { userVerified: false } } })).toThrow('must verify you')
+    expect(() => options.authentication.afterVerification({ verification: {} })).toThrow('must verify you')
+    expect(options.registration.afterVerification({ verification: { registrationInfo: { userVerified: true } } })).toBeUndefined()
+    expect(() => requireUserVerified(true)).not.toThrow()
   })
 })
 

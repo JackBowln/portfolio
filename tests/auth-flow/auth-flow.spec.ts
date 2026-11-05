@@ -200,3 +200,57 @@ test('J-08: the passkey is lost, GitHub lets the owner back in, a new passkey is
   expect(logins.slice(-2)).toEqual(['github', 'passkey'])
   await context.close()
 })
+
+// F12-T3: a passkey must verify the person, not only the device. The same credential signs two ceremonies run in the
+// page: asked with userVerification "required" it signs in; asked with "discouraged" the authenticator skips the check,
+// so the signed response carries no UV flag, and the server refuses it for that reason alone
+test('a passkey sign-in without user verification is refused by the server', async ({ browser, request }) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  const cdp = await context.newCDPSession(page)
+  await cdp.send('WebAuthn.enable')
+  await cdp.send('WebAuthn.addVirtualAuthenticator', {
+    options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true },
+  })
+  await fakeGithubAuthorize(page, OWNER_GITHUB_ID)
+  await page.goto('/admin/login')
+  await page.getByRole('button', { name: 'Entrar com GitHub' }).click()
+  await page.waitForURL(url => url.pathname.startsWith('/admin') && !url.pathname.startsWith('/admin/login'))
+  await page.goto('/admin/conta/passkeys')
+  await page.getByRole('button', { name: 'Adicionar passkey' }).click()
+  await expect(page.getByText('Passkey adicionada.')).toBeVisible()
+  await page.getByRole('button', { name: 'Sair' }).click()
+  await page.waitForURL(/\/admin\/login/)
+
+  const signIn = (userVerification: 'required' | 'discouraged') => page.evaluate(async (mode) => {
+    const decode = (value: string) => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')), char => char.charCodeAt(0))
+    const encode = (buffer: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    const options = await (await fetch('/api/auth/passkey/generate-authenticate-options')).json() as { challenge: string, rpId: string }
+    const credential = await navigator.credentials.get({ publicKey: { challenge: decode(options.challenge), rpId: options.rpId, userVerification: mode, timeout: 10_000 } }) as PublicKeyCredential
+    const response = credential.response as AuthenticatorAssertionResponse
+    const verified = await fetch('/api/auth/passkey/verify-authentication', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ response: {
+        id: credential.id,
+        rawId: encode(credential.rawId),
+        type: credential.type,
+        clientExtensionResults: {},
+        response: { clientDataJSON: encode(response.clientDataJSON), authenticatorData: encode(response.authenticatorData), signature: encode(response.signature), userHandle: response.userHandle ? encode(response.userHandle) : undefined },
+      } }),
+    })
+    return { status: verified.status, body: await verified.text(), userVerified: (new Uint8Array(response.authenticatorData)[32]! & 0x04) !== 0 }
+  }, userVerification)
+
+  const failuresBefore = (await authState(request)).audit.filter(entry => entry.action === 'auth.login_failed').length
+  const without = await signIn('discouraged')
+  expect(without.userVerified).toBe(false)
+  expect(without.status).toBe(401)
+  expect(without.body).toContain('USER_VERIFICATION_REQUIRED')
+  expect((await authState(request)).audit.filter(entry => entry.action === 'auth.login_failed').length).toBe(failuresBefore + 1)
+
+  // The same credential, verified: it signs in
+  const verified = await signIn('required')
+  expect(verified).toMatchObject({ userVerified: true, status: 200 })
+  await context.close()
+})

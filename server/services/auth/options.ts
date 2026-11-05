@@ -56,6 +56,17 @@ function loginMethod(ctx: HookContext | null | undefined): string | undefined {
   return isGithubCallback(ctx) ? GITHUB : undefined
 }
 
+/**
+ * A passkey proves the device and the person (F12-T3): a ceremony without user verification (a key that only checks
+ * presence) is refused. The plugin verifies with requireUserVerification: false and asks the browser for "preferred",
+ * so the check is made here, on the verified response, before the passkey is stored or the session opens
+ */
+export function requireUserVerified(userVerified: boolean | undefined): void {
+  if (userVerified !== true) {
+    throw new APIError('UNAUTHORIZED', { code: 'USER_VERIFICATION_REQUIRED', message: 'The passkey must verify you (PIN or biometrics)' })
+  }
+}
+
 /** WebAuthn ties passkeys to the environment's host and origin (ADR-0005 §2): each environment has its own */
 export function passkeyOptions(env: Pick<AuthEnv, 'SITE_URL'>) {
   const siteUrl = new URL(env.SITE_URL)
@@ -64,7 +75,18 @@ export function passkeyOptions(env: Pick<AuthEnv, 'SITE_URL'>) {
     rpName: 'Portfolio admin',
     origin: siteUrl.origin,
     // Discoverable credentials: sign-in needs no username
-    authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+    authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+    registration: {
+      afterVerification: ({ verification }: { verification: { registrationInfo?: { userVerified?: boolean } } }) => {
+        requireUserVerified(verification.registrationInfo?.userVerified)
+        return undefined
+      },
+    },
+    authentication: {
+      afterVerification: ({ verification }: { verification: { authenticationInfo?: { userVerified?: boolean } } }) => {
+        requireUserVerified(verification.authenticationInfo?.userVerified)
+      },
+    },
   } as const
 }
 
