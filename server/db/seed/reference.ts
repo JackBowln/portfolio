@@ -77,7 +77,7 @@ function codeBlock(id: string) {
     properties: { class: 'shiki shiki-themes github-light-default github-dark-default', style: '--shiki-light:#1f2328;--shiki-dark:#e6edf3;--shiki-light-bg:#ffffff;--shiki-dark-bg:#0d1117', tabindex: '0' },
     children: [{ type: 'element', tagName: 'code', properties: {}, children }],
   }
-  return { type: 'codeBlock' as const, attrs: { id, language: 'typescript', code: CODE, hast } }
+  return { type: 'codeBlock' as const, attrs: { id, language: 'ts', code: CODE, hast } }
 }
 
 const paragraph = (id: string, text: string) => ({ type: 'paragraph' as const, attrs: { id }, content: [{ type: 'text' as const, text }] })
