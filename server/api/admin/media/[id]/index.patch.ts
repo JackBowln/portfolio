@@ -1,7 +1,9 @@
 // Metadata only (RF-06.4): focal point, the explicit decorative flag and alt, caption and credit per locale.
-// An empty alt is accepted here; publishing (F05/F06) refuses informative images without one
+// An empty alt is accepted here; publishing (F05/F06) refuses informative images without one. The site's pages that
+// show it are purged (F11-T4)
 import { z } from 'zod'
 import { can } from '#shared/auth/permissions'
+import { mediaPurgeTags } from '#shared/cache/purge'
 import { LOCALES } from '#shared/types/enums'
 import { updateMediaMetadata } from '../../../../services/media/media.service.ts'
 
@@ -32,6 +34,8 @@ export default defineAdminHandler({
       ...Object.keys(body.localizations ?? {}).map(locale => `localization:${locale}`),
     ]
     await auditRequest(event, { action: 'media.updated', entityType: 'media', entityId: id, metadata: { fields: fields.join(',') } })
+    // F11-T4: the pages that show it (alt, caption, credit, crop) are tagged with it
+    await purgeAfterWrite(event, mediaPurgeTags(id))
     return media
   },
 })

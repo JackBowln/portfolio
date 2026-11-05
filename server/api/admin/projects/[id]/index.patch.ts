@@ -2,6 +2,7 @@
 // autosave revision, dropped when it repeats the latest. 409 on "version" when the copy changed since the editor
 // read it, on "slug" when the slug is taken. An author edits only the projects they created
 import { z } from 'zod'
+import { projectListPurgeTags } from '#shared/cache/purge'
 import { projectUpdateSchema } from '#shared/content/project-input'
 import { getProject, updateProject } from '../../../../services/content/projects.service.ts'
 
@@ -15,6 +16,11 @@ export default defineAdminHandler({
     const db = useDb(event)
     const project = await getProject(db, id)
     assertOwnership(event, { project: ['update'] }, { authorId: project.authorId })
-    return updateProject(db, auth.user.id, project, input)
+    const updated = await updateProject(db, auth.user.id, project, input)
+    // F11-T4: the featured flag is read live by the lists and the home; everything else waits for a publish
+    if (input.featured !== undefined && input.featured !== project.featured) {
+      await purgeAfterWrite(event, projectListPurgeTags())
+    }
+    return updated
   },
 })
