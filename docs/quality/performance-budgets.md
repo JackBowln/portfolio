@@ -15,7 +15,9 @@ Metas: **Lighthouse 100 em Performance, Accessibility, Best Practices e SEO** na
 | R7 | `/contato` | Formulário + Turnstile |
 | R8 | `/de/blog/{artigo-referência}` | Variante de idioma |
 
-O artigo e o estudo de referência são definidos na F06/F07 (conteúdo real ou placeholder representativo).
+O artigo e o estudo de referência são definidos na F06/F07 (conteúdo real ou placeholder representativo). Desde a F11-T5, são `artigo-de-referencia` (nos 5 idiomas; a R8 é a versão `de`) e `projeto-de-referencia`.
+- **Conteúdo:** gravado no prod-like por `pnpm db:seed:prodlike` (`server/db/seed/`), todo em `[PLACEHOLDER]`, com capa, figura, galeria e um bloco de código.
+- **Imagens:** de `tests/fixtures/reference-media`, geradas por `scripts/fixtures/reference-images.ts` com os codecs do pipeline do admin.
 
 ## 2. Protocolo de medição
 
@@ -26,6 +28,10 @@ O artigo e o estudo de referência são definidos na F06/F07 (conteúdo real ou 
 5. **Cache:** primeira carga fria (sem cache do navegador); Workers Cache aquecido (1 request antes), salvo quando o objetivo for medir o miss.
 6. **Registro** em `docs/quality/perf-log.md` (criado na F00-T7): data, commit, ferramenta e versão, Chrome, rota, dispositivo, as 4 notas, LCP, FCP, TBT, CLS, SI, elemento LCP e observações.
 7. **Nunca** declarar nota sem relatório gerado na sessão (HTML ou JSON salvo como artefato).
+8. **CI** (F11-T5): o workflow `lighthouse.yml` roda em PRs com o rótulo `ui`, na `main` e manualmente.
+   - **Passos:** build de produção → `check:budgets` → migrações e seed do prod-like → `pnpm lighthouse --assert`, com os relatórios como artefato.
+   - **Falhas do próprio Lighthouse** (`NO_NAVSTART`): a execução é repetida até 2 vezes, em vez de entrar na mediana como zero.
+   - **Prova da falha:** `--budgets <arquivo>` mede com outro arquivo de orçamentos.
 
 ## 3. Política de tolerância (variação de medição)
 

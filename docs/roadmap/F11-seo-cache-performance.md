@@ -194,7 +194,7 @@ Comprovar no preview.
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F11-T4 | RNF-01, RNF-02, RNF-03, RNF-11 | `/performance-audit` |
+| concluída | F11-T4 | RNF-01, RNF-02, RNF-03, RNF-11 | `/performance-audit` |
 
 **Objetivo.** Rodar o protocolo em R1–R8 (mobile e desktop, 3 execuções), corrigir as regressões e criar o job de Lighthouse no CI com as asserções da política de tolerância (PRs `ui`, `main` e pré-release), com os orçamentos aplicados e o `perf-log` atualizado.
 
@@ -208,9 +208,34 @@ Comprovar no preview.
 **Fora do escopo.** Remover conteúdo ou recursos para ganhar nota (proibido).
 
 **Critérios de aceite**
-- [ ] Medianas dentro da política (performance-budgets §3) em todas as rotas, e 100 nas quatro categorias em R1, R3 e R5 no desktop. Toda nota abaixo de 100 tem a causa documentada.
-- [ ] O job de CI falha quando um limite é violado (demonstrado).
-- [ ] `check:budgets` verde em todas as rotas.
+- [x] Medianas dentro da política (performance-budgets §3) em todas as rotas, e 100 nas quatro categorias em R1, R3 e R5 no desktop. Toda nota abaixo de 100 tem a causa documentada.
+- [x] O job de CI falha quando um limite é violado (demonstrado).
+- [x] `check:budgets` verde em todas as rotas.
+
+**Resultado (05/11/2026).**
+- **Conteúdo de referência:**
+  - `pnpm db:seed:prodlike` grava o artigo nos 5 idiomas (capa, figura, código e galeria), o projeto de referência, a massa `x`, a home, o sobre e o contato;
+  - as imagens vêm de `tests/fixtures/reference-media` (decisão 1, 128,6 kB), geradas por um script determinístico com os codecs do pipeline do admin;
+  - R2–R8 voltaram a ser medidas.
+- **Medição final** (3 execuções, mediana, `--assert` verde):
+
+  | | Performance | Demais categorias | CLS |
+  |---|---|---|---|
+  | Desktop | 100 em todas as rotas | 100 | 0 |
+  | Mobile | 96–100 | 100 | 0 |
+
+  - **R1 mobile:** 100.
+  - **Causas no mobile:**
+    - o CSS de entrada bloqueante (~306 ms na simulação), em todas as rotas;
+    - em R2 e R4, o download da capa, que é o elemento LCP.
+- **CLS da Fraunces:**
+  - **Antes:** 0,037 em R3, 0,060 em R5 e 0,014 em R8, no desktop.
+  - **Causa:** o tamanho óptico deixa a Fraunces até 17% mais estreita que o fallback em 100 px, e o título quebrava em mais linhas até a fonte chegar.
+  - **Correção:** fallbacks mais estreitos por tamanho para os títulos (`DISPLAY_FALLBACK_RULES` em `shared/design/fonts.ts`), usados também enquanto a Fraunces baixa. O CSS vai só no HTML (`server/plugins/display-fallback-css.ts`): no `app.head` ele entrava no JS e estourava R4 e R7.
+  - Um teste confere que as métricas copiadas são as que o `@nuxt/fonts` gera.
+- **CSS inline** (decisão 2): testado e descartado. No A/B de 5 execuções não houve ganho consistente (R1 −299 ms, R2 −182, R3 +76, R4 +137), e o HTML ficaria ~7,5 kB gz maior.
+- **CI:** `.github/workflows/lighthouse.yml` (decisão 3). A falha foi demonstrada localmente: com uma cópia dos orçamentos que exige nota 101, `pnpm lighthouse --assert` sai com 1; com R3 ≤ 100 kB, `check:budgets` também sai com 1.
+- **Atenção:** o R4 mobile oscila entre 95 e 96, perto do limite de 95.
 
 **Testes**
 - Relatórios do Lighthouse anexados (artefatos) e `perf-log` atualizado.

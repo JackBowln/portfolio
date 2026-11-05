@@ -49,6 +49,24 @@ Protocolo em [performance-budgets](performance-budgets.md) §2 e comandos em `.c
 | 2026-10-30 | idem | `pnpm lighthouse --path` / 13.5.0 | idem | idem | `/projetos/projeto-de-referencia` | mobile | 95 (±2) | 100 | 100 | 100 | 2584 ms | 4 ms | 0 | Projeto de referência `[PLACEHOLDER]`: documento com todos os nós, capa, galeria de 3 e imagens reais do pipeline. LCP: a capa |
 | 2026-10-30 | idem | idem | idem | idem | `/projetos/projeto-de-referencia` | desktop | 100 | 100 | 100 | 100 | 598 ms | 0 ms | 0,025 | Relatórios em `reports/lighthouse/2026-10-30/{R4,R5,PROJECT}-*` |
 
+| 2026-11-05 | F11-T5 (não commitado, base `33a5ba5`) | `pnpm lighthouse --assert` / 13.5.0 | Chrome 156.0.0.0 | local, `pnpm preview:prod` + `pnpm db:seed:prodlike` | R1 `/` | mobile | 100 (±4) | 100 | 100 | 100 | 1517 ms | 27 ms | 0 | Elemento LCP: o `<h1>` do hero. Na base desta tarefa: 98, 1.828 ms |
+| 2026-11-05 | idem | idem | idem | idem | R1 `/` | desktop | 100 | 100 | 100 | 100 | 440 ms | 0 ms | 0 | — |
+| 2026-11-05 | idem | idem | idem | idem | R2 `/blog` | mobile | 96 (±3) | 100 | 100 | 100 | 2752 ms | 6 ms | 0 | LCP: a capa do 1º card (AVIF, `fetchpriority=high`); FCP 1.964 ms. Causa: o download da capa no throttling simulado e o CSS de entrada bloqueante (~306 ms) |
+| 2026-11-05 | idem | idem | idem | idem | R2 `/blog` | desktop | 100 | 100 | 100 | 100 | 528 ms | 0 ms | 0 | — |
+| 2026-11-05 | idem | idem | idem | idem | R3 `/blog/artigo-de-referencia` | mobile | 98 (±2) | 100 | 100 | 100 | 1893 ms | 6 ms | 0 | Artigo de referência com capa, figura, código e galeria. Elemento LCP: `<h1>`. Causa: o CSS de entrada bloqueante |
+| 2026-11-05 | idem | idem | idem | idem | R3 `/blog/artigo-de-referencia` | desktop | 100 | 100 | 100 | 100 | 449 ms | 0 ms | 0 | CLS 0 (base: 0,037), com os fallbacks de título por tamanho |
+| 2026-11-05 | idem | idem | idem | idem | R4 `/projetos` | mobile | 96 (±1) | 100 | 100 | 100 | 2624 ms | 7 ms | 0 | LCP: a capa do 1º projeto; mesma causa da R2 |
+| 2026-11-05 | idem | idem | idem | idem | R4 `/projetos` | desktop | 100 | 100 | 100 | 100 | 424 ms | 0 ms | 0 | — |
+| 2026-11-05 | idem | idem | idem | idem | R5 `/projetos/projeto-de-referencia` | mobile | 98 (±2) | 100 | 100 | 100 | 1963 ms | 6 ms | 0 | Elemento LCP: `<h1>`. Causa: o CSS de entrada bloqueante |
+| 2026-11-05 | idem | idem | idem | idem | R5 `/projetos/projeto-de-referencia` | desktop | 100 | 100 | 100 | 100 | 443 ms | 0 ms | 0 | CLS 0 (base: 0,060) |
+| 2026-11-05 | idem | idem | idem | idem | R6 `/sobre` | mobile | 98 (±2) | 100 | 100 | 100 | 1822 ms | 11 ms | 0 | Idem R5 |
+| 2026-11-05 | idem | idem | idem | idem | R6 `/sobre` | desktop | 100 | 100 | 100 | 100 | 435 ms | 0 ms | 0 | — |
+| 2026-11-05 | idem | idem | idem | idem | R7 `/contato` | mobile | 98 | 100 | 100 | 100 | 1959 ms | 5 ms | 0 | Idem R5; o formulário hidrata com a página |
+| 2026-11-05 | idem | idem | idem | idem | R7 `/contato` | desktop | 100 | 100 | 100 | 100 | 456 ms | 0 ms | 0 | — |
+| 2026-11-05 | idem | idem | idem | idem | R8 `/de/blog/artigo-de-referencia` | mobile | 98 (±3) | 100 | 100 | 100 | 1887 ms | 12 ms | 0 | Idem R3 |
+| 2026-11-05 | idem | idem | idem | idem | R8 `/de/blog/artigo-de-referencia` | desktop | 100 | 100 | 100 | 100 | 421 ms | 0 ms | 0 | CLS 0 (base: 0,014). Relatórios em `reports/lighthouse/2026-11-05` |
+| 2026-11-05 | idem | `pnpm lighthouse --runs 5` / 13.5.0 | idem | idem | R1–R4 | mobile | — | — | — | — | — | — | — | **CSS inline (descartado, decisão 2):** com o `main.css` importado pelo `app.vue` (inline pelo `inlineStyles`) e o `<link>` duplicado removido, o LCP mediano em 5 execuções ficou: R1 1.662 contra 1.961 ms, R2 2.575 contra 2.757, R3 1.739 contra 1.663, R4 2.753 contra 2.616. Sem ganho consistente; cada HTML ficaria ~7,5 kB gz maior (home 14,0 kB gz) e o CSS deixaria de vir do cache do navegador entre páginas |
+
 O TTFB local não representa a borda; o número real vem do deploy de preview (F00-T6).
 
 ## Orçamentos (`pnpm check:budgets`)
@@ -87,6 +105,7 @@ O TTFB local não representa a borda; o número real vem do deploy de preview (F
 | 2026-11-04 | F10-T3 (não commitado, base `4ce7548`) | R1 / R5 | 123,00 / 122,62 | 7,39 (R5: 8,74) | 125 / 125 | Cenas da home adiadas (`scenes/home.ts`, ~1,3 KB gz, mais o índice): o JS estático da R1 não mudou; CSS +0,24 kB (estados iniciais e pin). Prod-like com a home publicada (3 seções), Lighthouse R1 mobile 98 e desktop 100, CLS 0. LCP mobile em 10 execuções: mediana 1.993 ms com motion e 1.973,5 ms sem (A/B do mesmo build): o motion não pesa; o critério de 1,8 s falha pela página (CSS bloqueante ~306 ms). Long tasks com CPU 4× e navegador novo: com motion 0–92 ms e sem motion 0–70 ms, nos mesmos instantes depois do `load`, da página e não do motion |
 | 2026-11-04 | F10-T4 (não commitado, base `e7ba81d`) | R1 / R5 | 122,99 / 122,61 | 7,51 (R5: 8,86) | 125 / 125 | Transições de página por CSS (`view-transition-name` por slug) e microinterações em CSS: nenhum JS estático novo; a cena do estudo de caso é adiada. Lighthouse no prod-like com conteúdo: R1 mobile 98 e desktop 100, R5 mobile 98 e desktop 100, CLS 0 (R5 desktop 0,055, já na F07). INP com CPU 4×: R1 abaixo de 16 ms; R5 32–40 ms |
 | 2026-11-04 | F11-T1 (não commitado, base `9202b1d`) | R2 / R3 / R5 / R6 | 126,17 / 122,61 / 122,71 / 124,02 | 7,51 (R3/R5/R6: 8,86) | 127 / 123 / 125 / 125 | JSON-LD montado no servidor; no cliente só a chamada que troca o bloco numa navegação (~0,1 kB). Sem nenhum código de JSON-LD no cliente a R2 já media 125,99–126,04 (variação do build; base no limite desde a F10-T4). R2 revista pelo owner |
+| 2026-11-05 | F11-T5 (não commitado, base `33a5ba5`) | R1 / R3 / R4 / R7 | 122,87 / 122,72 / 124,99 / 127,80 | 7,51 (R3/R5/R6/R8: 8,86) | 125 / 123 / 125 / 128 | Sem mudança no JS. Os fallbacks de título por tamanho (~0,5 kB gz) foram primeiro para o `app.head`, que o Nuxt serializa no JS de entrada: R4 125,48/125 e R7 128,29/128 (falha). Passaram para o HTML por um plugin do servidor (`display-fallback-css.ts`) |
 
 ## Pipeline de imagem do admin (F04-T2)
 
