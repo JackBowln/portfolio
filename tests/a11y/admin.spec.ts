@@ -143,3 +143,24 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await expectNoBlockingViolations(page)
   })
 }
+
+// F12-T2: the project editor, with a result and a technology, and the share image preview of its SEO panel
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`project editor and its share image preview have no serious or critical axe violations (${colorScheme})`, async ({ page, context }) => {
+    const request = context.request
+    expect((await request.post('/api/_test/session?role=owner', { headers: { origin: SITE_ORIGIN } })).status()).toBe(200)
+    const created = await (await request.post('/api/admin/projects', { headers: { origin: SITE_ORIGIN }, data: { title: `Projeto acessível ${uniqueName('p', 'x')}` } })).json()
+    const technology = await (await request.post('/api/admin/tags', { headers: { origin: SITE_ORIGIN }, data: { kind: 'technology', name: `Tecnologia ${uniqueName('t', 'x')}` } })).json()
+    expect((await request.patch(`/api/admin/projects/${created.id}`, { headers: { origin: SITE_ORIGIN }, data: { version: 1, summary: 'Resumo', highlights: [{ label: 'Resultado', value: '42%' }], technologyIds: [technology.id] } })).status()).toBe(200)
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' })
+
+    await page.goto(`/admin/projetos/${created.id}`)
+    await expect(page.getByRole('textbox', { name: 'Narrativa' })).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    await expectNoBlockingViolations(page)
+
+    await page.getByRole('button', { name: 'Ver prévia' }).click()
+    await expect(page.getByTestId('og-preview')).toBeVisible({ timeout: 30_000 })
+    await expectNoBlockingViolations(page)
+  })
+}
