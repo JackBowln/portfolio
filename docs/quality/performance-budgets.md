@@ -59,6 +59,8 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 
 **Revisão na F08-T1 (owner, 30/10/2026):** R3 e R8 passam a **≤ 121 KB**. Medido: as configurações globais no layout (carregamento, cabeçalho, navegação e rodapé que as leem) somam ~1,37 kB a toda rota pública, e o R3 ficou em 120,88 kB; os cortes sem perda de função somavam ~0,45 kB. A F11-T5 revisita os orçamentos no passe de performance.
 
+**Revisão na F12-T1 (owner, 05/11/2026):** R4 passa a **≤ 126 KB**. A jornada J-01 achou um defeito da F08-T3: chegando ao contato pela navegação do site, a página mantinha a CSP da anterior, sem o Turnstile, e a mensagem não saía. Os links para o contato passaram a carregar a página do servidor (`external` no `UiLocalizedLink`), +0,02 kB em toda rota, e o R4 ficou em 125,01 kB.
+
 **Revisão na F11-T1 (owner, 04/11/2026):** R2 passa a **≤ 127 KB**.
 - O JSON-LD é montado no servidor e chega pronto. Mesmo sem nenhum código de JSON-LD no cliente, a R2 mediu 126,04 kB: dois builds assim deram 125,99 e 126,04 kB, variação do build sobre uma base que já estava no limite desde a F10-T4 (a classe `.press` no botão compartilhado).
 - Com o limite revisto, ficou também no cliente a chamada que troca o bloco numa navegação no cliente (`useJsonLd`, ~0,1 kB): sem ela, o JSON-LD da página anterior ficaria no `<head>`. Medido: R2 126,17 kB.

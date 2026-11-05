@@ -14,7 +14,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F11 (gate) | RNF-04, RF-01, RF-05, RF-11 | `/test-engineer` |
+| concluída | F11 (gate) | RNF-04, RF-01, RF-05, RF-11 | `/test-engineer` |
 
 **Objetivo.** Cobrir as jornadas J-01…J-08 do PRD, o teste "sem JS" de todas as rotas públicas (conteúdo presente) e o crawl de i18n. Estabilizar ou corrigir os testes instáveis.
 
@@ -23,8 +23,27 @@
 **Fora do escopo.** Funcionalidades novas.
 
 **Critérios de aceite**
-- [ ] As 8 jornadas passam em Chromium desktop e WebKit mobile (a passkey só em Chromium, documentado).
-- [ ] Zero testes marcados `fixme` sem issue; 3 execuções seguidas sem falha intermitente.
+- [x] As 8 jornadas passam em Chromium desktop e WebKit mobile (a passkey só em Chromium, documentado).
+- [x] Zero testes marcados `fixme` sem issue; 3 execuções seguidas sem falha intermitente.
+
+**Resultado (05/11/2026).**
+- **Gate da F11** (decisão 5): seguiu com o Lighthouse cumprido. O purge ≤ 60 s fica para o deploy do preview (owner).
+- **Jornadas:**
+  - J-01–J-07 em `tests/e2e/journeys/`, em Chromium desktop e WebKit mobile;
+  - J-08 no `tests/auth-flow/`, só em Chromium (o autenticador WebAuthn virtual é do Chromium);
+  - J-04, J-05/J-06 e J-07 foram consolidadas a partir dos specs antigos (decisão 2), com a J-06 editando o original pelo editor;
+  - J-02 começa na URL alemã que um buscador abre (decisão 3: o site não tem busca interna);
+  - as jornadas do owner passaram a rodar no WebKit (decisão 4) e passaram sem correção.
+- **Defeitos que as jornadas acharam:**
+  - **Contato pela navegação do site (F08-T3):** a página mantinha a CSP da anterior, sem o Turnstile, e a mensagem não saía. Os links para o contato carregam a página do servidor (`external` no `UiLocalizedLink`); o owner subiu o R4 para 126 KB (+0,02 kB).
+  - **Seletor de idioma na 404:** os links saíam sem `href` (não focáveis e sem destino sem JS). Agora levam à home de cada idioma.
+- **Sem JS:** `tests/e2e/no-js.spec.ts`, 13 rotas públicas nos dois navegadores. Confere o `h1`, o texto, a navegação (o menu do celular abre sem JS), os `alt`, a ausência de conteúdo escondido por motion e o seletor em links reais.
+- **i18n:** `tests/e2e/i18n-crawl.spec.ts` percorre as páginas estáticas e o artigo, o projeto e o tema da massa, nos 5 idiomas. Confere 200, o `lang`, os rótulos da navegação no idioma, nenhuma chave dos arquivos de mensagens no texto e o seletor levando a páginas que respondem 200.
+- **Estabilidade** (decisão 1):
+  - **Dados:** o `pnpm preview:test` recria `.wrangler/state-e2e` com as migrações a cada execução (`scripts/e2e-state.ts`). Os dados acumulados (215 projetos, artigos com data futura) eram a causa das falhas recorrentes da ordem de projetos e da lista do blog.
+  - **Specs com dados próprios:** os que dependiam de dados deixados por outros, como o `transitions.spec`, que precisava de um projeto com capa, criam os seus.
+  - **WebKit:** os `goto` em sequência esperam a hidratação. O WebKit conta o `replaceState` do router como navegação e interrompia o próximo `goto`.
+- **Achado fora do escopo, para decidir:** a página de erro é renderizada pelo Nuxt numa sub-requisição sem o contexto da Cloudflare. O `/api/public/settings` responde 500 ("Cloudflare bindings unavailable") e a 404 sai com as configurações padrão.
 
 **Testes**
 - Saída da suíte completa, com contagem e duração.

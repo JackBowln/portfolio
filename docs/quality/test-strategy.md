@@ -10,7 +10,7 @@ Decisão em [ADR-0013](../architecture/adr/0013-testes-e-qualidade.md). A skill 
 | Componente | Vitest + `@nuxt/test-utils` (`nuxt`, happy-dom) | `tests/nuxt/` | Componentes e composables (renderer, ResponsiveImage, usePageSeo, useMotion com `matchMedia` mockado) | Todo PR |
 | Integração com bindings | Vitest + `@cloudflare/vitest-plugin` (`workers`) | `tests/workers/` | Repositórios e serviços contra D1 e R2 reais (miniflare), migrações, `batch`, unicidade, contagem de queries | Todo PR |
 | API | Playwright `api` contra o build em `wrangler dev`, e `api-prod` contra o mesmo build com `ENVIRONMENT=production` (`pnpm preview:prod`, porta 8788: robots, `X-Robots-Tag`, HSTS, head e crawl do sitemap) | `tests/api/`, `tests/api-prod/` | Handlers HTTP: matriz de autorização, CSRF, rate limit, validação, uploads, headers de cache e segurança, ausência de `Set-Cookie` público | Todo PR |
-| E2E | Playwright `e2e` (Chromium desktop, WebKit mobile) | `tests/e2e/` | Jornadas J-01…J-08 do PRD, i18n e seletor de idioma, sem JS (conteúdo presente) | Smoke em PR; completa diária e pré-release |
+| E2E | Playwright `e2e` (Chromium desktop, WebKit mobile) | `tests/e2e/` | Jornadas J-01…J-07 em `tests/e2e/journeys/` (desktop e mobile) e J-08 em `tests/auth-flow/` (só Chromium: a passkey usa o autenticador virtual do Chromium); i18n (`i18n-crawl.spec.ts`) e seletor de idioma; sem JS em todas as rotas públicas (`no-js.spec.ts`) | Smoke em PR; completa diária e pré-release |
 | Acessibilidade | Playwright `a11y` + `@axe-core/playwright` | `tests/a11y/` | Templates × (pt-BR, de) × (claro, escuro) × movimento reduzido; teclado nos fluxos críticos | Templates afetados em PR; completa diária |
 | Visual (_should_) | Playwright `toHaveScreenshot` | `tests/visual/` | Templates-chave em 360, 768 e 1280 px, com movimento reduzido | CI Linux, PRs com rótulo `ui` |
 | Performance | Lighthouse 13 (ferramenta da F00-T7) + `check:budgets` | `scripts/`, `reports/` | Rotas-chave × mobile/desktop; orçamento de JS por rota | Orçamentos em todo PR; Lighthouse em PR `ui`, na `main` e pré-release |
@@ -34,7 +34,10 @@ Decisão em [ADR-0013](../architecture/adr/0013-testes-e-qualidade.md). A skill 
 ## 3. Dados, fixtures e mocks
 
 - **Factories** em `tests/factories/` (artigo, projeto, mídia, usuário por papel), com IDs e datas determinísticos.
-- **D1 de teste:** migrações aplicadas no setup do projeto `workers`; para `api`/`e2e`, o seed vai para o estado local do `wrangler dev` por script (`pnpm test:seed`).
+- **D1 de teste:**
+  - **Projeto `workers`:** migrações aplicadas no setup.
+  - **Playwright (desde a F12-T1):** o `pnpm preview:test` recria um estado próprio (`.wrangler/state-e2e`, `scripts/e2e-state.ts`) com as migrações antes de subir, e cada spec cria os dados de que precisa (`/api/_test/blog-fixture` e as APIs do admin). Os dados não se acumulam entre execuções, e o `.wrangler/state` do `pnpm preview` fica intacto.
+  - **Prod-like:** recebe o conteúdo de referência por `pnpm db:seed:prodlike` (F11-T5).
 - **Login em testes:** autenticador WebAuthn virtual para o fluxo real. Para outros papéis, um endpoint de login de teste que **só existe em builds de teste** (flag de build `TEST_AUTH=1`, excluído do build normal por `ignore` do Nitro) e ainda exige `ENVIRONMENT=test`. O `/security-audit` e o `/release-check` verificam que ele não está no output de produção.
 - **Provedores externos:**
   - IA: `FakeTranslationProvider` determinístico.
@@ -42,6 +45,7 @@ Decisão em [ADR-0013](../architecture/adr/0013-testes-e-qualidade.md). A skill 
   - Turnstile: chaves de teste oficiais da Cloudflare, uma que sempre passa e outra que sempre falha.
   - Nenhuma chamada real a terceiros em testes.
 - **Relógio:** `vi.useFakeTimers()` em agendamento e expiração; nada depende do horário real.
+  - Nos E2E, o cron roda pela rota de teste com um horário adiantado. O teste despublica o que publicou no futuro, para não ocupar o topo das listas.
 
 ## 4. Cobertura
 
