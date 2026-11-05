@@ -106,7 +106,7 @@ test('history, restore, publish with technologies, a 301 from the old path, unpu
   const anonymous = await playwright.request.newContext({ baseURL })
   const redirect = await anonymous.get(`/projetos/${oldSlug}`, { maxRedirects: 0 })
   expect(redirect.status()).toBe(301)
-  expect(redirect.headers()).toMatchObject({ 'location': `/projetos/${oldSlug}-novo`, 'cache-tag': 'redirects' })
+  expect(redirect.headers()).toMatchObject({ 'location': `/projetos/${oldSlug}-novo`, 'cache-tag': 'redirects,site' })
   expect(redirect.headers()['set-cookie']).toBeUndefined()
 
   expect((await editor.delete(`/api/admin/projects/${project.id}`, { headers: ORIGIN })).status()).toBe(409)

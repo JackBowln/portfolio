@@ -51,7 +51,7 @@ test('robots.txt allows crawling except private areas and points to the sitemap'
   const response = await request.get('/robots.txt')
 
   expect(await response.text()).toBe(`User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /preview\n\nSitemap: ${SITE}/sitemap.xml\n`)
-  expect(response.headers()['cache-tag']).toBe('robots')
+  expect(response.headers()['cache-tag']).toBe('robots,site')
 })
 
 test('production responses are indexable and use HSTS', async ({ request }) => {
@@ -71,7 +71,7 @@ test('production responses are indexable and use HSTS', async ({ request }) => {
 test('the sitemap is valid XML with absolute URLs, alternates and x-default', async ({ request, page }) => {
   const response = await request.get('/sitemap.xml')
   expect(response.headers()['content-type']).toContain('application/xml')
-  expect(response.headers()['cache-tag']).toBe('sitemap')
+  expect(response.headers()['cache-tag']).toBe('sitemap,site')
 
   // Everything in the sitemap is listed only where it is published (pages since F08-T2, the blog since F06-T5,
   // projects since F07-T2), so it depends on the instance's data: empty in CI, whatever was copied locally

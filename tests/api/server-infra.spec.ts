@@ -27,9 +27,8 @@ test.describe('public pages', () => {
 
       expect(response.status(), method).toBe(200)
       expect(headers['cache-control'], method).toBe(PUBLIC_POLICY)
-      // The layout's settings (F08-T1) and the home's own page (F08-T2); `site` is the default only for a page with
-      // no tags at all
-      expect(headers['cache-tag']?.split(','), method).toEqual(expect.arrayContaining(['settings', 'page:home:pt-BR']))
+      // The layout's settings (F08-T1), the home's own page (F08-T2) and `site` on every public response (F11-T4)
+      expect(headers['cache-tag']?.split(','), method).toEqual(expect.arrayContaining(['settings', 'page:home:pt-BR', 'site']))
       expect(headers['set-cookie'], method).toBeUndefined()
       expectBaseSecurityHeaders(headers)
     }
@@ -41,7 +40,8 @@ test.describe('public pages', () => {
 
     expect(response.status()).toBe(200)
     expect(headers['cache-control']).toBe(PUBLIC_POLICY)
-    expect(headers['cache-tag']).toBe('page:home:pt-BR')
+    // F11-T4: `site` joins every public response, so one purge after a deploy reaches it
+    expect(headers['cache-tag']).toBe('page:home:pt-BR,site')
     expect(headers['set-cookie']).toBeUndefined()
   })
 
