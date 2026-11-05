@@ -27,7 +27,7 @@
       "path": "/projetos",
       "page": "pages/projetos/index.vue",
       "layout": "layouts/default.vue",
-      "js": 125,
+      "js": 126,
       "css": 30
     },
     "R5": {
