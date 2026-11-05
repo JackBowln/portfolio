@@ -70,7 +70,8 @@ test('J-05 and J-06: translate, review, approve, publish; then the source change
   await page.getByRole('button', { name: 'Aprovar tradução' }).click()
   await expect(page.getByTestId('review-status')).toHaveText('Tradução aprovada.')
   await page.getByRole('button', { name: 'Publicar em en' }).click()
-  await expect(page.getByTestId('review-status')).toHaveText('Publicada em en.')
+  // F11-T2: the locale's share image is made first
+  await expect(page.getByTestId('review-status')).toHaveText('Publicada em en.', { timeout: 60_000 })
 
   const english = await request.get(`/en/blog/${slug}`)
   expect(english.status()).toBe(200)

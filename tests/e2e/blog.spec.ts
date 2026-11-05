@@ -126,4 +126,6 @@ test('J-04: a scheduled article reaches the page, the list, the RSS and the site
   await expect(page.getByRole('link', { name: title })).toBeVisible()
   expect(await (await request.get('/rss.xml')).text()).toContain(`<title>${title}</title>`)
   expect(await (await request.get('/sitemap.xml')).text()).toContain(`/blog/${slug}</loc>`)
+  // Published ahead by the moved clock, it would top the blog list for a while: off the site again
+  expect((await request.post(`/api/admin/articles/${id}/unpublish`, { headers: ORIGIN, data: { locale: 'pt-BR' } })).status()).toBe(200)
 })

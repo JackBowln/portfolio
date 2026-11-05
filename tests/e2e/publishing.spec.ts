@@ -9,6 +9,8 @@ import { expectNoBlockingViolations } from '../support/axe'
 import { readyImage, uniqueName } from '../support/media-api'
 
 test.skip(({ browserName, isMobile }) => browserName !== 'chromium' || isMobile, 'The article editor runs in desktop Chromium here; axe covers the panel')
+// F11-T2: publishing and scheduling make the share image first, a few seconds each
+test.setTimeout(120_000)
 
 const ORIGIN = { origin: SITE_ORIGIN }
 
@@ -27,7 +29,8 @@ test('publish, publish changes with a new slug, and unpublish', async ({ page })
   await expect(status).toHaveText('Rascunho: ainda não está no site.')
   await expectNoBlockingViolations(page)
   await page.getByRole('button', { name: 'Publicar agora' }).click()
-  await expect(page.getByText('Artigo publicado.')).toBeVisible()
+  // F11-T2: publishing draws and uploads the share image first, a few seconds with the suite in parallel
+  await expect(page.getByText('Artigo publicado.')).toBeVisible({ timeout: 60_000 })
   await expect(status).toContainText('No site desde')
   const oldSlug = await page.getByRole('textbox', { name: 'Endereço (slug)' }).inputValue()
 
@@ -35,7 +38,8 @@ test('publish, publish changes with a new slug, and unpublish', async ({ page })
   await expect(page.getByTestId('autosave-status')).toContainText(/Salvo às/, { timeout: 10_000 })
   await expect(page.getByText('Há alterações salvas que ainda não estão no site.')).toBeVisible()
   await page.getByRole('button', { name: 'Publicar alterações' }).click()
-  await expect(page.getByText('Artigo publicado.')).toBeVisible()
+  // F11-T2: publishing draws and uploads the share image first, a few seconds with the suite in parallel
+  await expect(page.getByText('Artigo publicado.')).toBeVisible({ timeout: 60_000 })
   await expect(page.getByText('Há alterações salvas que ainda não estão no site.')).toBeHidden()
   const redirect = await page.context().request.get(`/blog/${oldSlug}`, { maxRedirects: 0 })
   expect(redirect.status()).toBe(301)
@@ -55,7 +59,7 @@ test('schedule in the site time zone, the cron publishes after the time, and a s
   await page.getByLabel('Data e hora (America/Sao_Paulo)').fill(utcToZoned(at))
   await page.getByRole('button', { name: 'Agendar' }).click()
   const status = page.getByTestId('publish-status')
-  await expect(status).toContainText('Agendado para')
+  await expect(status).toContainText('Agendado para', { timeout: 60_000 })
   expect((await (await page.context().request.get(`/api/admin/articles/${id}`)).json()).localizations[0].scheduledAt).toBe(at.toISOString())
 
   // The cron, four minutes after the time
@@ -63,11 +67,13 @@ test('schedule in the site time zone, the cron publishes after the time, and a s
   expect((await run.json()).published).toBe(1)
   await page.reload()
   await expect(page.getByTestId('publish-status')).toContainText('No site desde')
+  // Published two hours ahead by the moved clock, it would top the blog list until then: off the site again
+  expect((await page.context().request.post(`/api/admin/articles/${id}/unpublish`, { headers: ORIGIN, data: { locale: 'pt-BR' } })).status()).toBe(200)
 
   const other = await openNew(page, `Cancelar agendamento ${uniqueName('c', 'x')}`)
   await page.getByLabel('Data e hora (America/Sao_Paulo)').fill(utcToZoned(at))
   await page.getByRole('button', { name: 'Agendar' }).click()
-  await expect(page.getByTestId('publish-status')).toContainText('Agendado para')
+  await expect(page.getByTestId('publish-status')).toContainText('Agendado para', { timeout: 60_000 })
   await page.getByRole('button', { name: 'Cancelar agendamento' }).click()
   await expect(page.getByTestId('publish-status')).toHaveText('Rascunho: ainda não está no site.')
   expect((await (await page.context().request.get(`/api/admin/articles/${other}`)).json()).localizations[0].status).toBe('draft')
@@ -81,6 +87,6 @@ test('an image without alt text blocks publishing, with the reason', async ({ pa
   expect((await request.patch(`/api/admin/articles/${id}`, { headers: ORIGIN, data: { version: current.localizations[0].version, coverMediaId: cover } })).status()).toBe(200)
   await page.reload()
   await page.getByRole('button', { name: 'Publicar agora' }).click()
-  await expect(page.getByText(/1 imagem precisa de texto alternativo antes de publicar/)).toBeVisible()
+  await expect(page.getByText(/1 imagem precisa de texto alternativo antes de publicar/)).toBeVisible({ timeout: 60_000 })
   await expect(page.getByTestId('publish-status')).toHaveText('Rascunho: ainda não está no site.')
 })

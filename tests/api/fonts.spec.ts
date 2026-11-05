@@ -1,6 +1,6 @@
 // F01-T3: fonts come from the site itself, with metric-matched fallbacks and no preload (ADR-0010 §4)
 import { expect, test } from '@playwright/test'
-import { fallbackFamilies, FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from '../../shared/design/fonts'
+import { DISPLAY_FALLBACK_CSS, DISPLAY_FALLBACK_METRICS, fallbackFamilies, FONT_FAMILIES, FONT_LOADING_SCRIPT, FONT_PENDING_CSS, fontFaces } from '../../shared/design/fonts'
 
 test('the home inlines same-origin @font-face rules, their fallbacks and the first-visit loader, with no preload', async ({ request }) => {
   const html = await (await request.get('/')).text()
@@ -37,5 +37,24 @@ test('font files are served as immutable WOFF2', async ({ request }) => {
     expect(response.status(), face.src).toBe(200)
     expect(response.headers()['content-type']).toBe('font/woff2')
     expect(response.headers()['cache-control']).toBe('public, max-age=31536000, immutable')
+  }
+})
+
+test('display titles get the narrower fallbacks in the HTML only, built from the faces @nuxt/fonts generates', async ({ request }) => {
+  // F11-T5: in the server-rendered head, never in the JS (app.head would serialize it into the bundle)
+  const html = await (await request.get('/')).text()
+  const head = html.slice(0, html.indexOf('</head>'))
+  expect(head).toContain(`<style>${DISPLAY_FALLBACK_CSS}</style>`)
+  const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
+  expect(entry).toBeTruthy()
+  expect(await (await request.get(entry!)).text()).not.toContain('Fraunces Fallback 83')
+
+  // The copied metrics are still the ones @nuxt/fonts generates for the Fraunces fallbacks
+  for (const [local, metrics] of Object.entries(DISPLAY_FALLBACK_METRICS)) {
+    const rule = [...head.matchAll(/@font-face\{[^}]*\}/g)].map(match => match[0]).find(text => text.includes(`Fraunces Fallback\\: ${local};`))
+    expect(rule, local).toBeTruthy()
+    expect(rule, local).toContain(`size-adjust:${metrics.sizeAdjust}%`)
+    expect(rule, local).toContain(`ascent-override:${metrics.ascent}%`)
+    expect(rule, local).toContain(`descent-override:${metrics.descent}%`)
   }
 })

@@ -46,6 +46,8 @@ test.beforeAll(async ({ request }) => {
 })
 
 test('every public response is cached with valid tags, site included, and no cookie', async ({ playwright, baseURL }) => {
+  // Every sitemap URL: the local test data grows with each run
+  test.setTimeout(120_000)
   const anonymous = await playwright.request.newContext({ baseURL })
   const xml = await (await anonymous.get('/sitemap.xml')).text()
   const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]!).pathname)
@@ -145,7 +147,8 @@ test('writes that change the site without a publish purge tags the affected page
   const created = await (await owner.post('/api/admin/articles', { headers: ORIGIN, data: { title: `Com capa ${uniqueName('c', 'x')}` } })).json() as { id: string }
   const saved = await (await owner.patch(`/api/admin/articles/${created.id}`, { headers: ORIGIN, data: { version: 1, excerpt: 'Resumo', coverMediaId: cover } })).json() as { localizations: { slug: string, version: number }[] }
   expect((await owner.post(`/api/admin/articles/${created.id}/publish`, { headers: ORIGIN, data: { locale: 'pt-BR', version: saved.localizations[0]!.version } })).status()).toBe(200)
-  for (const path of [`/blog/${saved.localizations[0]!.slug}`, '/blog', `/api/public/blog/${saved.localizations[0]!.slug}?locale=pt-BR`]) {
+  // The lists carry their covers' tags too (tests/api/blog.spec.ts); which page lists this one depends on the data
+  for (const path of [`/blog/${saved.localizations[0]!.slug}`, `/api/public/blog/${saved.localizations[0]!.slug}?locale=pt-BR`]) {
     expectReached(await anonymous.get(path), mediaPurgeTags(cover))
   }
 

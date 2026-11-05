@@ -56,7 +56,8 @@ test('create, fill the case study, add a result and a technology, and publish', 
   // Published by hand: no schedule for projects
   await expect(page.getByRole('button', { name: 'Agendar' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Publicar agora' }).click()
-  await expect(page.getByText('Projeto publicado.')).toBeVisible()
+  // F11-T2: publishing draws and uploads the share image first
+  await expect(page.getByText('Projeto publicado.')).toBeVisible({ timeout: 60_000 })
   await expect(page.getByTestId('publish-status')).toContainText('No site desde')
 
   // Reloaded, everything was saved
