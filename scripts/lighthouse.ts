@@ -1,4 +1,5 @@
 // pnpm lighthouse [--routes R1,E404] [--runs 3] [--devices mobile,desktop] [--base http://localhost:8788] [--assert]
+// [--budgets other.json] — another budgets file, to show that --assert fails on a violated limit (F11-T5)
 // pnpm lighthouse --path '/_test/media?lcp=…' [--id MEDIA] — one page outside the route table (F04-T3)
 // Protocol: docs/quality/performance-budgets.md §2. Serve the production build first (`pnpm build && pnpm preview:prod`):
 // the default base runs with ENVIRONMENT=production, since every other environment sends X-Robots-Tag: noindex.
@@ -29,10 +30,10 @@ const METRICS = {
   SI: 'speed-index',
 } as const
 
-const budgets = JSON.parse(readFileSync('performance-budgets.json', 'utf8')) as BudgetsFile
 const { values } = parseArgs({
   options: {
-    routes: { type: 'string', default: Object.entries(budgets.routes).filter(([, route]) => route.lighthouse !== false).map(([id]) => id).join(',') },
+    budgets: { type: 'string', default: 'performance-budgets.json' },
+    routes: { type: 'string' },
     runs: { type: 'string', default: '3' },
     devices: { type: 'string', default: 'mobile,desktop' },
     base: { type: 'string', default: 'http://localhost:8788' },
@@ -41,8 +42,10 @@ const { values } = parseArgs({
     id: { type: 'string', default: 'PAGE' },
   },
 })
+const budgets = JSON.parse(readFileSync(values.budgets, 'utf8')) as BudgetsFile
+const allRoutes = Object.entries(budgets.routes).filter(([, route]) => route.lighthouse !== false).map(([id]) => id)
 
-const routes = values.path ? [values.id] : values.routes.split(',')
+const routes = values.path ? [values.id] : values.routes?.split(',') ?? allRoutes
 const devices = values.devices.split(',') as Device[]
 const runs = Number(values.runs)
 const outDir = join('reports', 'lighthouse', new Date().toISOString().slice(0, 10))
@@ -90,7 +93,17 @@ for (const id of routes) {
     let lcpElement = ''
 
     for (let run = 1; run <= runs; run++) {
-      const { lhr, report } = await audit(`${values.base}${route.path}`, device)
+      // A run where Lighthouse itself failed (NO_NAVSTART, a lost trace) has no scores: it is run again, up to twice,
+      // instead of entering the median as zeros
+      let result = await audit(`${values.base}${route.path}`, device)
+      for (let retry = 1; result.lhr.runtimeError && retry <= 2; retry++) {
+        console.warn(`${id} ${device} run ${run}: ${result.lhr.runtimeError.code}, running again`)
+        result = await audit(`${values.base}${route.path}`, device)
+      }
+      if (result.lhr.runtimeError) {
+        throw new Error(`${id} ${device} run ${run}: Lighthouse failed three times (${result.lhr.runtimeError.code})`)
+      }
+      const { lhr, report } = result
       const [html, json] = report as string[]
       writeFileSync(join(outDir, `${id}-${device}-${run}.html`), html ?? '')
       writeFileSync(join(outDir, `${id}-${device}-${run}.json`), json ?? '')

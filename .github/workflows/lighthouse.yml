@@ -1,0 +1,70 @@
+# Lighthouse 13 against the production-like instance (F11-T5, performance-budgets §2–§3): the production build served
+# by wrangler with ENVIRONMENT=production and a local D1/R2 seeded with the reference content. Fails when a route's
+# median is below the policy or a JS/CSS budget is exceeded. No deploys and no Cloudflare access (ADR-0014).
+# Runs on pull requests labeled `ui`, on main and by hand before a release, since 7 routes × 2 devices × 3 runs take
+# about 20 minutes.
+name: Lighthouse
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'ui') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      # The production build, without the test-only routes
+      - run: pnpm build
+      - run: pnpm check:budgets
+      - run: pnpm db:migrate:prodlike
+      - run: pnpm db:seed:prodlike
+      # Chrome for Testing, the same browser the local measurements use
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Serve the production-like instance
+        run: |
+          pnpm preview:prod > preview-prod.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            curl --silent --fail --output /dev/null http://localhost:8788/api/health && exit 0
+            sleep 2
+          done
+          cat preview-prod.log
+          exit 1
+
+      - name: Lighthouse (3 runs per route and device, median, asserted)
+        run: pnpm lighthouse --assert
+
+      - name: Upload Lighthouse reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse-reports
+          path: |
+            reports/lighthouse/
+            preview-prod.log
+          retention-days: 30
+          if-no-files-found: warn
