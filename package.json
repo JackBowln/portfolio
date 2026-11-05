@@ -33,6 +33,7 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state",
     "db:migrate:prodlike": "wrangler d1 migrations apply DB --local --config wrangler.jsonc --persist-to .wrangler/state-prod",
     "db:seed": "node server/db/seed/dev.ts",
+    "db:seed:prodlike": "node server/db/seed/prodlike.ts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

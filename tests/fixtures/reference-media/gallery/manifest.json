@@ -1,0 +1,88 @@
+{
+  "alt": "[PLACEHOLDER] Composição abstrata em âmbar",
+  "manifest": {
+    "kind": "image",
+    "mimeType": "image/jpeg",
+    "originalFilename": "referencia-gallery.jpg",
+    "size": 44209,
+    "width": 1280,
+    "height": 960,
+    "sha256": "6849c5ccf6a45af84d09944aa10e1a7106edb164eb7378787c177bd24339aa6c",
+    "placeholderDataUrl": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAABwBACdASogABcAPp1GnEqlo6KhqAqosBOJYwDFB1ABIeB68bZECs2p9J80AAD+6hkSiL/fJIu8vrchvWt3PaWGOinK2TWAuZBI5kexf/0c3j9zjJKE6qAZgh/ZmWP8AAA=",
+    "dominantColor": "#906b41",
+    "variants": [
+      {
+        "format": "avif",
+        "width": 320,
+        "height": 240,
+        "size": 733
+      },
+      {
+        "format": "webp",
+        "width": 320,
+        "height": 240,
+        "size": 1270
+      },
+      {
+        "format": "jpeg",
+        "width": 320,
+        "height": 240,
+        "size": 2533
+      },
+      {
+        "format": "avif",
+        "width": 640,
+        "height": 480,
+        "size": 1109
+      },
+      {
+        "format": "webp",
+        "width": 640,
+        "height": 480,
+        "size": 2824
+      },
+      {
+        "format": "jpeg",
+        "width": 640,
+        "height": 480,
+        "size": 5694
+      },
+      {
+        "format": "avif",
+        "width": 960,
+        "height": 720,
+        "size": 1645
+      },
+      {
+        "format": "webp",
+        "width": 960,
+        "height": 720,
+        "size": 4950
+      },
+      {
+        "format": "jpeg",
+        "width": 960,
+        "height": 720,
+        "size": 9708
+      },
+      {
+        "format": "avif",
+        "width": 1280,
+        "height": 960,
+        "size": 2219
+      },
+      {
+        "format": "webp",
+        "width": 1280,
+        "height": 960,
+        "size": 7382
+      },
+      {
+        "format": "jpeg",
+        "width": 1280,
+        "height": 960,
+        "size": 15490
+      }
+    ]
+  }
+}

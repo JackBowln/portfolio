@@ -1,0 +1,88 @@
+{
+  "alt": "[PLACEHOLDER] Capa abstrata em azul e rosa",
+  "manifest": {
+    "kind": "image",
+    "mimeType": "image/jpeg",
+    "originalFilename": "referencia-cover.jpg",
+    "size": 43825,
+    "width": 1600,
+    "height": 900,
+    "sha256": "1a56780fcab99e11e63c8bd8dda10417eb207e8509c17f5ccbf0bfb9f5648e22",
+    "placeholderDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwBACdASogABIAPp1Cm0klo6KkMBgIALATiWMAsR7fAYBYmSEEZh7KTTOJyeEBPn4A/vQyxcpdkDXzDrTH5aYP+SRNhnTFhbAVH2tcE0aL8PTVcnbeAAAA",
+    "dominantColor": "#774b6d",
+    "variants": [
+      {
+        "format": "avif",
+        "width": 320,
+        "height": 180,
+        "size": 584
+      },
+      {
+        "format": "webp",
+        "width": 320,
+        "height": 180,
+        "size": 886
+      },
+      {
+        "format": "jpeg",
+        "width": 320,
+        "height": 180,
+        "size": 1800
+      },
+      {
+        "format": "avif",
+        "width": 640,
+        "height": 360,
+        "size": 886
+      },
+      {
+        "format": "webp",
+        "width": 640,
+        "height": 360,
+        "size": 2038
+      },
+      {
+        "format": "jpeg",
+        "width": 640,
+        "height": 360,
+        "size": 3635
+      },
+      {
+        "format": "avif",
+        "width": 960,
+        "height": 540,
+        "size": 1146
+      },
+      {
+        "format": "webp",
+        "width": 960,
+        "height": 540,
+        "size": 3524
+      },
+      {
+        "format": "jpeg",
+        "width": 960,
+        "height": 540,
+        "size": 5913
+      },
+      {
+        "format": "avif",
+        "width": 1280,
+        "height": 720,
+        "size": 1544
+      },
+      {
+        "format": "webp",
+        "width": 1280,
+        "height": 720,
+        "size": 5140
+      },
+      {
+        "format": "jpeg",
+        "width": 1280,
+        "height": 720,
+        "size": 8429
+      }
+    ]
+  }
+}

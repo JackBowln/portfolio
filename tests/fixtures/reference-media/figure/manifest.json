@@ -1,0 +1,88 @@
+{
+  "alt": "[PLACEHOLDER] Diagrama abstrato em verde",
+  "manifest": {
+    "kind": "image",
+    "mimeType": "image/jpeg",
+    "originalFilename": "referencia-figure.jpg",
+    "size": 29009,
+    "width": 1280,
+    "height": 720,
+    "sha256": "bf22bc65df39054aeaf75b17802289db8b76264ea0d18e4d7ee14f2156315873",
+    "placeholderDataUrl": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAAAQBQCdASogABIAPo04lkglI6IhN/qoAKARiWUAwcwgb9ETLgvE5UEMJwMteWzM3SQAAP70MsdXMoSAypLhvH3qo7HJrmYG0LMiKpMvu9Wt8KNRRcoWbfMAAAA=",
+    "dominantColor": "#678c6d",
+    "variants": [
+      {
+        "format": "avif",
+        "width": 320,
+        "height": 180,
+        "size": 598
+      },
+      {
+        "format": "webp",
+        "width": 320,
+        "height": 180,
+        "size": 902
+      },
+      {
+        "format": "jpeg",
+        "width": 320,
+        "height": 180,
+        "size": 1816
+      },
+      {
+        "format": "avif",
+        "width": 640,
+        "height": 360,
+        "size": 881
+      },
+      {
+        "format": "webp",
+        "width": 640,
+        "height": 360,
+        "size": 2050
+      },
+      {
+        "format": "jpeg",
+        "width": 640,
+        "height": 360,
+        "size": 3769
+      },
+      {
+        "format": "avif",
+        "width": 960,
+        "height": 540,
+        "size": 1204
+      },
+      {
+        "format": "webp",
+        "width": 960,
+        "height": 540,
+        "size": 3738
+      },
+      {
+        "format": "jpeg",
+        "width": 960,
+        "height": 540,
+        "size": 6080
+      },
+      {
+        "format": "avif",
+        "width": 1280,
+        "height": 720,
+        "size": 1587
+      },
+      {
+        "format": "webp",
+        "width": 1280,
+        "height": 720,
+        "size": 5506
+      },
+      {
+        "format": "jpeg",
+        "width": 1280,
+        "height": 720,
+        "size": 9354
+      }
+    ]
+  }
+}
