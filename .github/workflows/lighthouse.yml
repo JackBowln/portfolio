@@ -39,6 +39,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The production build, without the test-only routes
       - run: pnpm build
+      # F12-T3: the test login and the other test routes are not in it
+      - run: pnpm check:prod-build
       - run: pnpm check:budgets
       - run: pnpm db:migrate:prodlike
       - run: pnpm db:seed:prodlike
