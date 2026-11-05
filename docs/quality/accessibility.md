@@ -5,6 +5,10 @@ Meta: **WCAG 2.2 nível AA** no site público **e** no admin, com Lighthouse Acc
 ## 1. Automatizado (CI)
 
 - `@axe-core/playwright` com tags `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa`, em todos os templates × (pt-BR, de) × (claro, escuro) × movimento reduzido.
+  - **Desde a F12-T2:** a matriz fica em `tests/a11y/matrix.spec.ts` e cruza também o movimento normal; com ele, a análise espera as cenas começarem e as entradas terminarem.
+  - **Admin:** em `tests/a11y/admin.spec.ts`.
+  - **Checklist do §2:** o que dá para medir está em `tests/a11y/checklist.spec.ts`: estrutura, foco e contraste do indicador, foco sob o header, reflow e zoom, espaçamento de texto, alvos e aproximações de leitor de tela.
+  - **Auditorias:** registradas em `docs/quality/a11y-audit-<data>.md`.
 - Lighthouse Accessibility = 100 nas rotas-chave.
 - Testes de teclado no Playwright para: menu mobile, seletor de idioma, formulário de contato, login do admin, editor (inserir imagem e link) e publicação.
 

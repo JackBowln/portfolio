@@ -54,7 +54,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F12-T1 | RNF-10 | `/frontend-design`, `/test-engineer` |
+| concluída (VoiceOver pendente com o owner) | F12-T1 | RNF-10 | `/frontend-design`, `/test-engineer` |
 
 **Objetivo.** Rodar a matriz axe completa (templates × idiomas × temas × movimento reduzido) e a passada manual com VoiceOver em R1–R8 e no fluxo editorial do admin ([accessibility](../quality/accessibility.md) §2 e §4), e corrigir o que for encontrado.
 
@@ -63,8 +63,19 @@
 **Fora do escopo.** Redesenho sem relação com acessibilidade.
 
 **Critérios de aceite**
-- [ ] 0 violações axe sérias ou críticas; Lighthouse Accessibility 100 nas rotas-chave.
-- [ ] A checklist manual foi preenchida, com os achados e as correções.
+- [x] 0 violações axe sérias ou críticas; Lighthouse Accessibility 100 nas rotas-chave.
+- [x] A checklist manual foi preenchida, com os achados e as correções.
+
+**Resultado (05/11/2026).** O relatório completo está em [a11y-audit-2026-11-05](../quality/a11y-audit-2026-11-05.md).
+- **Matriz axe:** 11 templates × pt-BR/de × claro/escuro × movimento reduzido/normal, mais o preview (92 casos, 0 violações sérias ou críticas). Substitui os specs por página da F01–F08 (decisão 2).
+- **Checklist:** medida no navegador, com 13 testes.
+- **Correções:**
+  - a âncora de seção com 24×24 px (2.5.8);
+  - os grids de uma coluna com `minmax(0, 1fr)`, porque uma imagem que não carregava alargava a página no celular (1.4.10);
+  - o envio simultâneo do mesmo arquivo responde 409 em vez de 500;
+  - o id de linguagem `ts` nos dados de referência.
+- **VoiceOver** (decisão 1): o roteiro está no relatório, para o owner executar.
+- **Fora daqui** (decisão 3): a 404 renderizada sem os bindings da Cloudflare (achado da F12-T1).
 
 **Testes**
 - Suíte `a11y` completa (saída) e relatório manual.
