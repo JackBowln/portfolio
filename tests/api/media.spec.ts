@@ -221,8 +221,9 @@ test.describe('rejected uploads', () => {
     expect((await finalize(request, created.id)).status()).toBe(409)
 
     const video = await create(request, {
-      kind: 'video', mimeType: 'video/mp4', originalFilename: 'v.mp4', size: 100, width: 10, height: 10, durationMs: 1, sha256: randomSha256(), posterMediaId: created.id.replace(/.$/, '0'),
+      kind: 'video', mimeType: 'video/mp4', originalFilename: 'v.mp4', size: 100, width: 10, height: 10, durationMs: 1, sha256: randomSha256(), posterMediaId: '01900000-0000-7000-8000-000000000000',
     })
+    // An id that names no media (deriving one from created.id could hit created.id itself)
     expect(video.status(), 'poster must be a ready image').toBe(400)
     await request.dispose()
   })

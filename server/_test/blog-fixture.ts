@@ -30,8 +30,10 @@ const body = {
 }
 
 async function fixtureUser(db: Db): Promise<string> {
+  // Specs set up in parallel on an empty state (F12-T1): two requests may both try to create the user
+  await db.insert(users).values({ name: 'Blog fixture', email: EMAIL }).onConflictDoNothing()
   const [found] = await db.select({ id: users.id }).from(users).where(eq(users.email, EMAIL))
-  return found?.id ?? (await db.insert(users).values({ name: 'Blog fixture', email: EMAIL }).returning({ id: users.id }))[0]!.id
+  return found!.id
 }
 
 /** The project `x` in the five locales, with one technology and one result */
