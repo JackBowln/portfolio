@@ -75,10 +75,72 @@ export function fontStack(family: FontFamily): string {
 const PENDING_CLASS = 'fonts-pending'
 const FONTS_STORAGE_KEY = 'fonts'
 
+/**
+ * F11-T5: Fraunces has an optical-size axis, so the larger the text, the narrower its glyphs, while the fallback faces
+ * @nuxt/fonts generates match its default size. Set in the fallback, a 100 px title was ~17% wider, wrapped into twice
+ * the lines and pushed the page down when the web font came in (CLS 0.06 on the case study, desktop). Measured width
+ * of Fraunces ÷ its Georgia fallback, by step and viewport (Chrome, 2026-11-05):
+ *
+ * | step | 412 px | 768 px | 1024 px | 1350 px | 1920 px |
+ * |---|---|---|---|---|---|
+ * | 5 | 0.969 | 0.952 | 0.935 | 0.911 | 0.896 |
+ * | 6 | 0.957 | 0.922 | 0.861 | 0.831 | 0.829 |
+ * | 7 | 0.937 | 0.834 | 0.824 | 0.822 | 0.822 |
+ *
+ * So display titles get narrower copies of the fallback by size: each is @nuxt/fonts' face for that local font with
+ * size-adjust times the scale, and the vertical overrides divided by it, so line boxes keep their height. Local fonts
+ * only: nothing is downloaded. The values of @nuxt/fonts are checked against the build by tests/unit/fonts.test.ts
+ */
+export const DISPLAY_FALLBACK_METRICS: Record<string, { sizeAdjust: number, ascent: number, descent: number }> = {
+  'Georgia': { sizeAdjust: 105.204, ascent: 92.9623, descent: 24.2386 },
+  'Times New Roman': { sizeAdjust: 115.446, ascent: 84.7148, descent: 22.0882 },
+}
+const LOCAL_NAMES: Record<string, string[]> = {
+  'Georgia': ['Georgia', 'Georgia Regular', 'Georgia-Regular'],
+  'Times New Roman': ['Times New Roman', 'Times New Roman Regular', 'TimesNewRoman-Regular', 'TimesNewRomanPSMT'],
+}
+export const DISPLAY_SCALES = [95, 91, 86, 83] as const
+/** Which scale a step uses from a viewport width (rem) up, from the table above */
+export const DISPLAY_FALLBACK_RULES: readonly { step: 5 | 6 | 7, minWidth: number, scale: (typeof DISPLAY_SCALES)[number] }[] = [
+  { step: 5, minWidth: 48, scale: 95 },
+  { step: 5, minWidth: 84, scale: 91 },
+  { step: 6, minWidth: 0, scale: 95 },
+  { step: 6, minWidth: 48, scale: 91 },
+  { step: 6, minWidth: 64, scale: 86 },
+  { step: 6, minWidth: 84, scale: 83 },
+  { step: 7, minWidth: 0, scale: 95 },
+  { step: 7, minWidth: 48, scale: 83 },
+]
+
+const round = (value: number) => Number(value.toFixed(3))
+const displayFamily = (scale: number, local: string) => `"Fraunces Fallback ${scale}: ${local}"`
+
+function displayFallbackCss(): string {
+  const faces = DISPLAY_SCALES.flatMap(scale => Object.entries(DISPLAY_FALLBACK_METRICS).map(([local, metrics]) => {
+    const factor = scale / 100
+    return `@font-face{font-family:${displayFamily(scale, local)};src:${LOCAL_NAMES[local]!.map(name => `local(${name})`).join(',')};size-adjust:${round(metrics.sizeAdjust * factor)}%;ascent-override:${round(metrics.ascent / factor)}%;descent-override:${round(metrics.descent / factor)}%;line-gap-override:0%}`
+  }))
+  const generic = FONT_FAMILIES.find(family => family.token === '--font-display')!.generic
+  // Twice: while pending, the narrow fallback alone; after, Fraunces first and the same fallback while it downloads,
+  // or the title would widen for that moment and shift twice
+  const rules = DISPLAY_FALLBACK_RULES.map(({ step, minWidth, scale }) => {
+    const fallbacks = [...Object.keys(DISPLAY_FALLBACK_METRICS).map(local => displayFamily(scale, local)), ...generic].join(',')
+    const rule = `.font-display.text-step-${step}{font-family:"Fraunces",${fallbacks}}:root.${PENDING_CLASS} .font-display.text-step-${step}{font-family:${fallbacks}}`
+    return minWidth === 0 ? rule : `@media (min-width:${minWidth}rem){${rule}}`
+  })
+  return [...faces, ...rules].join('')
+}
+
 /** While pending, the tokens name only the fallbacks, so the browser neither uses nor downloads the web fonts */
 export const FONT_PENDING_CSS = `:root.${PENDING_CLASS}{${FONT_FAMILIES
   .map(family => `${family.token}:${[...fallbackFamilies(family), ...family.generic].join(',')}`)
   .join(';')}}`
+
+/**
+ * Display titles in the narrower fallbacks of their size, pending or while Fraunces downloads (F11-T5). Added to the
+ * HTML by server/plugins/display-fallback-css.ts: in app.head it would be serialized into every page's JS too
+ */
+export const DISPLAY_FALLBACK_CSS = displayFallbackCss()
 
 /**
  * Runs inline in <head>. First visit: hold the web fonts until the first frame after `load` has painted (an image
