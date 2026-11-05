@@ -36,6 +36,7 @@ export const AUDIT_ACTIONS = [
   'page.published',
   'page.unpublished',
   'settings.updated',
+  'cache.purged',
   'contact.status_changed',
   'contact.deleted',
   'glossary.created',
