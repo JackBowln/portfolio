@@ -1,12 +1,12 @@
-// F09-T4: the translation journeys in the browser, with the fake provider of the test build. J-05: translate an
-// article into English with AI → review side by side → approve → publish → /en/blog/<slug> exists, with reciprocal
-// hreflang. J-06: edit the original → only the edited segment is outdated → retranslate it → approve. axe on the
-// review screen
+// J-05 and J-06 (PRD §8; F09-T4, F12-T1): the translation journeys in the browser, with the fake provider of the test
+// build. J-05: translate an article into English with AI → review side by side → approve → publish → /en/blog/<slug>
+// exists, with reciprocal hreflang. J-06: edit the original in the editor → only the edited segment is outdated →
+// retranslate it → approve. axe on the review screen. Desktop Chromium and a phone (WebKit)
 import { randomBytes } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
-import { SITE_ORIGIN } from '../support/auth'
-import { expectNoBlockingViolations } from '../support/axe'
+import { SITE_ORIGIN } from '../../support/auth'
+import { expectNoBlockingViolations } from '../../support/axe'
 
 const headers = { origin: SITE_ORIGIN }
 
@@ -38,8 +38,8 @@ async function hydrated(page: Page) {
 
 test.describe.configure({ mode: 'serial' })
 
-test('J-05 and J-06: translate, review, approve, publish; then the source changes', async ({ page, browserName, isMobile }) => {
-  test.skip(browserName !== 'chromium' || isMobile, 'The review runs in desktop Chromium here')
+test('J-05 and J-06: translate, review, approve, publish; then the source changes', async ({ page }) => {
+  test.setTimeout(150_000)
   const request = page.context().request
   expect((await request.post('/api/_test/session?role=owner', { headers })).status()).toBe(200)
   await enableAi(request)
@@ -81,10 +81,15 @@ test('J-05 and J-06: translate, review, approve, publish; then the source change
   const portugueseSlug = ((await (await request.get(`/api/admin/articles/${id}`)).json()) as { localizations: { locale: string, slug: string }[] }).localizations.find(copy => copy.locale === 'pt-BR')!.slug
   expect(await (await request.get(`/blog/${portugueseSlug}`)).text()).toMatch(new RegExp(`<link[^>]+hreflang="en"[^>]+/en/blog/${slug}|<link[^>]+/en/blog/${slug}[^>]+hreflang="en"`))
 
-  // J-06
-  const article = await (await request.get(`/api/admin/articles/${id}`)).json() as { localizations: { locale: string, version: number }[] }
-  const version = article.localizations.find(copy => copy.locale === 'pt-BR')!.version
-  expect((await request.patch(`/api/admin/articles/${id}`, { headers, data: { version, body: body('Segundo parágrafo, reescrito') } })).status()).toBe(200)
+  // J-06: the owner edits the original in the editor
+  await page.goto(`/admin/artigos/${id}`)
+  await hydrated(page)
+  const editor = page.getByRole('textbox', { name: 'Corpo do artigo' })
+  await editor.getByText('Segundo parágrafo', { exact: true }).click()
+  await page.keyboard.press('End')
+  await page.keyboard.type(', reescrito')
+  await page.getByRole('button', { name: 'Salvar agora' }).click()
+  await expect(page.getByTestId('autosave-status')).toContainText(/Salvo às/, { timeout: 15_000 })
   await page.goto(`/admin/traducoes/article/${id}/en`)
   await hydrated(page)
   await expect(page.locator('[data-testid="review-segment"][data-status="outdated"]')).toHaveCount(1)

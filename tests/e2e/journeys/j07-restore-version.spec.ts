@@ -1,10 +1,8 @@
-// F06-T2, journey J-07: the owner edits an article, saves a named version, edits again, compares in the history and
-// restores the earlier version; the restore is a new revision and nothing is deleted
+// J-07 (PRD §8; F06-T2, F12-T1): the owner edits an article, saves a named version, edits again, compares in the history and
+// restores the earlier version; the restore is a new revision and nothing is deleted. Desktop Chromium and a phone (WebKit)
 import { expect, test } from '@playwright/test'
-import { SITE_ORIGIN } from '../support/auth'
-import { uniqueName } from '../support/media-api'
-
-test.skip(({ browserName, isMobile }) => browserName !== 'chromium' || isMobile, 'The article editor runs in desktop Chromium here; axe covers the rest')
+import { SITE_ORIGIN } from '../../support/auth'
+import { uniqueName } from '../../support/media-api'
 
 test('J-07: edit, save a version, edit again, compare and restore the earlier version', async ({ page }) => {
   test.setTimeout(90_000)

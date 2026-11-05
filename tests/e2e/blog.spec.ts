@@ -1,6 +1,6 @@
-// F06-T5 (J-03, J-04): the public blog in a browser. List → article → another language; an article published only in
-// pt-BR offers no broken link in the switcher; pages of a topic; the article reads fully without JS; and J-04 end to
-// end: schedule, the cron runs with a moved clock, and the page, the list, the RSS and the sitemap show the article
+// F06-T5: the public blog in a browser. List → article → another language; an article published only in pt-BR offers
+// no broken link in the switcher; pages of a topic; the article reads fully without JS. J-04 is in
+// tests/e2e/journeys (F12-T1)
 import { randomBytes } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
@@ -107,25 +107,4 @@ test.describe('without JavaScript', () => {
     await page.goto('/blog/temas/x')
     await expect(page.getByRole('link', { name: 'Artigo de exemplo [PLACEHOLDER]' })).toBeVisible()
   })
-})
-
-test('J-04: a scheduled article reaches the page, the list, the RSS and the sitemap when the cron runs', async ({ page }) => {
-  const request = page.context().request
-  await editor(request)
-  const title = `Agendado ${unique()}`
-  const { id, slug } = await draft(request, title)
-  const at = new Date(Date.now() + 10 * 60 * 1000)
-  expect((await request.post(`/api/admin/articles/${id}/schedule`, { headers: ORIGIN, data: { locale: 'pt-BR', version: 2, at: at.toISOString() } })).status()).toBe(200)
-  expect((await page.goto(`/blog/${slug}`))?.status()).toBe(404)
-
-  const run = await request.post('/api/_test/run-task', { headers: ORIGIN, data: { now: new Date(at.getTime() + 60_000).toISOString(), articleIds: [id] } })
-  expect((await run.json()).published).toBe(1)
-  await page.goto(`/blog/${slug}`)
-  await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
-  await page.goto('/blog')
-  await expect(page.getByRole('link', { name: title })).toBeVisible()
-  expect(await (await request.get('/rss.xml')).text()).toContain(`<title>${title}</title>`)
-  expect(await (await request.get('/sitemap.xml')).text()).toContain(`/blog/${slug}</loc>`)
-  // Published ahead by the moved clock, it would top the blog list for a while: off the site again
-  expect((await request.post(`/api/admin/articles/${id}/unpublish`, { headers: ORIGIN, data: { locale: 'pt-BR' } })).status()).toBe(200)
 })

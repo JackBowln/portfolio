@@ -1,7 +1,7 @@
 // F03-T2: owner bootstrap, GitHub allowlist, passkeys and the audit trail (ADR-0005 §2–§4, §8).
 // Serial and alone (project auth-flow): it empties the auth tables, so "no owner yet" holds at the start.
 // GitHub is simulated inside the test Worker (server/_test/github-mock.ts): `code=gh-<id>` signs in as that GitHub id.
-// Passkeys use Chromium's virtual WebAuthn authenticator
+// Passkeys use Chromium's virtual WebAuthn authenticator. J-08 (passkey lost, back in through GitHub) closes the file
 import { createHmac } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
@@ -164,4 +164,39 @@ test.describe('after the owner exists', () => {
     expect(await lastResponse.json()).toMatchObject({ code: 'LAST_PASSKEY' })
     await Promise.all([stale.dispose(), fresh.dispose()])
   })
+})
+
+// J-08 (PRD §8, F12-T1): the owner loses the device with the passkey, gets back in through GitHub, registers a new
+// passkey and signs in with it. Chromium only: the passkey uses Chromium's virtual WebAuthn authenticator
+test('J-08: the passkey is lost, GitHub lets the owner back in, a new passkey is registered and works', async ({ browser, request }) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  const cdp = await context.newCDPSession(page)
+  await cdp.send('WebAuthn.enable')
+  // A new device: the owner's passkey is not on it
+  await cdp.send('WebAuthn.addVirtualAuthenticator', {
+    options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true },
+  })
+  await fakeGithubAuthorize(page, OWNER_GITHUB_ID)
+  const passkeysBefore = (await authState(request)).passkeys
+
+  // Without the old device there is nothing to answer the passkey prompt (a failed passkey sign-in is covered above),
+  // so the owner takes the recovery path the login page offers
+  await page.goto('/admin/login')
+  await expect(page.getByText('O GitHub serve para recuperar o acesso.')).toBeVisible()
+  await page.getByRole('button', { name: 'Entrar com GitHub' }).click()
+  // Signed in: out of the login page
+  await page.waitForURL(url => url.pathname.startsWith('/admin') && !url.pathname.startsWith('/admin/login'))
+  await page.goto('/admin/conta/passkeys')
+  await page.getByRole('button', { name: 'Adicionar passkey' }).click()
+  await expect(page.getByText('Passkey adicionada.')).toBeVisible()
+  expect((await authState(request)).passkeys).toBe(passkeysBefore + 1)
+
+  await page.getByRole('button', { name: 'Sair' }).click()
+  await page.waitForURL(/\/admin\/login/)
+  await page.getByRole('button', { name: 'Entrar com passkey' }).click()
+  await page.waitForURL(/\/admin$/)
+  const logins = (await authState(request)).audit.filter(entry => entry.action === 'auth.login').map(entry => JSON.parse(entry.metadata ?? '{}').method)
+  expect(logins.slice(-2)).toEqual(['github', 'passkey'])
+  await context.close()
 })
