@@ -31,6 +31,12 @@ function wrapFocus(event: KeyboardEvent) {
 
 // Following a link swaps the page behind the dialog, so it closes
 watch(() => route.fullPath, close)
+
+// F12-T2/T3: the `command` attribute opens the dialog before hydration too; aria-expanded follows the dialog itself,
+// read once mounted and on every toggle, so it is never "false" over an open menu
+onMounted(() => {
+  open.value = dialog.value?.open ?? false
+})
 </script>
 
 <template>
@@ -55,6 +61,7 @@ watch(() => route.fullPath, close)
       :aria-label="$t('layout.menu.label')"
       closedby="any"
       @close="open = false"
+      @toggle="open = dialog?.open ?? false"
       @keydown.tab="wrapFocus"
     >
       <UiContainer class="grid gap-8 py-4">
