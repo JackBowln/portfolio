@@ -10,7 +10,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | Worker | — (`nuxt dev` + emulação) | `portfolio-preview` | `portfolio` |
 | D1 (`DB`) | estado local (`.wrangler/state`) | `portfolio-preview` | `portfolio-production` |
 | R2 (`MEDIA`) | local | `portfolio-media-preview` | `portfolio-media-production` |
-| R2 (`BACKUPS`) | — | — | `portfolio-backups` |
+| R2 de backups | — | `portfolio-backups` (chaves `d1/preview/…`, `media/preview/…`) | `portfolio-backups` (chaves `d1/production/…`, `media/production/…`) |
 | Entrega de mídia | rota `/media/**` | rota `/media/**` | `MEDIA_BASE_URL` = `https://media.<domínio>` (bucket com domínio próprio) |
 | Workers Cache | desligado | ligado (para testar) | ligado |
 | Indexação | — | `noindex` em tudo | permitida (exceto `/admin`, `/api`, `/preview`) |
@@ -51,7 +51,7 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 | Binding | Tipo | Observação |
 |---|---|---|
 | `DB` | D1 | `migrations_dir: server/db/migrations` |
-| `MEDIA`, `BACKUPS` | R2 | `BACKUPS` só em produção |
+| `MEDIA` | R2 | O bucket `portfolio-backups` não é binding do Worker: só o `backup.yml` escreve nele, pelo wrangler (F12-T4) |
 | `AI` | Workers AI | Free: 10 mil neurons/dia. Só em preview e produção: não tem emulação local, e declará-lo localmente abriria uma sessão remota no `nuxt dev` e nos testes (ADR-0015) |
 | `RL_AUTH`, `RL_PUBLIC`, `RL_ADMIN` | Rate limiting | `simple: { limit, period: 60 }` |
 | `CONTACT_EMAIL` | `send_email` | Destino = endereço verificado no Email Routing (Q-05), o mesmo de `contact.email` nas configurações. Local: emulado (a mensagem só é registrada). Preview e produção: `destination_address` ainda é placeholder (F08-T3) |
@@ -67,10 +67,12 @@ Decisão em [ADR-0014](../architecture/adr/0014-operacao.md). Este documento lis
 wrangler d1 create portfolio-preview
 wrangler r2 bucket create portfolio-media-preview
 
+# Backups (criado em 05/11/2026, F12-T4, com autorização do owner)
+wrangler r2 bucket create portfolio-backups
+
 # Produção (somente no lançamento)
 wrangler d1 create portfolio-production
 wrangler r2 bucket create portfolio-media-production
-wrangler r2 bucket create portfolio-backups
 ```
 
 Contas necessárias, todas gratuitas:

@@ -69,6 +69,7 @@
 ## Validação
 
 - F12-T4: restore ensaiado (D1 de um export num banco de preview); rollback de versão ensaiado em preview.
+- **F12-T4 (2026-11-05):** workflows `backup`, `deploy-preview` e `deploy-production` e scripts `scripts/ops/` criados; bucket `portfolio-backups` criado; migrações 0000–0008 aplicadas no preview, com deploy e smoke verdes. O restore foi ensaiado localmente (com conteúdo) e no preview (export do bucket → banco novo → contagens e amostras iguais → banco apagado). O ensaio mostrou que o export único não reimporta no D1 por causa da ordem das tabelas, e o backup passou a exportar schema e dados separados ([backup-restore §2.2](../../operations/backup-restore.md#22-por-export-semanal)). Rollback ensaiado no preview, com efeito em ≤ 12 s. A execução dos workflows no GitHub espera os Environments e os secrets do owner.
 - **F00-T5 (2026-10-26):** o CI roda em todo PR e na `main`, com todos os passos verdes em ~1 min 38 s por execução (ubuntu-24.04; [run do PR #1](https://github.com/JackBowln/portfolio/actions/runs/40317070699)). O PR de teste #2 falhou no `pnpm lint` ([run](https://github.com/JackBowln/portfolio/actions/runs/40317914335)) e passou depois da correção ([run](https://github.com/JackBowln/portfolio/actions/runs/40319741293)). O repositório é **público** (Q-07), então não há custo de minutos. Actions fixadas por SHA e atualizadas pelo Dependabot.
 
 ## Referências

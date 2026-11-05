@@ -38,7 +38,7 @@ Medidos em páginas (`/`, `/blog/x`, `/admin`, `/admin/login`, 404), dados (`/ap
 - **Dados:** `default-src 'none'; frame-ancestors 'none'` e sem `Set-Cookie`.
 - **Admin:** `noindex` e `private, no-store`.
 
-**Pendente com o owner:** conferir os mesmos headers no preview depois do deploy, com o mesmo teste (`PROD_LIKE_URL` apontando para o preview) ou com `curl -I`.
+**Conferido no preview em 05/11/2026 (F12-T4),** com `curl -I` em `/`, `/blog`, `/admin/login`, um 404 e `/api/public/settings`: os mesmos headers, sem `Set-Cookie`, com `noindex` em tudo. A única diferença é a esperada: **sem HSTS**, que só sai com `ENVIRONMENT=production` (`server/plugins/security-headers.ts`), para um subdomínio workers.dev não fixar HSTS na zona. Em produção, conferir o HSTS no lançamento (F12-T5).
 
 ## 3. Matriz de autorização contra o código
 
@@ -79,6 +79,6 @@ A saída está no relatório da DoD da F12-T3:
 
 | Item | Quem | Quando |
 |---|---|---|
-| Conferir os headers no preview (§2) | owner, com deploy autorizado | antes do release (F12-T5) |
+| ~~Conferir os headers no preview (§2)~~ feito na F12-T4; falta o HSTS em produção | dev, no lançamento | F12-T5 |
 | Achado 2: rever o Nuxt ≥ 4.6.3 quando couber no orçamento, ou subir o R7 | owner | na próxima atualização do Nuxt, ou na F12-T5 |
 | Moderados de build e dev no `pnpm audit` | dev | a cada atualização de dependências; nenhum chega ao Worker |

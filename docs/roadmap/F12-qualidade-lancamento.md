@@ -123,7 +123,7 @@
 
 | Status | Depende de | Requisitos | Skills |
 |---|---|---|---|
-| pendente | F12-T1 | RNF-08, RNF-13 | `/release-check` |
+| concluída (execução dos workflows no GitHub pendente com o owner) | F12-T1 | RNF-08, RNF-13 | `/release-check` |
 
 **Objetivo.** Criar o workflow agendado de export semanal do D1 para o `BACKUPS` e o manifesto de mídia, o workflow de deploy de preview e o de produção (`workflow_dispatch`, sem execução automática). Ensaiar o restore (export → banco de verificação) e o rollback de versão no preview, e revisar os logs e o painel de uso (custos).
 
@@ -132,10 +132,10 @@
 **Fora do escopo.** Monitor externo pago.
 
 **Critérios de aceite**
-- [ ] Criar o bucket `BACKUPS` e os segredos do CI só com sua autorização; o primeiro export roda e é listado.
-- [ ] Restore ensaiado: contagens e amostra conferidas, com o tempo registrado.
-- [ ] Rollback de versão ensaiado no preview.
-- [ ] O workflow de produção exige disparo manual e passa por migrações (com bookmark) → upload → deploy → smoke.
+- [x] Criar o bucket `BACKUPS` e os segredos do CI só com sua autorização; o primeiro export roda e é listado. (Bucket `portfolio-backups` criado; primeiro export do preview gravado e conferido por releitura, porque o wrangler não lista objetos. Os segredos do CI ficam com o owner.)
+- [x] Restore ensaiado: contagens e amostra conferidas, com o tempo registrado ([backup-restore §6](../operations/backup-restore.md#6-registro-de-ensaios-trimestral)).
+- [x] Rollback de versão ensaiado no preview.
+- [x] O workflow de produção exige disparo manual e passa por migrações (com bookmark) → upload → deploy → smoke.
 
 **Testes**
 - Execuções reais dos workflows no preview (logs no relatório).
