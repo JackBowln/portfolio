@@ -216,6 +216,24 @@ export async function unpublishPage(db: Db, actor: Actor, page: PageDetail, loca
 
 // Public read
 
+/**
+ * The published blocks of one page for a locale, else pt-BR, with the tags they depend on (both locales: a pt-BR publish
+ * changes what a fallback shows). Text only, no media: the home reads About's timeline this way (F13-T3, a cheap read)
+ */
+export async function publishedBlocks(db: Db, key: PageKey, locale: Locale): Promise<{ blocks: unknown, fallback: boolean, cacheTags: string[] }> {
+  const page = await findPage(db, key)
+  const localizations = page ? await findPageLocalizations(db, [page.id]) : []
+  const published = localizations.filter(item => item.publishedRevisionId && item.publishedSnapshot)
+  const chosen = published.find(item => item.locale === locale) ?? published.find(item => item.locale === SOURCE_LOCALE)
+  const parsed = chosen ? pageBlockSchemas[key].safeParse(chosen.publishedSnapshot!.localization.blocks) : undefined
+  const blocks = parsed?.success ? parsed.data : null
+  return {
+    blocks,
+    fallback: !!blocks && chosen!.locale !== locale,
+    cacheTags: [cacheTags.page(key, locale), cacheTags.page(key, SOURCE_LOCALE)],
+  }
+}
+
 export async function publicPage(db: Db, key: PageKey, locale: Locale): Promise<PublicPage> {
   const page = await findPage(db, key)
   const localizations = page ? await findPageLocalizations(db, [page.id]) : []
@@ -234,14 +252,15 @@ export async function publicPage(db: Db, key: PageKey, locale: Locale): Promise<
 
   let home: PublicPage['home']
   if (key === 'home') {
-    // F13-T3: the experience shown on the home is the about page's timeline (same locale, else pt-BR); its tags go with
-    // the home's, so publishing the about page also refreshes the home
-    const [projects, articles, about] = await Promise.all([projectList(db, locale), blogPage(db, locale, 1), publicPage(db, 'about', locale)])
+    // F13-T3: the experience shown on the home is the about page's timeline (same locale, else pt-BR). Its fallback goes
+    // with it, so the text is labelled with its own language; its tags go with the home's, so publishing about refreshes it
+    const [projects, articles, about] = await Promise.all([projectList(db, locale), blogPage(db, locale, 1), publishedBlocks(db, 'about', locale)])
     home = {
       projects: (projects?.items ?? []).filter(item => item.featured),
       articles: (articles?.items ?? []).slice(0, 3),
       experience: (about.blocks as PageBlocks<'about'> | null)?.timeline ?? [],
       skills: (about.blocks as PageBlocks<'about'> | null)?.skills ?? [],
+      experienceFallback: about.fallback,
     }
     tags.push(cacheTags.projectList(locale), cacheTags.blogList(locale), ...(projects?.cacheTags ?? []), ...(articles?.cacheTags ?? []), ...about.cacheTags)
   }

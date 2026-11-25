@@ -87,6 +87,9 @@ describe('institutional pages', () => {
     const home = await publicPage(db, 'home', 'pt-BR')
     expect(home.home?.experience).toEqual(timeline)
     expect(home.home?.skills).toEqual(skills)
+    expect(home.home?.experienceFallback).toBe(false)
+    // About has no German text: the timeline is the pt-BR one, and the home says so
+    expect((await publicPage(db, 'home', 'de')).home?.experienceFallback).toBe(true)
     expect(home.cacheTags).toContain('page:about:pt-BR')
   })
 

@@ -150,7 +150,7 @@ const button = 'press inline-flex min-h-(--target-comfortable) items-center just
       v-if="experience.length > 0"
       class="grid gap-8"
       :aria-labelledby="ids.experience"
-      :lang="page.fallback ? 'pt-BR' : undefined"
+      :lang="page.home?.experienceFallback ? 'pt-BR' : undefined"
     >
       <UiHeading
         :id="ids.experience"
