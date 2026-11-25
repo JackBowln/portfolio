@@ -10,8 +10,10 @@ import BlogCard from '~/components/blog/BlogCard.vue'
 import FallbackNotice from '~/components/pages/FallbackNotice.vue'
 import ProjectCard from '~/components/projects/ProjectCard.vue'
 
-defineProps<{ page: PublicPage<PageBlocks<'home'>> & { blocks: PageBlocks<'home'> } }>()
+const props = defineProps<{ page: PublicPage<PageBlocks<'home'>> & { blocks: PageBlocks<'home'> } }>()
 const settings = useSiteSettings()
+// F13-T2: a figure needs both its number and its label to show
+const stats = computed(() => props.page.blocks.stats.filter(stat => stat.value.trim() !== '' && stat.label.trim() !== ''))
 const LINKS = { projects: '/projetos', blog: '/blog', about: '/sobre', contact: '/contato' } as const
 const ids = { featured: useId(), articles: useId() }
 const button = 'press inline-flex min-h-(--target-comfortable) items-center justify-self-start border border-text px-5 font-strong hover:border-accent hover:text-accent'
@@ -75,6 +77,30 @@ const button = 'press inline-flex min-h-(--target-comfortable) items-center just
         {{ page.blocks.hero.cta.label }}
       </UiLocalizedLink>
     </section>
+
+    <!-- F13-T2: the stats strip. A figure is text as the owner wrote it; with motion, a plain number counts up once -->
+    <dl
+      v-if="stats.length > 0"
+      class="grid grid-cols-2 gap-x-6 gap-y-8 border-t border-border pt-8 md:grid-cols-4"
+      :lang="page.fallback ? 'pt-BR' : undefined"
+      data-motion="stats"
+    >
+      <div
+        v-for="(stat, index) in stats"
+        :key="index"
+        class="grid content-start gap-2"
+      >
+        <dt class="text-step--1 text-text-muted">
+          {{ stat.label }}
+        </dt>
+        <dd
+          class="font-display text-step-3 text-text"
+          data-motion="stat-value"
+        >
+          {{ stat.value }}
+        </dd>
+      </div>
+    </dl>
 
     <!-- With 3 or more sections the story is pinned and scrubbed on desktop (storyboard-home §3, decision 3) -->
     <div

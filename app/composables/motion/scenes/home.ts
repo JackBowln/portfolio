@@ -4,6 +4,7 @@
 // show everything first); below the fold, each reveal sets its starting state as it is created, out of sight.
 // Desktop (≥ md) gets the full timelines; mobile only fades; reduced motion never gets here
 import { BREAKPOINTS, DISTANCES, DURATIONS } from '#shared/design/tokens'
+import { countableStat, formatCount } from './count'
 import type { SceneContext } from './types'
 
 // GSAP takes named eases; these are the closest to the CSS tokens (cubic-bezier needs the CustomEase plugin)
@@ -11,7 +12,7 @@ const EASE = { out: 'power3.out', emphasis: 'expo.out', inOut: 'power3.inOut' } 
 const seconds = (ms: number) => ms / 1000
 const STAGGER = 0.06
 
-export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: SceneContext): undefined {
+export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: SceneContext): (() => void) | undefined {
   const all = (name: string) => [...scope.querySelectorAll<HTMLElement>(`[data-motion="${name}"]`)]
   const one = (name: string) => scope.querySelector<HTMLElement>(`[data-motion="${name}"]`)
   const media = gsap.matchMedia()
@@ -112,5 +113,47 @@ export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: S
     }
     return undefined
   })
-  return undefined
+
+  // F13-T2, the stats strip: a figure written as a number counts up once to its value (as the case study's highlights,
+  // storyboard-home §9). While it counts, the moving digits are hidden from screen readers and the final value is read
+  // from a visually hidden copy; the owner's text comes back at the end and when the scene reverts. Without motion the
+  // strip is the static text, which is the final value
+  const restores: (() => void)[] = []
+  for (const element of scope.querySelectorAll<HTMLElement>('[data-motion="stat-value"]')) {
+    const original = element.textContent?.trim() ?? ''
+    const count = countableStat(original)
+    if (!count) {
+      continue
+    }
+    const visual = document.createElement('span')
+    visual.setAttribute('aria-hidden', 'true')
+    const spoken = document.createElement('span')
+    spoken.className = 'sr-only'
+    spoken.textContent = original
+    const restore = () => {
+      element.textContent = original
+    }
+    restores.push(restore)
+    const state = { value: 0 }
+    gsap.to(state, {
+      value: count.value,
+      duration: seconds(DURATIONS.cinematic),
+      ease: EASE.out,
+      scrollTrigger: { trigger: element, start: 'top 90%', once: true },
+      onStart: () => {
+        visual.textContent = formatCount(count, 0)
+        element.replaceChildren(visual, spoken)
+      },
+      onUpdate: () => {
+        visual.textContent = formatCount(count, state.value)
+      },
+      onComplete: restore,
+    })
+  }
+
+  return () => {
+    for (const restore of restores) {
+      restore()
+    }
+  }
 }

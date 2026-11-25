@@ -29,6 +29,15 @@ export function parseCount(text: string): Count | null {
   return { prefix: symbol + space, value, decimals: fraction.length, group, point, suffix }
 }
 
+/**
+ * A stats figure that counts up (F13-T2): a plain number with an optional symbol and suffix, like "6+", "~5M" or
+ * "90%+". A range ("70–80%") is not counted: its second number would be left in the suffix
+ */
+export function countableStat(text: string): Count | null {
+  const count = parseCount(text)
+  return count && !/\d/.test(count.suffix) ? count : null
+}
+
 function splitLast(text: string, separator: string): [string, string] {
   const index = text.lastIndexOf(separator)
   return [text.slice(0, index), text.slice(index + 1)]
