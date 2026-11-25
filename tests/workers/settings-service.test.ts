@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { createDb } from '../../server/db/client'
 import { siteSettings, users } from '../../server/db/schema'
+import { insertMedia, listUsages, markReady } from '../../server/services/media/media.repo'
 import { adminSettings, publicSettings, siteFeatures, updateSetting } from '../../server/services/settings/settings.service'
 import { PUBLIC_SETTINGS_DEFAULTS } from '../../shared/settings/public'
 import { uuidv7 } from '../../shared/utils/id'
@@ -30,7 +31,7 @@ describe('settings service', () => {
     const version = await versionOf('identity')
     const saved = await updateSetting(db, userId, 'identity', { version, value: { name: 'Nome salvo' }, localizations: { 'pt-BR': { role: 'Papel', bio: 'Bio' } } })
     expect(saved.version).toBe(version + 1)
-    expect((await publicSettings(db, 'pt-BR', 'https://media.example.test')).identity).toEqual({ name: 'Nome salvo', role: 'Papel', bio: 'Bio' })
+    expect((await publicSettings(db, 'pt-BR', 'https://media.example.test')).identity).toEqual({ name: 'Nome salvo', role: 'Papel', bio: 'Bio', cv: null })
     expect(await errorOf(updateSetting(db, userId, 'identity', { version, value: { name: 'Perdeu' } }))).toMatchObject({ statusCode: 409, data: { issues: [{ path: 'version', message: 'stale' }] } })
     expect((await publicSettings(db, 'pt-BR', 'https://media.example.test')).identity.name).toBe('Nome salvo')
   })
@@ -60,5 +61,32 @@ describe('settings service', () => {
   it('refuses a share image that is not a ready image', async () => {
     expect(await errorOf(updateSetting(db, userId, 'seo_defaults', { version: await versionOf('seo_defaults'), value: { ogImageMediaId: uuidv7() } })))
       .toMatchObject({ statusCode: 400, data: { issues: [{ path: 'value.ogImageMediaId' }] } })
+  })
+
+  // F13-T5 (ADR-0017): the CV is a ready PDF; its link is public, its use is recorded and blocks deletion, and clearing
+  // it removes both
+  it('links a ready CV, refuses anything else, and records its use', async () => {
+    const hash = [...crypto.getRandomValues(new Uint8Array(32))].map(byte => byte.toString(16).padStart(2, '0')).join('')
+    const cv = { id: uuidv7(), kind: 'file' as const, mimeType: 'application/pdf' as const, originalFilename: 'cv.pdf', sizeBytes: 1000, width: null, height: null, sha256: hash, originalKey: `media/${hash.slice(0, 2)}/${hash}/file.pdf`, variants: [] }
+    await insertMedia(db, cv, [])
+    expect(await markReady(db, cv.id)).toBe(true)
+    const base = 'https://media.example.test'
+
+    let version = await versionOf('identity')
+    await updateSetting(db, userId, 'identity', { version, value: { name: 'Com CV', cvMediaId: cv.id } })
+    expect((await publicSettings(db, 'pt-BR', base)).identity.cv).toEqual({ url: `${base}/${cv.originalKey}` })
+    expect(await listUsages(db, cv.id)).toEqual([expect.objectContaining({ entityType: 'setting', entityId: 'identity', context: 'settings' })])
+
+    version = await versionOf('identity')
+    const imageHash = [...crypto.getRandomValues(new Uint8Array(32))].map(byte => byte.toString(16).padStart(2, '0')).join('')
+    const image = { id: uuidv7(), kind: 'image' as const, mimeType: 'image/jpeg' as const, originalFilename: 'foto.jpg', sizeBytes: 100, width: 10, height: 10, sha256: imageHash, originalKey: `originals/${imageHash}.jpg`, variants: [] }
+    await insertMedia(db, image, [])
+    await markReady(db, image.id)
+    expect(await errorOf(updateSetting(db, userId, 'identity', { version, value: { name: 'Com CV', cvMediaId: image.id } }))).toMatchObject({ statusCode: 400 })
+
+    version = await versionOf('identity')
+    await updateSetting(db, userId, 'identity', { version, value: { name: 'Sem CV', cvMediaId: null } })
+    expect((await publicSettings(db, 'pt-BR', base)).identity.cv).toBeNull()
+    expect(await listUsages(db, cv.id)).toEqual([])
   })
 })

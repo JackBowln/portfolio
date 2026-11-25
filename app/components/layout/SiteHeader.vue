@@ -19,6 +19,15 @@ const settings = useSiteSettings()
           class="hidden md:block"
           :label="$t('layout.nav.label')"
         />
+        <!-- F13-T5: the CV, when the owner has uploaded one (a PDF, downloaded from the media delivery, ADR-0017) -->
+        <a
+          v-if="settings.identity.cv"
+          :href="settings.identity.cv.url"
+          download
+          class="inline-flex min-h-(--target-comfortable) items-center text-step--1 underline hover:text-accent"
+        >
+          {{ $t('layout.downloadCv') }}
+        </a>
         <LayoutThemeToggle />
         <LayoutMobileMenu class="md:hidden" />
       </div>

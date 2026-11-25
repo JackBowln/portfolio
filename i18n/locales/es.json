@@ -37,7 +37,8 @@
     "reduceMotion": {
       "label": "Reducir movimiento",
       "system": "Tu sistema ya pide movimiento reducido."
-    }
+    },
+    "downloadCv": "Descargar CV"
   },
   "errors": {
     "code": "Error {code}",

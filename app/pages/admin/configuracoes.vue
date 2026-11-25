@@ -97,6 +97,16 @@ useHead({ title: () => t('admin.settings.title'), meta: [{ name: 'robots', conte
               :maxlength="80"
             />
           </UiField>
+          <!-- F13-T5 (ADR-0017): the CV, one PDF for every language -->
+          <AdminSettingsCvField
+            v-model="value.cvMediaId"
+            :label="$t('admin.settings.identity.cv')"
+            :choose="$t('admin.settings.identity.cvChoose')"
+            :remove="$t('admin.settings.identity.cvRemove')"
+            :uploading="$t('admin.settings.identity.cvUploading')"
+            :uploaded="$t('admin.settings.identity.cvUploaded')"
+            :invalid="$t('admin.settings.identity.cvInvalid')"
+          />
         </template>
         <template #localized="{ text }">
           <UiField

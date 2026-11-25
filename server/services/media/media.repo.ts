@@ -217,3 +217,24 @@ export async function findMediaStates(db: Db, ids: readonly string[]): Promise<M
   }
   return found
 }
+
+/** The stored key of a ready PDF (F13-T5, ADR-0017), or null: a CV link is only ever built from a finished file */
+export async function findReadyFileKey(db: Db, id: string): Promise<string | null> {
+  const [row] = await db.select({ key: media.originalKey }).from(media)
+    .where(and(eq(media.id, id), eq(media.kind, 'file'), eq(media.status, 'ready')))
+    .limit(1)
+  return row?.key ?? null
+}
+
+/**
+ * Whether a PDF may be served (F13-T5 review): the object is a ready file and a settings key still uses it. Removing the
+ * CV from the settings drops its usage, so its link stops working at once, not only when the cleanup removes the object
+ */
+export async function isServedFile(db: Db, key: string): Promise<boolean> {
+  const used = db.select({ one: sql`1` }).from(mediaUsages)
+    .where(and(eq(mediaUsages.mediaId, media.id), eq(mediaUsages.entityType, 'setting')))
+  const [row] = await db.select({ id: media.id }).from(media)
+    .where(and(eq(media.originalKey, key), eq(media.kind, 'file'), eq(media.status, 'ready'), exists(used)))
+    .limit(1)
+  return row !== undefined
+}

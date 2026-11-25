@@ -37,7 +37,8 @@
     "reduceMotion": {
       "label": "Reduzir movimento",
       "system": "Seu sistema já pede movimento reduzido."
-    }
+    },
+    "downloadCv": "Baixar CV"
   },
   "errors": {
     "code": "Erro {code}",
@@ -1046,7 +1047,13 @@
         "intro": "O nome aparece no cabeçalho, no rodapé e no título das páginas.",
         "name": "Nome",
         "role": "Cargo",
-        "bio": "Bio curta"
+        "bio": "Bio curta",
+        "cv": "Currículo (PDF)",
+        "cvChoose": "Escolher PDF",
+        "cvRemove": "Remover currículo",
+        "cvUploading": "Enviando o PDF…",
+        "cvUploaded": "PDF enviado",
+        "cvInvalid": "Envie um PDF de até 5 MB."
       },
       "social": {
         "title": "Redes",

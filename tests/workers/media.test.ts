@@ -1,9 +1,10 @@
 // F04-T1: the media repository on a real D1 (migration 0003): uniqueness of the content hash, soft delete hidden
 // from reads, the filters of the library and the uses that block deletion (data-model §5)
 import { env } from 'cloudflare:test'
+import { eq } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { createDb } from '../../server/db/client'
-import { mediaLocalizations, users } from '../../server/db/schema'
+import { mediaLocalizations, mediaUsages, users } from '../../server/db/schema'
 import type { media } from '../../server/db/schema'
 import {
   findMedia,
@@ -13,6 +14,7 @@ import {
   listMedia,
   listTracks,
   listUsages,
+  isServedFile,
   markReady,
   softDeleteMedia,
   updateMedia,
@@ -161,5 +163,22 @@ describe('createMedia with the same file twice at once', () => {
     const id = (created[0] as PromiseFulfilledResult<{ id: string }>).value.id
     expect((refused[0] as PromiseRejectedResult).reason).toMatchObject({ statusCode: 409, data: { issues: [{ path: 'sha256', message: `Already uploaded as media ${id}` }] } })
     expect(await findMediaIdBySha256(db, hash)).toBe(id)
+  })
+})
+
+// F13-T5 (review): a CV PDF is served only while it is ready and a setting uses it
+describe('served CV files', () => {
+  it('serves a ready PDF that a setting uses, and nothing else', async () => {
+    const hash = sha()
+    const pdf = row({ kind: 'file', mimeType: 'application/pdf', originalFilename: 'cv.pdf', width: null, height: null, sha256: hash, originalKey: `media/${hash.slice(0, 2)}/${hash}/file.pdf` })
+    await insertMedia(db, pdf, [])
+    const key = pdf.originalKey
+    expect(await isServedFile(db, key)).toBe(false)
+    await markReady(db, pdf.id)
+    expect(await isServedFile(db, key)).toBe(false)
+    await insertUsage(db, { mediaId: pdf.id, entityType: 'setting', entityId: 'identity', context: 'settings' })
+    expect(await isServedFile(db, key)).toBe(true)
+    await db.delete(mediaUsages).where(eq(mediaUsages.mediaId, pdf.id))
+    expect(await isServedFile(db, key)).toBe(false)
   })
 })

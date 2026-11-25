@@ -23,7 +23,8 @@ describe('settings schemas', () => {
   it('the public defaults mirror the schema defaults', () => {
     const { identity, seo_defaults: seo, navigation, footer, features, social, contact } = settingSchemas
     expect(PUBLIC_SETTINGS_DEFAULTS).toEqual({
-      identity: { ...identity.defaults.global, ...identity.defaults.localized },
+      // The CV's media id is internal: the public identity carries only the link (F13-T5)
+      identity: { name: identity.defaults.global.name, ...identity.defaults.localized, cv: null },
       social: social.defaults.global.links,
       contactEmail: contact.defaults.global.showEmail ? contact.defaults.global.email : null,
       seo: { ...seo.defaults.localized, ogImage: null },
