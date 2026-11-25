@@ -277,7 +277,7 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 | F13-T5 CV autohospedado | Implementada e **verificada no navegador** (download local); ADR-0017 ainda **Proposto**, aguardando aceite | `9d52de8`, correção de cache `3386174` (ADR em `ff16193`) |
 | F13-T6 CTA magnético com mola | Feita | `3deacba` |
 | F13-T7 gerador de mensagem, só no cliente | **Pendente**: texto do template nos cinco idiomas precisa de aprovação | — |
-| F13-T8 validação | **Parcial**: Lighthouse e a verificação de movimento reduzido feitos no build de produção (ver §8.4). Falta: axe, E2E, capturas e a conferência com os números e a experiência reais em um banco com conteúdo | — |
+| F13-T8 validação | **Parcial**: Lighthouse, axe, movimento reduzido, download do CV e a faixa de números (E2E) verificados (ver §8.4). Falta: a experiência fixada no navegador, a suíte E2E completa e a conferência com o conteúdo real do owner | — |
 | Tradução destes docs para pt-BR (D-06) | Feita nesta etapa | branch `docs/F13-pt-br` |
 
 ### 8.4 Verificado até agora
@@ -289,7 +289,10 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 - **axe (WCAG 2.0 A/AA, 2.1 AA e 2.2 AA), 5 páginas públicas × desktop e mobile, no build de produção:** 0 violações em todas as 10 combinações; o teste confirmou 19 regras aprovadas na página Sobre, então a varredura executou de fato. Capturas de página inteira ficaram em `docs/quality/screenshots-2026-11-25/`, **sem commit** (contêm o conteúdo de placeholder do banco local).
 - **AC-M3 (movimento reduzido), no build de produção:** com `prefers-reduced-motion: reduce`, nenhum dos 8 scripts de movimento (que contêm GSAP e ScrollTrigger) é baixado, o diretor de movimento não inicia e não há animação de CSS em execução. Sem a preferência, os 8 carregam e o diretor inicia.
 - **CV, verificado no navegador (preview de produção, banco local):** o PDF do currículo foi carregado no R2 e no D1 locais e ligado às configurações. O link "Baixar CV" baixa `cv.pdf` com 6.634 bytes (mesmo SHA-256 do arquivo original), e nenhuma aba nova abre. Os cabeçalhos: `attachment`, `sandbox`, `nosniff`, `max-age=86400`. O envio pelo admin continua **não verificado** (pede sessão).
-- **Não verificado no navegador:** a faixa de números, o pin e a contagem, com conteúdo real. Os testes de componente cobrem a marcação; os testes de workers cobrem o caminho de dados; os testes unitários cobrem as regras de mídia e de cabeçalho.
+- **Faixa de números, E2E (`tests/e2e/home-stats.spec.ts`):** o owner preenche os quatro números no editor, publica, e a home mostra os valores finais; os contadores terminam no texto escrito; a faixa é removida ao final. Passou no Chromium.
+- **Suítes E2E existentes, passando:** configurações e biblioteca de mídia (7), layout (9), home (2), CSP (13), sem JS (13), home/motion e o novo CV e os números. Uma execução do CSP expirou por sobreposição de servidores de teste, não por falha de asserção; rodada sozinha, passou.
+- **Aberto:** a execução de layout, home e sem JS registra 4 + 2 + 2 erros "Cloudflare bindings unavailable" em `/api/public/settings`. O mesmo ocorre no branch anterior ao código do CV, então não vem da F13-T5. Todas as asserções passam; a origem não foi identificada.
+- **Não verificado no navegador:** a experiência fixada (pin e rolagem) e as habilidades, com conteúdo real. Os testes de componente cobrem a marcação; os testes de workers cobrem o caminho de dados; os testes unitários cobrem as regras de mídia e de cabeçalho.
 
 ### 8.5 Correções feitas durante a execução
 
