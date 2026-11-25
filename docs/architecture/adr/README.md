@@ -19,5 +19,6 @@
 | [0014](0014-operacao.md) | Operação, CI/CD e backups | Aceito |
 | [0015](0015-vitest-5-e-vitest-plugin.md) | Vitest 5 com `@cloudflare/vitest-plugin` | Aceito |
 | [0016](0016-rotas-do-admin-fora-do-js-publico.md) | Rotas do admin fora do JS público | Aceito |
+| [0017](0017-curriculo-pdf-autohospedado.md) | Currículo em PDF autohospedado na mídia | Proposto |
 
 Para propor um ADR novo, copie o [template](0000-template.md) e siga o [ADR-0001](0001-registro-de-decisoes.md).
