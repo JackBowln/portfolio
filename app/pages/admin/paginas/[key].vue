@@ -5,7 +5,7 @@
 // the page is published by hand. Translations come with F09. Every rule is the server's
 import { canonicalJson } from '#shared/content/canonical-json'
 import type { DocumentJson } from '#shared/content/document-schema'
-import { PAGE_LINK_TARGETS } from '#shared/pages/blocks'
+import { EMPTY_PAGE_BLOCKS, PAGE_LINK_TARGETS } from '#shared/pages/blocks'
 import { PAGE_KEYS, SOURCE_LOCALE } from '#shared/types/enums'
 import type { PageKey } from '#shared/types/enums'
 import PublishPanel from '~/components/admin/articles/PublishPanel.vue'
@@ -64,7 +64,8 @@ function clone<T>(value: T): T {
 function draftOf(detail: PageDetail): Draft {
   const localization = detail.localizations.find(item => item.locale === SOURCE_LOCALE)!
   return {
-    blocks: clone(localization.blocks),
+    // Blocks saved before a field existed (e.g. the home's stats, F13-T1) take the empty value of that field
+    blocks: { ...clone(EMPTY_PAGE_BLOCKS[key.value as PageKey]), ...clone(localization.blocks) },
     seoTitle: localization.seoTitle ?? '',
     seoDescription: localization.seoDescription ?? '',
     ogImageMediaId: localization.ogImageMediaId,
@@ -391,6 +392,55 @@ useHead({ title: () => (known.value ? t(`admin.pages.names.${key.value}`) : t('a
                 </select>
               </UiField>
             </div>
+          </fieldset>
+          <fieldset class="grid gap-4">
+            <legend class="font-strong">
+              {{ $t('admin.pages.home.stats') }}
+            </legend>
+            <div
+              v-for="(stat, index) in list('stats')"
+              :key="index"
+              class="grid gap-3 border-b border-border pb-4"
+            >
+              <UiField
+                v-slot="field"
+                :label="$t('admin.pages.home.statValue', { number: index + 1 })"
+                :description="$t('admin.pages.home.statsHint')"
+              >
+                <UiInput
+                  v-model="stat.value"
+                  v-bind="field"
+                  :maxlength="12"
+                />
+              </UiField>
+              <UiField
+                v-slot="field"
+                :label="$t('admin.pages.home.statLabel', { number: index + 1 })"
+              >
+                <UiInput
+                  v-model="stat.label"
+                  v-bind="field"
+                  :maxlength="60"
+                />
+              </UiField>
+              <UiButton
+                variant="ghost"
+                size="sm"
+                class="justify-self-start"
+                @click="draft.blocks.stats.splice(index, 1)"
+              >
+                {{ $t('admin.pages.remove', { item: $t('admin.pages.home.statValue', { number: index + 1 }) }) }}
+              </UiButton>
+            </div>
+            <UiButton
+              variant="secondary"
+              size="sm"
+              class="justify-self-start"
+              :disabled="draft.blocks.stats.length >= 4"
+              @click="draft.blocks.stats.push({ value: '', label: '' })"
+            >
+              {{ $t('admin.pages.home.addStat') }}
+            </UiButton>
           </fieldset>
           <fieldset class="grid gap-4">
             <legend class="font-strong">

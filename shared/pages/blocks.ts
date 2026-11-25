@@ -17,6 +17,9 @@ const pageLink = z.strictObject({ label: text(60), target: z.enum(PAGE_LINK_TARG
 export const pageBlockSchemas = {
   home: z.strictObject({
     hero: z.strictObject({ eyebrow: text(80), title: text(160), subtitle: text(300), cta: pageLink }),
+    // F13-T1: the figures of the home's stats strip, shown as written (e.g. "6+", "70–80%"). Optional in stored
+    // blocks, so pages saved before this field still parse with none
+    stats: z.array(z.strictObject({ value: text(12), label: text(60) })).max(4).default([]),
     sections: z.array(z.strictObject({ title: text(120), text: text(1500) })).max(6),
     // Featured projects and the latest articles come from what is published (decision 2); only their titles here
     featuredTitle: text(120),
@@ -47,6 +50,7 @@ const emptyLink = { label: '', target: 'projects' as const }
 export const EMPTY_PAGE_BLOCKS: { [K in PageKey]: PageBlocks<K> } = {
   home: {
     hero: { eyebrow: '', title: '', subtitle: '', cta: emptyLink },
+    stats: [],
     sections: [],
     featuredTitle: '',
     articlesTitle: '',
