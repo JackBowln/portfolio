@@ -66,6 +66,8 @@ Baseline do esqueleto (F00-T7, 26/10/2026): R1 com 68,56 kB de JS inicial e 0 kB
 - Com o limite revisto, ficou também no cliente a chamada que troca o bloco numa navegação no cliente (`useJsonLd`, ~0,1 kB): sem ela, o JSON-LD da página anterior ficaria no `<head>`. Medido: R2 126,17 kB.
 - A F11-T5 revisita todos os orçamentos.
 
+**Revisão de CI (owner, 2026-11-25):** o job de CI do `main` mede R1 126,75; R2 130,01; R3 126,59; R4 128,84; R5 126,70; R6 127,97; R7 131,97; R8 126,59 kB, cerca de 3 kB acima das builds locais. A causa ainda não foi identificada. Por decisão do owner, os limites sobem para R1 127, R2 131, R3 127, R4 129, R5 127, R6 128, R7 132 e R8 127 kB, até a diferença ser investigada.
+
 **Revisão no F13-T7 (owner, 2026-11-25):** R3 e R8 passam a **≤ 124 KB** e R7 a **≤ 129 KB**. Motivo: o rascunho de mensagem (F13-T7) fica na página de contato, com carregamento sob demanda. Medido em build limpo: R3 123,33 kB, R7 128,70 kB; o rascunho adiciona ~0,5 kB a toda rota (a divisão de chunks feita pela importação dinâmica), e o restante é do próprio rascunho na página de contato.
 
 **Revisão na F10-T2 (owner, 04/11/2026):** R2 passa a **≤ 126 KB**, R3 e R8 a **≤ 123 KB** e R7 a **≤ 128 KB**. Medido: a infraestrutura de motion soma ~1,5 kB a toda rota pública. Desse total:

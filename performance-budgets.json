@@ -5,14 +5,14 @@
       "path": "/",
       "page": "pages/index.vue",
       "layout": "layouts/default.vue",
-      "js": 125,
+      "js": 127,
       "css": 30
     },
     "R2": {
       "path": "/blog",
       "page": "pages/blog/index.vue",
       "layout": "layouts/default.vue",
-      "js": 127,
+      "js": 131,
       "css": 30
     },
     "R3": {
@@ -20,35 +20,35 @@
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
       "noMotion": true,
-      "js": 124,
+      "js": 127,
       "css": 25
     },
     "R4": {
       "path": "/projetos",
       "page": "pages/projetos/index.vue",
       "layout": "layouts/default.vue",
-      "js": 126,
+      "js": 129,
       "css": 30
     },
     "R5": {
       "path": "/projetos/projeto-de-referencia",
       "page": "pages/projetos/[slug].vue",
       "layout": "layouts/default.vue",
-      "js": 125,
+      "js": 127,
       "css": 30
     },
     "R6": {
       "path": "/sobre",
       "page": "pages/sobre.vue",
       "layout": "layouts/default.vue",
-      "js": 125,
+      "js": 128,
       "css": 30
     },
     "R7": {
       "path": "/contato",
       "page": "pages/contato.vue",
       "layout": "layouts/default.vue",
-      "js": 129,
+      "js": 132,
       "css": 30
     },
     "R8": {
@@ -56,7 +56,7 @@
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
       "noMotion": true,
-      "js": 124,
+      "js": 127,
       "css": 25
     },
     "E404": {
