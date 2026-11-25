@@ -277,7 +277,7 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 | F13-T5 CV autohospedado | Implementada; ADR-0017 ainda **Proposto**; falta verificação no navegador | `9d52de8` (ADR em `ff16193`) |
 | F13-T6 CTA magnético com mola | Feita | `3deacba` |
 | F13-T7 gerador de mensagem, só no cliente | **Pendente**: texto do template nos cinco idiomas precisa de aprovação | — |
-| F13-T8 validação | **Pendente**: precisa de números e experiência em um banco local; depois Lighthouse, axe, Playwright e capturas | — |
+| F13-T8 validação | **Parcial**: Lighthouse e a verificação de movimento reduzido feitos no build de produção (ver §8.4). Falta: axe, E2E, capturas e a conferência com os números e a experiência reais em um banco com conteúdo | — |
 | Tradução destes docs para pt-BR (D-06) | Feita nesta etapa | branch `docs/F13-pt-br` |
 
 ### 8.4 Verificado até agora
@@ -285,6 +285,8 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 - `test:unit` 498/498; `test:workers` 139/139; `test:nuxt` 162/162; `typecheck` código de saída 0; `check:i18n` OK; `check:budgets` OK; `build` OK (medido antes da F13-T5).
 - Orçamento de JS da rota home: 122,92 kB de um limite de 125 kB, medido depois de T1–T4 e T6 (2 kB de folga). CSS 7,61 kB de 30 kB. A rota `/blog` está em 126,23 de 127 kB, o que não é causado por estas tarefas. Remedir na F13-T8.
 - `lint` falha só em `nuxt.config.ts` (a alteração de formatação que já estava sem commit). Todos os arquivos novos passam no lint.
+- **Lighthouse 13.5 na home (`pnpm lighthouse`, build de produção em `pnpm preview:prod`, banco local migrado e sem conteúdo do owner):** desktop 100 / 100 / 100 / 100 (desempenho, acessibilidade, boas práticas, SEO); mobile 98 / 100 / 100 / 100. CLS 0,000 nos dois; LCP no H1 (não escondido). Medido com uma execução cada; é a casca da página, não a página com os números.
+- **AC-M3 (movimento reduzido), no build de produção:** com `prefers-reduced-motion: reduce`, nenhum dos 8 scripts de movimento (que contêm GSAP e ScrollTrigger) é baixado, o diretor de movimento não inicia e não há animação de CSS em execução. Sem a preferência, os 8 carregam e o diretor inicia.
 - **Não verificado no navegador:** a faixa de números, o pin, a contagem, o CV (envio pelo admin e download). Os testes de componente cobrem a marcação; os testes de workers cobrem o caminho de dados; os testes unitários cobrem as regras de mídia e de cabeçalho.
 
 ### 8.5 Correções feitas durante a execução
