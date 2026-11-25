@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { expectedUploads } from '../../shared/media/keys'
 import { MEDIA_LIMITS, mediaManifestSchema } from '../../shared/media/schemas'
 import { isPublicMediaKey } from '../../shared/media/public'
-import { deliveryDispositionHeaders } from '../../server/utils/media-delivery'
+import { deliveryCacheControl, deliveryDispositionHeaders } from '../../server/utils/media-delivery'
 import { sniffMediaType } from '../../server/utils/magic-bytes'
 
 const sha = 'ab'.repeat(32)
@@ -36,5 +36,10 @@ describe('PDF media', () => {
   it('delivers a PDF as a download under a sandbox policy, and an image inline', () => {
     expect(deliveryDispositionHeaders('application/pdf')).toEqual({ 'content-disposition': 'attachment; filename="cv.pdf"', 'content-security-policy': 'default-src \'none\'; sandbox' })
     expect(deliveryDispositionHeaders('image/jpeg')).toEqual({ 'content-disposition': 'inline' })
+  })
+
+  it('caches a CV for a day and other media for a year', () => {
+    expect(deliveryCacheControl('application/pdf')).toBe('public, max-age=86400')
+    expect(deliveryCacheControl('image/webp')).toBe('public, max-age=31536000, immutable')
   })
 })
