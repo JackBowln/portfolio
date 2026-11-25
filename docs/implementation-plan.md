@@ -237,4 +237,50 @@ Proposed as phase **F13 — Alinhamento com as referências** (name in pt-BR per
 | README | Exists | [../README.md](../README.md) |
 | Automated tests | Exists (Vitest, Playwright); new tests per task | F13-T1…T8 |
 | Performance report | To be written in F13-T8 | `docs/quality/` |
-| Source code changes | **None yet**, pending approval | — |
+| Source code changes | Done for F13-T1 to T4 and T6 (see §8) | branches `feat/F13-*` |
+
+## 8. Status (2026-11-25)
+
+### 8.1 Owner decisions
+
+| ID | Answer | Effect |
+|---|---|---|
+| D-01 | Yes: the experience is the pinned storytelling block on the home | F13-T3 |
+| D-02 | Client-only drafter, no AI cost | F13-T7 (copy needs approval, see 8.3) |
+| D-03 | Figures from the CV and GitHub (46 public repos on `JackBowln`). LinkedIn could not be read anonymously (it redirects) | Figures are for the admin to enter (see 8.2) |
+| D-05 | No 3D | M-14 stays out |
+| D-06 | Docs in pt-BR, as CLAUDE.md asks | Translation pending (see 8.3) |
+| D-07 | F13 approved; start after F12-T5 | Branches are ready, merge order follows F12-T5 |
+| D-08 | CV self-hosted | F13-T5 needs ADR-0017 accepted first |
+
+### 8.2 Figures for D-03, as the CV supports them
+
+| Figure (`value`) | Label (`label`) | Source in the CV |
+|---|---|---|
+| `6+` | Years of frontend experience | Summary: "6+ years of experience" |
+| `~5M` | Users on the platform I led the frontend of | EnBW: "a platform serving around 5 million users" |
+| `70–80%` | Faster page loads after the Nuxt migration | Bee Engineering, Link Consulting: "reducing page load times by 70-80%" |
+| `90%+` | Coverage of critical components | TLScontact: "over 90% coverage on critical components" |
+
+Two wording changes from the first draft: "5M+" became "~5M" (the CV says "around"), and the labels now say what the source supports. The owner enters these in the home page's editor, in the "Números" section. Nothing is seeded.
+
+### 8.3 Commits and what is left
+
+| Task | State | Commit |
+|---|---|---|
+| F13-T1 home stats content model | Done | `bad2d68` |
+| F13-T2 stats strip with count-up | Done | `bbe9c5c` |
+| F13-T3 experience pinned on the home | Done | `144a7b0` |
+| F13-T4 skill groups on the home (ticker not included) | Done | `cb7cec1` |
+| F13-T5 CV self-hosted | **Blocked** on ADR-0017 (Proposto) and then a media-kind change touching about 44 branch points | ADR `ff16193` |
+| F13-T6 spring magnetic CTA | Done | `3deacba` |
+| F13-T7 outreach drafter, client-only | **Pending**: the drafter's wording in five locales needs the owner's approval first | — |
+| F13-T8 validation | **Pending**: needs the figures and the experience entered in a local database, then Lighthouse, axe, Playwright and screenshots | — |
+| D-06 translation of these docs | **Pending** | — |
+
+### 8.4 Verified so far
+
+- `test:unit` 493/493 passed, `test:workers` 138/138, `test:nuxt` motion and home tests pass, `typecheck` exit 0, `check:i18n` OK, `check:budgets` OK, `build` OK.
+- Home route JS: 122.92 kB of a 125 kB limit, measured after T1 to T4 and T6 (2 kB of headroom); CSS 7.61 kB of 30 kB. The `/blog` route is at 126.23 of 127 kB, which is not caused by these tasks. Re-measure at T8.
+- `lint` fails only in `nuxt.config.ts` (the formatting change that was already uncommitted). Every new file lints clean.
+- Not verified: the rendered strip, the pin and the count-up in a real browser. The component tests cover markup and the workers test covers the data path.
