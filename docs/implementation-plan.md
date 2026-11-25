@@ -48,14 +48,14 @@
 | A feature | Portfolio today | Gap | Verified |
 |---|---|---|---|
 | Hero with CTAs | Home hero blocks (eyebrow, title, subtitle, CTA) exist | Matches; CTA set may differ | [V] (storyboard) |
-| Stats strip (4 figures) | Highlights exist for projects (`count` scene); no home stats strip | **Missing** on home | [V] (grep, scene file) |
-| Experience (6 roles) | No experience content type or section | **Missing** | [V] (grep: 0 matches) |
+| Stats strip (4 figures) | Highlights exist for projects (`count` scene); no home stats strip. **F13-T1 added the content model** (`home.stats`) | **Missing** on home (rendering is F13-T2) | [V] (`shared/pages/blocks.ts`) |
+| Experience (6 roles) | `about.timeline` (period, title, text) with an admin editor, rendered on `/sobre` | **Covered on `/sobre`; missing on the home.** Reuse it; no new content type | [V] (`shared/pages/blocks.ts`, `app/pages/sobre.vue`) |
 | GitHub-style projects | Projects with case studies, filter, ordering, publication | **Covered**, and richer | [V] |
-| Skills & background | Only a technology filter on projects | **Missing** as a section | [V] (partial match) |
+| Skills & background | `about.skills` (group, items) with an admin editor, rendered on `/sobre` | **Covered on `/sobre`; missing on the home.** Reuse it | [V] (`shared/pages/blocks.ts`, `app/pages/sobre.vue`) |
 | AI Outreach drafter | None | **Missing** | [V] (grep: 0 matches) |
 | Blog and articles | Full: list, article, topics, RSS | **Covered** | [V] |
 | Contact | Real form, Turnstile, inbox | **Covered**, stronger than A (A has no form) | [V] |
-| CV download | No route or asset linked from the header/hero | **Missing** (needs the PDF in media) | [V] (grep: no match in routes) |
+| CV download | No CV asset. The media pipeline accepts only images (JPEG, PNG, WebP, AVIF) and videos (MP4, WebM); the `file` kind exists in the enum but nothing uses it | **Blocked** (decision D-08): a PDF path needs a new media kind and a security review, or the CV is an external https link | [V] (`shared/media/schemas.ts`, `shared/types/enums.ts`) |
 | 404 | `app/error.vue` | **Covered** | [V] |
 | Analytics beacon | Not needed | Not required | — |
 
@@ -92,25 +92,25 @@ Proposed as phase **F13 — Alinhamento com as referências** (name in pt-BR per
 
 | Task | Scope | Maps to | Depends on | Priority |
 |---|---|---|---|---|
-| **F13-T1** | Content model for the new sections: `home.stats`, `home.experience`, `home.skills`, CV asset. **Schema first**, expand-only migration, `shared/` document schema update | A-R1, A-R3, A-R5, A-R8 | D-04 | P1 |
+| **F13-T1** | ~~Content model~~ **Done** (`bad2d68`): `home.stats` in the schema and the admin editor. The experience and skills content models already exist in `about`, and CV was split out (D-08) | A-R1 | — | P1 |
 | **F13-T2** | Home stats strip (F3) with count-up (M-06); final values in HTML; reduced motion shows final values | A-R1 | F13-T1, D-03 | P1 |
-| **F13-T3** | Experience section (F4): storytelling pin reused from the home (M-03); mobile stacked | A-R3 | F13-T1, D-01 | P1 |
-| **F13-T4** | Skills section (F6): grouped lists (M-05); optional ticker (M-07) with pause control and reduced-motion stop | A-R5 | F13-T1 | P2 |
-| **F13-T5** | CV download: link in header and hero to the PDF in the media library | A-R2, A-R8 | F13-T1 | P0 |
+| **F13-T3** | Experience on the home (F4): the `about.timeline` data, shown as the storytelling pin (M-03); mobile stacked. Needs the public home to read the about timeline, a change to the public page API | A-R3 | D-01 | P1 |
+| **F13-T4** | Skills on the home (F6): the `about.skills` data as grouped lists (M-05); optional ticker (M-07) with pause control and reduced-motion stop | A-R5 | D-01 | P2 |
+| **F13-T5** | CV download: link in header and hero | A-R2, A-R8 | D-08 | P0 (blocked) |
 | **F13-T6** | Spring pointer helper (M-02) applied to the blueprint-style card and the magnetic CTA (fine pointer only) | Motion | — | P2 |
 | **F13-T7** | AI Outreach drafter (F7) as a **client-only template** with feedback (M-13); no network call | A-R6 | D-02 | P2 (gated) |
 | **F13-T8** | Validation: Lighthouse on home and a project page, axe, reduced-motion E2E, screenshot comparison, performance report | §5 | T1–T7 | P0 |
 
-**Total new surface:** four home sections, one CV link, one client-only tool, one motion helper.
+**Total new surface (after the F13-T1 correction):** a home stats strip, the experience and skills content shown on the home (their data already exists in `about`), one client-only tool, one motion helper. The CV link waits for D-08.
 
 **Not in this plan:** 3D (M-14), blocking loader (M-11), custom cursor, smooth scroll, audio. See [animation-mapping §1](animation-mapping.md#1-pattern-catalogue).
 
 ### 2.1 Per-task technical plan (for approval)
 
-**F13-T1 — content model**
-- Files: `shared/` document schema (block types), `server/db/` schema (only if the block store needs a column), `server/db/migrations` (new migration, expand only), `app/pages/admin/paginas/[key].vue` (editor for the new blocks), i18n keys in 5 locales.
-- Tests: schema unit tests (zod strict), migration applies cleanly locally, `pnpm check:i18n`.
-- Risk: the admin editor for home blocks must accept the new types without a regression on existing home content.
+**F13-T1 — content model (done, `bad2d68`)**
+- Changed: `shared/pages/blocks.ts` (`home.stats`, optional with default `[]`), the admin editor in `app/pages/admin/paginas/[key].vue`, pt-BR admin keys, `tests/unit/home-stats.test.ts`.
+- No SQL migration: page blocks are JSON. Pages saved before the field still parse.
+- Verified: `test:unit` 486/486, `test:workers` 137/137, `typecheck` exit 0, `check:i18n` OK. `lint` fails only in `nuxt.config.ts` (pre-existing formatting change, not in the commit). The editor was not exercised in a browser.
 
 **F13-T2 — stats**
 - Files: `app/components/pages/HomeContent.vue` (markup with `data-motion="stat"`), `app/composables/motion/scenes/home.ts` (new `stats` step, or reuse `count.ts`).
@@ -215,7 +215,8 @@ Proposed as phase **F13 — Alinhamento com as referências** (name in pt-BR per
 | **D-01** | Build the experience section as a pinned storytelling block (reuses the approved pattern)? | Yes | F13-T3 |
 | **D-02** | AI Outreach drafter: build it as a client-only template, build it with Workers AI (needs ADR and cost review), or skip it? | Client-only template | F13-T7 |
 | **D-03** | Confirm the four stats figures and their wording (6+ years; 5M+ users served; 90%+ coverage; 70–80% faster load), since the portfolio cannot verify them | Confirm each one | F13-T2 |
-| **D-04** | Migrate the experience, skills and CV content from Website A into the portfolio's CMS as owner content? | Yes, with the owner's text | F13-T1, T3, T4, T5 |
+| **D-04** | Migrate the experience and skills content from Website A into the portfolio's CMS? The `about` page already has the editors and the data model; only the owner's text is missing | Check the existing `/sobre` content against Website A and fill any gaps | F13-T3, T4 |
+| **D-08** | CV download (F13-T5): (a) an external https link to the CV the owner already hosts, using the existing link fields (no code); or (b) store the PDF in the media library, which needs a new `file` media kind, a PDF path through the pipeline and a security review, as an ADR | (a) now; (b) only if the owner wants the PDF self-hosted | F13-T5 |
 | **D-05** | Keep 3D out of scope (no Three.js, no WebGL hero)? | Yes; it was discarded in F10-T5 | Confirms scope |
 | **D-06** | Language of these docs: English (as produced) or pt-BR (CLAUDE.md convention)? | pt-BR, to match the project; I can translate | Docs only |
 | **D-07** | Approve the phase name and the tasks F13-T1 to F13-T8, and their order relative to the pending F12-T5 launch task? | Approve, and do F13 after F12-T5 | Start of implementation |
