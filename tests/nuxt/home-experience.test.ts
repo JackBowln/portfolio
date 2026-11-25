@@ -44,6 +44,13 @@ describe('home experience', () => {
     expect(three.find('[data-motion="experience"]').attributes('data-pin')).toBeDefined()
   })
 
+  it('labels the timeline pt-BR when About fell back to the Portuguese text', async () => {
+    const page = pageWith([role('A')])
+    page.home!.experienceFallback = true
+    const wrapper = await mountSuspended(HomeContent, { props: { page } })
+    expect(wrapper.find('section[aria-labelledby]').attributes('lang')).toBe('pt-BR')
+  })
+
   it('renders no section when there are no roles', async () => {
     const wrapper = await mountSuspended(HomeContent, { props: { page: pageWith([]) } })
     expect(wrapper.find('[data-motion="experience"]').exists()).toBe(false)
