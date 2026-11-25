@@ -1,200 +1,200 @@
-# Website B — motion and interaction analysis
+# Website B — análise de movimento e interação
 
-**Reference:** https://lusion.co/ (Lusion, a 3D and interactive web studio)
-**Captured:** 2026-11-25, headless Chromium, 1440×900 / 820×1180 / 390×844. Routes probed: `/`, `/about`, `/projects`, `/projects/oryzo_ai`.
-**Role in this project:** inspiration for **how** motion feels. It is **not** a source for code, assets or 3D scenes.
+**Referência:** https://lusion.co/ (Lusion, estúdio de web 3D e interativa)
+**Capturado:** 2026-11-25, Chromium headless, 1440×900 / 820×1180 / 390×844. Rotas exploradas: `/`, `/about`, `/projects`, `/projects/oryzo_ai`.
+**Papel neste projeto:** inspiração para **como** o movimento se sente. **Não** é fonte de código, assets nem cenas 3D.
 
-**Legend:** **[V]** verified by browser inspection or by reading the shipped bundle · **[A]** assumption or inference · **[N/M]** not measured in this pass.
+**Legenda:** **[V]** verificado por inspeção no navegador ou pela leitura do bundle publicado · **[A]** premissa ou inferência · **[N/M]** não medido nesta etapa.
 
 ---
 
-## 1. Summary
+## 1. Resumo
 
-Lusion is a single-viewport WebGL experience. The document never scrolls natively (`html` and `body` are `overflow: hidden`, document height 900 px). Scrolling, pointer and camera movement are handled by a custom input system that drives a Three.js scene. Motion is spring-based and tied to the cursor and camera, not to CSS timing curves.
+A Lusion é uma experiência WebGL de viewport único. O documento nunca rola de forma nativa (`html` e `body` têm `overflow: hidden`, altura do documento de 900 px). Rolagem, ponteiro e movimento da câmera são tratados por um sistema próprio de entrada que dirige uma cena Three.js. O movimento é baseado em molas e atrelado ao cursor e à câmera, não a curvas de tempo do CSS.
 
-| Question | Answer | Verified |
+| Pergunta | Resposta | Verificado |
 |---|---|---|
-| Animation library | No GSAP, ScrollTrigger, Lenis, SplitText, Splitting or ScrollSmoother in the bundle (0 matches each). Three.js is present (152 `THREE` matches; WebGL warnings name `THREE.WebGLRenderer`) | [V] |
-| 3D engine | Three.js with post-processing (GTAO ambient occlusion, camera motion blur named in the source) | [V] (names), [A] (exact pipeline) |
-| Custom motion | A `SecondOrderDynamics` class (spring–damper) drives camera, cursor-follow and focus motion | [V] (class and usages in source) |
-| Scroll model | Custom wheel/touch/pointer manager. A `window` `wheel` listener calls `preventDefault` (`passive: false`) | [V] |
-| Native scroll | Disabled. `html`/`body` `overflow: hidden`, document height 900 px | [V] |
-| Smooth scroll library | None found. The scroll is a custom physics model over the 3D scene | [V] |
-| Reduced motion | **Not honoured** for the CSS animations: the same 6 animations run with and without `prefers-reduced-motion: reduce` | [V] |
-| Source maps | None. `…js.map` returns `text/html` (site fallback), not a map | [V] |
+| Biblioteca de animação | Sem GSAP, ScrollTrigger, Lenis, SplitText, Splitting nem ScrollSmoother no bundle (0 ocorrências cada). Three.js está presente (152 ocorrências de `THREE`; avisos do WebGL citam `THREE.WebGLRenderer`) | [V] |
+| Motor 3D | Three.js com pós-processamento (GTAO de oclusão ambiente, desfoque de movimento da câmera citado no código-fonte) | [V] (nomes), [A] (pipeline exato) |
+| Movimento próprio | Uma classe `SecondOrderDynamics` (mola-amortecedor) dirige a câmera, o seguimento do cursor e o movimento de foco | [V] (classe e usos no código) |
+| Modelo de rolagem | Gerenciador próprio de roda, toque e ponteiro. Um listener de `wheel` em `window` chama `preventDefault` (`passive: false`) | [V] |
+| Rolagem nativa | Desativada. `html`/`body` com `overflow: hidden`, altura do documento de 900 px | [V] |
+| Biblioteca de rolagem suave | Nenhuma encontrada. A rolagem é um modelo físico próprio sobre a cena 3D | [V] |
+| Movimento reduzido | **Não respeitado** nas animações de CSS: as mesmas 6 animações rodam com e sem `prefers-reduced-motion: reduce` | [V] |
+| Source maps | Nenhum. `…js.map` retorna `text/html` (fallback do site), não um mapa | [V] |
 
 ---
 
-## 2. Routes and structure
+## 2. Rotas e estrutura
 
-| Route | Observed | Verified |
+| Rota | Observado | Verificado |
 |---|---|---|
-| `/` | Hero is a 3D canvas in a framed 16:9 panel. Headline "We create 3D visual storytelling and interactive web experiences…". Newsletter form with Cloudflare Turnstile | [V] |
-| `/about` | Same shell (3 canvases), "About Us" with press links (Porsche newsroom, Wallpaper, Opera North), addresses and contacts | [V] |
-| `/projects` | Project index: about 13 entries, each a text row with a category line (e.g. "CONCEPT • WEB • DESIGN • DEVELOPMENT • 3D • ANIMATION") linking to `/projects/<slug>` | [V] |
-| `/projects/oryzo_ai` | Project detail with H2s, external links (GitHub, Product Hunt, launch site) | [V] |
-| Header | HOME, ABOUT US, PROJECTS, LABS (external) | [V] |
-| Footer | Address, social links, `hello@` and `business@` mail links | [V] |
+| `/` | O hero é um canvas 3D em um painel 16:9 com moldura. Título "We create 3D visual storytelling and interactive web experiences…". Formulário de newsletter com Cloudflare Turnstile | [V] |
+| `/about` | Mesma base (3 canvas), "About Us" com links de imprensa (newsroom da Porsche, Wallpaper, Opera North), endereços e contatos | [V] |
+| `/projects` | Índice de projetos: cerca de 13 entradas, cada uma uma linha de texto com uma linha de categoria (ex.: "CONCEPT • WEB • DESIGN • DEVELOPMENT • 3D • ANIMATION") linkando para `/projects/<slug>` | [V] |
+| `/projects/oryzo_ai` | Página de projeto com H2 e links externos (GitHub, Product Hunt, site de lançamento) | [V] |
+| Cabeçalho | HOME, ABOUT US, PROJECTS, LABS (externo) | [V] |
+| Rodapé | Endereço, links de redes sociais, links de e-mail `hello@` e `business@` | [V] |
 
-**Page transitions:** the screenshots show a single page per route with the same WebGL shell. No View Transition API call was found (`startViewTransition`, 0 matches). Transition behaviour between routes was **not** recorded frame-by-frame [N/M].
+**Transições de página:** as capturas mostram uma página por rota com a mesma base WebGL. Nenhuma chamada da View Transitions API foi encontrada (`startViewTransition`, 0 ocorrências). O comportamento de transição entre rotas **não** foi registrado quadro a quadro [N/M].
 
 ---
 
-## 3. Initial loading sequence (observed)
+## 3. Sequência de carregamento inicial (observada)
 
-Frames captured with `waitUntil: domcontentloaded` and screenshots at fixed times (`screenshots/b-intro-300ms.png`, `screenshots/b-intro-6000ms.png`):
+Quadros capturados com `waitUntil: domcontentloaded` e capturas em tempos fixos (`screenshots/b-intro-300ms.png`, `screenshots/b-intro-6000ms.png`):
 
-| Time | State | Verified |
+| Tempo | Estado | Verificado |
 |---|---|---|
-| ~300 ms | Black screen. A progress bar in the centre (about 210×40 px, grey). A counter in the bottom-left reads `000` in a neutral sans-serif | [V] |
-| ~6000 ms | The 3D tube cluster is visible, inside a panel skewed about 25–30° that is still settling; the counter reads `…00` at the bottom-left | [V] |
-| Between | Counter counts up; the panel un-skews into the frame | [V] (observed endpoints), [N/M] (exact easing and duration) |
+| ~300 ms | Tela preta. Uma barra de progresso no centro (cerca de 210×40 px, cinza). Um contador no canto inferior esquerdo lê `000` em uma fonte sans-serif neutra | [V] |
+| ~6000 ms | O aglomerado de tubos 3D está visível, dentro de um painel inclinado em cerca de 25–30° que ainda se acomoda; o contador lê `…00` no canto inferior esquerdo | [V] |
+| Entre os dois | O contador sobe; o painel se endireita e entra no quadro | [V] (extremos observados), [N/M] (easing e duração exatos) |
 
-**Interpretation [A]:** a percentage loader gates the reveal of the 3D scene; the panel transform animates from skewed to upright as the scene becomes ready. The exact trigger (asset download, GPU compile or a fixed timeline) is not known.
+**Interpretação [A]:** um carregador de porcentagem bloqueia a revelação da cena 3D; a transformação do painel anima de inclinado para reto conforme a cena fica pronta. O gatilho exato (download de assets, compilação na GPU ou uma linha do tempo fixa) não é conhecido.
 
-**Blocking:** the page content is hidden behind this loader. This is the opposite of what the portfolio's rules allow (the LCP must not wait for motion).
+**Bloqueio:** o conteúdo da página fica escondido atrás desse carregador. É o oposto do que as regras do portfólio permitem (o LCP não pode esperar pelo movimento).
 
-Counts observed during the intro: 11 elements matching `[class*=loader]`, `[class*=loading]` or `[id*=loader]` were displayed. Their meaning was not confirmed [N/M].
+Contagens observadas durante a introdução: 11 elementos correspondentes a `[class*=loader]`, `[class*=loading]` ou `[id*=loader]` estavam exibidos. O significado não foi confirmado [N/M].
 
 ---
 
-## 4. Motion inventory
+## 4. Inventário de movimento
 
-For each animation, the table lists what could be verified. Fields that cannot be read from the outside are marked **[N/M]**.
+Para cada animação, a tabela lista o que pôde ser verificado. Campos que não podem ser lidos de fora estão marcados **[N/M]**.
 
-### 4.1 Hero and 3D scene
+### 4.1 Hero e cena 3D
 
-| Animation | Trigger | Target | Initial → final | Duration / easing | Notes | Verified |
+| Animação | Gatilho | Alvo | Inicial → final | Duração / easing | Observações | Verificado |
 |---|---|---|---|---|---|---|
-| Loader counter | Page load | Text counter, bottom-left | 000 → 100 | [N/M] | Blocks the reveal | [V] |
-| Panel un-skew | Load complete | 3D panel (framed canvas) | Skewed ≈ 25–30° → 0° | [N/M] | Observed at two frames | [V] (endpoints) |
-| Tube cluster | Continuous | Three.js meshes | Glossy black, white and blue cylinders in a tumbling cluster | Continuous | Post-processed (GTAO), matcap shading (`matcap.exr`, 589 KB) | [V] |
-| Camera / cluster response | Pointer and wheel | Camera, object rotation | Spring-driven via `SecondOrderDynamics` (names: `focusPosMotion`, `domVideoCursorExtraRotationMotion`) | Spring; constants in source | Cursor response shown as `easedMouseDyn` in the source | [V] (names), [N/M] (values) |
-| Motion blur | Camera speed | Post-process | `cameraMotionBlur` present in source | — | Performance-expensive | [V] (name) |
+| Contador do carregador | Carregamento da página | Contador de texto, canto inferior esquerdo | 000 → 100 | [N/M] | Bloqueia a revelação | [V] |
+| Endireitar o painel | Fim do carregamento | Painel 3D (canvas com moldura) | Inclinado ≈ 25–30° → 0° | [N/M] | Observado em dois quadros | [V] (extremos) |
+| Aglomerado de tubos | Contínuo | Malhas do Three.js | Cilindros pretos, brancos e azuis brilhantes em um aglomerado girando | Contínuo | Pós-processado (GTAO), sombreamento matcap (`matcap.exr`, 589 KB) | [V] |
+| Resposta da câmera e do aglomerado | Ponteiro e roda | Câmera, rotação dos objetos | Guiado por mola via `SecondOrderDynamics` (nomes: `focusPosMotion`, `domVideoCursorExtraRotationMotion`) | Mola; constantes no código | Resposta do cursor aparece como `easedMouseDyn` no código | [V] (nomes), [N/M] (valores) |
+| Desfoque de movimento | Velocidade da câmera | Pós-processamento | `cameraMotionBlur` presente no código | — | Caro em desempenho | [V] (nome) |
 
-### 4.2 Text animations
+### 4.2 Animações de texto
 
-| Animation | Trigger | Target | Details | Verified |
+| Animação | Gatilho | Alvo | Detalhes | Verificado |
 |---|---|---|---|---|
-| Looping category line (`text-animation`) | Always running (CSS) | Category strings on project rows | The line is duplicated and each character is a `<span>` repeated 4× (e.g. "O O O O r r r r y y y y…"); a CSS animation named `text-animation` runs continuously | [V] |
-| Arrow animation (`arrow-animation`) | Always running (CSS) | Arrow glyphs in the links | CSS animation named `arrow-animation` runs continuously | [V] |
-| Headline reveal | Load | H1 "We create 3D visual storytelling…" | Not identified as a separate text-split effect. No SplitText library present | [N/M] |
+| Linha de categoria em loop (`text-animation`) | Sempre rodando (CSS) | Strings de categoria nas linhas de projeto | A linha é duplicada e cada caractere é um `<span>` repetido 4× (ex.: "O O O O r r r r y y y y…"); uma animação de CSS chamada `text-animation` roda continuamente | [V] |
+| Animação da seta (`arrow-animation`) | Sempre rodando (CSS) | Glifos de seta nos links | Animação de CSS chamada `arrow-animation` roda continuamente | [V] |
+| Revelação do título | Carregamento | H1 "We create 3D visual storytelling…" | Não identificada como um efeito de divisão de texto separado. Nenhuma biblioteca de SplitText presente | [N/M] |
 
-**Per-character spans:** the duplicated, per-letter markup is a pattern for character-level motion. It is a risk for screen readers unless the text is duplicated with `aria-hidden` or `aria-label` is used. Not verified [N/M].
+**Spans por caractere:** a marcação duplicada, letra por letra, é um padrão de movimento em nível de caractere. É um risco para leitores de tela, a menos que o texto seja duplicado com `aria-hidden` ou que se use `aria-label`. Não verificado [N/M].
 
-### 4.3 Hover, pointer and cursor
+### 4.3 Hover, ponteiro e cursor
 
-| Behaviour | Evidence | Verified |
+| Comportamento | Evidência | Verificado |
 |---|---|---|
-| Custom cursor | `body` cursor is `auto`. No `cursor: none` in the bundle | [V] |
-| Pointer-driven 3D interaction | `pointermove`, `pointerup` and `pointercancel` handlers on the WebGL canvas; `DeviceOrientationControls` class present | [V] |
-| Hover on project rows | Not captured in the probe. Source mentions a video cursor rotation (`domVideoCursorExtraRotationMotion`) | [V] (name), [N/M] (visual) |
-| Magnetic buttons | No magnetic-effect code found (`magnet` 0 matches) | [V] |
+| Cursor personalizado | O cursor do `body` é `auto`. Nenhum `cursor: none` no bundle | [V] |
+| Interação 3D dirigida pelo ponteiro | Handlers de `pointermove`, `pointerup` e `pointercancel` no canvas WebGL; classe `DeviceOrientationControls` presente | [V] |
+| Hover nas linhas de projeto | Não capturado na exploração. O código cita uma rotação de cursor de vídeo (`domVideoCursorExtraRotationMotion`) | [V] (nome), [N/M] (visual) |
+| Botões magnéticos | Nenhum código de efeito magnético encontrado (0 ocorrências de `magnet`) | [V] |
 
-### 4.4 Scroll
+### 4.4 Rolagem
 
-| Behaviour | Evidence | Verified |
+| Comportamento | Evidência | Verificado |
 |---|---|---|
-| Native scroll | Disabled (`overflow: hidden`, height 900 px) | [V] |
-| Wheel | `wheel` listener on `window` with `preventDefault` and `passive: false`; `wheel` listeners on the canvas | [V] |
-| Touch | `touchmove` and `touchend` handlers | [V] |
-| Scroll thresholds, snapping, pins | Not measured. Scroll is a virtual value inside the 3D scene | [N/M] |
-| Scroll-linked parallax | Not identified separately; camera position is scroll-driven | [A] |
+| Rolagem nativa | Desativada (`overflow: hidden`, altura de 900 px) | [V] |
+| Roda | Listener de `wheel` em `window` com `preventDefault` e `passive: false`; listeners de `wheel` no canvas | [V] |
+| Toque | Handlers de `touchmove` e `touchend` | [V] |
+| Limiares de rolagem, snap, pins | Não medidos. A rolagem é um valor virtual dentro da cena 3D | [N/M] |
+| Paralaxe ligada à rolagem | Não identificada separadamente; a posição da câmera é guiada pela rolagem | [A] |
 
-### 4.5 Reduced motion and accessibility
+### 4.5 Movimento reduzido e acessibilidade
 
-| Check | Result | Verified |
+| Verificação | Resultado | Verificado |
 |---|---|---|
-| `prefers-reduced-motion: reduce` changes running animations | **No.** `arrow-animation` and `text-animation` run in both modes (6 running in total) | [V] |
-| WebGL under reduced motion | Not checked [N/M]. Probably unchanged | [A] |
-| Keyboard focus on the 3D experience | Not tested | [N/M] |
-| Screen reader content | H1 and H2 present; the decorative text is repeated per character | [V] (structure), [N/M] (announcements) |
+| `prefers-reduced-motion: reduce` altera animações em execução | **Não.** `arrow-animation` e `text-animation` rodam nos dois modos (6 em execução no total) | [V] |
+| WebGL com movimento reduzido | Não verificado [N/M]. Provavelmente inalterado | [A] |
+| Foco do teclado na experiência 3D | Não testado | [N/M] |
+| Conteúdo para leitor de tela | H1 e H2 presentes; o texto decorativo se repete por caractere | [V] (estrutura), [N/M] (anúncios) |
 
-### 4.6 Media and loading
+### 4.6 Mídia e carregamento
 
-| Item | Observed | Verified |
+| Item | Observado | Verificado |
 |---|---|---|
-| Audio | 5 `.ogg` files requested from `lusion.dev` (`generic.ogg`, `cinematic_*.ogg`, `generic_end.ogg`). Playback not verified | [V] (requests) |
-| 3D geometry | `.buf` files (`cross.buf`, `line_reel.buf`, `astronaut_helmet*.buf`) | [V] |
-| Textures | `matcap.exr` (589 KB, fetch); WebP normal maps (`astronaut_*_nor.webp`, 426–450 KB each) | [V] |
-| Analytics | Google tag `G-…` (gtag.js, 534 KB decoded) | [V] |
-| Turnstile | Cloudflare Turnstile widget on the newsletter form. A 2 MB challenge response and a 401 response were seen | [V] |
-| Console | WebGL warnings: "GPU stall due to ReadPixels", "No available adapters" (software GL), "KHR_parallel_shader_compile not supported", "Turnstile has already been rendered" | [V] |
+| Áudio | 5 arquivos `.ogg` buscados de `lusion.dev` (`generic.ogg`, `cinematic_*.ogg`, `generic_end.ogg`). Reprodução não verificada | [V] (requisições) |
+| Geometria 3D | Arquivos `.buf` (`cross.buf`, `line_reel.buf`, `astronaut_helmet*.buf`) | [V] |
+| Texturas | `matcap.exr` (589 KB, fetch); mapas normais em WebP (`astronaut_*_nor.webp`, 426–450 KB cada) | [V] |
+| Analytics | Tag do Google `G-…` (gtag.js, 534 KB descompactado) | [V] |
+| Turnstile | Widget do Cloudflare Turnstile no formulário de newsletter. Foram vistos um desafio de 2 MB e uma resposta 401 | [V] |
+| Console | Avisos do WebGL: "GPU stall due to ReadPixels", "No available adapters" (GL por software), "KHR_parallel_shader_compile not supported", "Turnstile has already been rendered" | [V] |
 
 ---
 
-## 5. Performance observations
+## 5. Observações de desempenho
 
-Measured in 8 s after `load` on the home page, desktop viewport. Sizes are **decoded** body sizes from Playwright, not wire sizes.
+Medido 8 s após o `load` na home, viewport desktop. Os tamanhos são de corpo **descompactado** pelo Playwright, não tamanhos de transferência.
 
-| Metric | Website B home | Website A home | Verified |
+| Métrica | Home da Website B | Home da Website A | Verificado |
 |---|---|---|---|
-| Requests | 118 | 13 | [V] |
-| Document | 702 KB | 65 KB | [V] |
-| Scripts | 1,902 KB (`hoisted.js` 1,222 KB, `gtag` 534 KB) | 557 KB | [V] |
-| Stylesheets | 88 KB | 89 KB | [V] |
-| Images | 6,161 KB | 0 | [V] |
-| XHR / fetch (3D, audio, Turnstile) | 5,353 KB + 589 KB | 0 | [V] |
-| Fonts | 185 KB (self-hosted Aeonik and IBM Plex Mono) | 147 KB (Google Fonts) | [V] |
+| Requisições | 118 | 13 | [V] |
+| Documento | 702 KB | 65 KB | [V] |
+| Scripts | 1.902 KB (`hoisted.js` 1.222 KB, `gtag` 534 KB) | 557 KB | [V] |
+| Folhas de estilo | 88 KB | 89 KB | [V] |
+| Imagens | 6.161 KB | 0 | [V] |
+| XHR / fetch (3D, áudio, Turnstile) | 5.353 KB + 589 KB | 0 | [V] |
+| Fontes | 185 KB (Aeonik e IBM Plex Mono, hospedadas pelo próprio site) | 147 KB (Google Fonts) | [V] |
 
-**Signals in the console:** "GPU stall due to ReadPixels" indicates a synchronous GPU read-back, a known cost in WebGL pipelines.
+**Sinais no console:** "GPU stall due to ReadPixels" indica uma leitura síncrona da GPU, um custo conhecido em pipelines WebGL.
 
-**Not measured [N/M]:** frame rate (headless software GL; "No available adapters"), Core Web Vitals, INP, Lighthouse. These cannot be trusted from a headless software-rendered run and need to be measured on a real GPU device.
+**Não medido [N/M]:** taxa de quadros (GL por software headless; "No available adapters"), Core Web Vitals, INP, Lighthouse. Não podem ser confiáveis numa execução headless com renderização por software e precisam ser medidos em um dispositivo com GPU real.
 
 ---
 
-## 6. Patterns worth adopting (in principle)
+## 6. Padrões que valem adotar (em princípio)
 
-These are the ideas behind Website B's feel, separated from its implementation:
+Estas são as ideias por trás da sensação da Website B, separadas da implementação:
 
-1. **Spring physics instead of fixed easing for pointer-driven motion.** A second-order response gives a sense of weight, and it can be done without WebGL (see [animation-mapping.md](../animation-mapping.md), pattern M-02).
-2. **Strong, few, deliberate motions.** Each element has a single job: the 3D panel un-skew, the cluster response, the category line.
-3. **The page is a stage.** Content and motion share one composition. The portfolio's equivalent is the storyboard, not the scene graph.
-4. **Image and panel reveals with transform, not layout.** The skew-to-upright reveal is a transform (see pattern M-04).
-5. **Typography in motion as a secondary signal.** Looping category lines and arrows give life without blocking content (pattern M-07, with pause control).
+1. **Física de mola em vez de easing fixo para movimento guiado pelo ponteiro.** Uma resposta de segunda ordem dá sensação de peso, e pode ser feita sem WebGL (ver [animation-mapping.md](../animation-mapping.md), padrão M-02).
+2. **Poucos movimentos fortes e deliberados.** Cada elemento tem um único papel: o endireitamento do painel 3D, a resposta do aglomerado, a linha de categoria.
+3. **A página é um palco.** Conteúdo e movimento compartilham uma composição. O equivalente no portfólio é o storyboard, não o grafo de cena.
+4. **Revelações de imagem e painel com transformação, não com layout.** A revelação de inclinado para reto é uma transformação (ver padrão M-04).
+5. **Tipografia em movimento como sinal secundário.** Linhas de categoria e setas em loop dão vida sem bloquear o conteúdo (padrão M-07, com controle de pausa).
 
-## 7. Patterns to reject for this project
+## 7. Padrões a rejeitar neste projeto
 
-| Pattern | Why it is rejected here |
+| Padrão | Por que é rejeitado aqui |
 |---|---|
-| Native scroll replaced by a custom wheel/touch manager (scrolljacking) | Forbidden by [motion-principles §3](../design/motion-principles.md) and CLAUDE.md. Hurts accessibility and the reading flow |
-| Blocking loader with a 0→100 counter | The LCP must never wait for motion. Content must be reachable without JS |
-| Ignoring `prefers-reduced-motion` | Required by WCAG 2.3.3 and the project's rules. Lusion's behaviour is the anti-pattern |
-| Full-viewport WebGL scene as the main experience | No 3D without approval (F10-T5 was discarded). Also a large performance and battery cost (see §5) |
-| Audio on page load | Not in the storyboard; unexpected sound is an accessibility problem |
-| Custom cursor (`cursor: none`) | Forbidden by motion-principles §3. Lusion does not use it, so this is not a pattern to copy anyway |
-| Per-character DOM duplication for looping text without `aria` handling | Screen reader noise; use one visible text and an `aria-hidden` decorative copy, or a CSS marquee with pause |
-| Smooth-scroll library (Lenis-style) | Forbidden as artificial smooth scroll |
+| Rolagem nativa substituída por um gerenciador próprio de roda e toque (scrolljacking) | Proibido pelo [motion-principles §3](../design/motion-principles.md) e pelo CLAUDE.md. Prejudica a acessibilidade e o fluxo de leitura |
+| Carregador bloqueante com contador de 0 a 100 | O LCP nunca pode esperar por movimento. O conteúdo precisa estar acessível sem JS |
+| Ignorar `prefers-reduced-motion` | Exigido pelo WCAG 2.3.3 e pelas regras do projeto. O comportamento da Lusion é o anti-padrão |
+| Cena WebGL em tela cheia como experiência principal | Sem 3D sem aprovação (a F10-T5 foi descartada). Também tem um custo grande de desempenho e bateria (ver §5) |
+| Áudio ao carregar a página | Não está no storyboard; som inesperado é um problema de acessibilidade |
+| Cursor personalizado (`cursor: none`) | Proibido pelo motion-principles §3. A Lusion não o usa, então não é um padrão a copiar de qualquer forma |
+| Duplicação de caracteres no DOM para texto em loop sem tratamento de `aria` | Ruído para leitores de tela; use um texto visível e uma cópia decorativa com `aria-hidden`, ou um marquee de CSS com pausa |
+| Biblioteca de rolagem suave (estilo Lenis) | Proibida como rolagem suave artificial |
 
 ---
 
-## 8. Implementation notes for the portfolio
+## 8. Notas de implementação para o portfólio
 
-- **No code copied.** Only the behaviour pattern is taken. The `SecondOrderDynamics` idea is re-implemented from first principles if approved (see plan §4).
-- **No assets copied.** `matcap.exr`, the `.buf` geometry, the audio and the textures belong to Lusion.
-- **GSAP stays the motion engine** for the portfolio, as the approved storyboard specifies. Lusion's stack is not a reason to add another library.
-- **Libraries:** Three.js is the only engine confirmed by evidence. Nothing else in Lusion's bundle is confirmed as a library. Anything else (e.g. custom spring code) is inferred from class names and usage, not from a package list.
-
----
-
-## 9. Limitations
-
-- Headless Chromium with software WebGL. No real frame-rate, GPU timing or INP data.
-- Only home, about, projects index and one project page were probed. Other project pages may use different motion.
-- The loader timing and the skew-reveal duration were read from two frames, not a full trace. Exact values are **not** claimed.
-- Hover effects on project rows and transitions between routes were not recorded.
-- Turnstile and the newsletter form were not interacted with (no test submissions).
-- No source maps are available; minified bundle names are used as evidence only.
-- Reduced-motion testing covered the CSS animations only. The WebGL scene's behaviour under reduced motion was not checked.
+- **Nenhum código copiado.** Só o padrão de comportamento é adotado. A ideia de `SecondOrderDynamics` é reimplementada a partir de princípios básicos, se aprovada (ver plano, §4).
+- **Nenhum asset copiado.** `matcap.exr`, a geometria `.buf`, o áudio e as texturas pertencem à Lusion.
+- **O GSAP continua sendo o motor de movimento** do portfólio, como o storyboard aprovado especifica. A stack da Lusion não é motivo para adicionar outra biblioteca.
+- **Bibliotecas:** o Three.js é o único motor confirmado por evidência. Nada mais no bundle da Lusion é confirmado como biblioteca. Qualquer outra coisa (por exemplo, o código próprio de mola) é inferida a partir dos nomes de classe e de uso, não de uma lista de pacotes.
 
 ---
 
-## Screenshots
+## 9. Limitações
 
-| File | What it shows |
+- WebGL headless com renderização por software. Não há dados reais de taxa de quadros, tempo de GPU nem INP.
+- Só a home, a página sobre, o índice de projetos e uma página de projeto foram explorados. Outras páginas de projeto podem usar movimento diferente.
+- O tempo do carregador e a duração da revelação de inclinação foram lidos de dois quadros, não de um rastro completo. Valores exatos **não** são afirmados.
+- Os efeitos de hover nas linhas de projeto e as transições entre rotas não foram registrados.
+- O Turnstile e o formulário de newsletter não foram usados (sem envios de teste).
+- Não há source maps disponíveis; nomes do bundle minificado são usados apenas como evidência.
+- O teste de movimento reduzido cobriu só as animações de CSS. O comportamento da cena WebGL sob movimento reduzido não foi verificado.
+
+---
+
+## Capturas de tela
+
+| Arquivo | O que mostra |
 |---|---|
-| [screenshots/b-desktop-fold.png](screenshots/b-desktop-fold.png) | Home at 1440 × 900: the 3D tube cluster in its framed panel |
-| [screenshots/b-tablet-fold.png](screenshots/b-tablet-fold.png) | Home at 820 × 1180 |
-| [screenshots/b-mobile-fold.png](screenshots/b-mobile-fold.png) | Home at 390 × 844 |
-| [screenshots/b-intro-300ms.png](screenshots/b-intro-300ms.png) | Loader at ~300 ms: progress bar and counter on black |
-| [screenshots/b-intro-6000ms.png](screenshots/b-intro-6000ms.png) | Skewed panel with the 3D cluster, counter still near the end |
+| [screenshots/b-desktop-fold.png](screenshots/b-desktop-fold.png) | Home em 1440 × 900: o aglomerado de tubos 3D no painel com moldura |
+| [screenshots/b-tablet-fold.png](screenshots/b-tablet-fold.png) | Home em 820 × 1180 |
+| [screenshots/b-mobile-fold.png](screenshots/b-mobile-fold.png) | Home em 390 × 844 |
+| [screenshots/b-intro-300ms.png](screenshots/b-intro-300ms.png) | Carregador em ~300 ms: barra de progresso e contador sobre fundo preto |
+| [screenshots/b-intro-6000ms.png](screenshots/b-intro-6000ms.png) | Painel inclinado com o aglomerado 3D, contador ainda perto do fim |

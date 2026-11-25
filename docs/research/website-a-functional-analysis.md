@@ -1,165 +1,165 @@
-# Website A — functional analysis
+# Website A — análise funcional
 
-**Reference:** https://vinicius-viola-workfolio.lovable.app/ (the owner's current portfolio, built on Lovable)
-**Captured:** 2026-11-25, headless Chromium (Playwright 1.64), 1440×900 / 820×1180 / 390×844.
-**Role in this project:** source of truth for **what** the product does (see [implementation-plan.md](../implementation-plan.md)).
+**Referência:** https://vinicius-viola-workfolio.lovable.app/ (o portfólio atual do owner, feito no Lovable)
+**Capturado:** 2026-11-25, Chromium headless (Playwright 1.64), 1440×900 / 820×1180 / 390×844.
+**Papel neste projeto:** fonte da verdade sobre **o que** o produto faz (ver [implementation-plan.md](../implementation-plan.md)).
 
-**Legend:** **[V]** verified by browser inspection or by reading the shipped bundle · **[A]** assumption or inference, not directly observed.
+**Legenda:** **[V]** verificado por inspeção no navegador ou pela leitura do bundle publicado · **[A]** premissa ou inferência, não observada diretamente.
 
 ---
 
-## 1. Summary
+## 1. Resumo
 
-Website A is a single-page portfolio with one long home page and one blog listing with three articles. It has no backend of its own: the only network call the site makes is an analytics beacon, and the one interactive tool (the outreach drafter) runs entirely in the browser. It has a 404 page.
+O Website A é um portfólio de uma página só, com uma página inicial longa e uma listagem de blog com três artigos. Não tem backend próprio: a única chamada de rede do site é um beacon de analytics, e a única ferramenta interativa (o gerador de mensagem de contato) roda inteiramente no navegador. Tem uma página 404.
 
-| Area | Status |
+| Área | Situação |
 |---|---|
-| Routes | `/`, `/blog`, `/blog/<slug>` (×3), a catch-all 404 |
-| Server API | None. The only non-GET request is an analytics beacon (`/__l5e/trackevents`) **[V]** |
-| Forms | One interactive form (AI Outreach drafter). The "Contact" section is links, not a form **[V]** |
-| Content source | Hard-coded in the bundle (no CMS, no fetch of content) **[V]** (no content request appears in the network log) |
-| Console errors at load | None on desktop **[V]** |
-| Horizontal overflow at 390 px | None **[V]** |
+| Rotas | `/`, `/blog`, `/blog/<slug>` (×3), um 404 para qualquer outro caminho |
+| API de servidor | Nenhuma. A única requisição que não é GET é o beacon de analytics (`/__l5e/trackevents`) **[V]** |
+| Formulários | Um formulário interativo (o gerador de mensagem de contato). A seção "Contato" são links, não um formulário **[V]** |
+| Fonte do conteúdo | Escrito no próprio bundle (sem CMS, sem busca de conteúdo) **[V]** (nenhuma requisição de conteúdo aparece no log de rede) |
+| Erros no console ao carregar | Nenhum no desktop **[V]** |
+| Rolagem horizontal em 390 px | Nenhuma **[V]** |
 
 ---
 
-## 2. Routes and information architecture
+## 2. Rotas e arquitetura de informação
 
-| Route | Observed | Evidence |
+| Rota | Observado | Evidência |
 |---|---|---|
-| `/` | Single page with anchor sections: `#top`, `#experience`, `#projects`, `#skills`, `#outreach`, `#contact` | Nav `href`s and `h2` headings **[V]** |
-| `/blog` | "Blog" H1 and three article links | Route probe **[V]** |
-| `/blog/migrating-vue-2-to-vue-3-at-scale`, `/blog/design-systems-in-code-banking`, `/blog/ai-assisted-frontend-workflows-claude-code` | Article pages: H1, lead paragraph, body paragraphs. No "back" link was found | Route probe **[V]** |
-| `/does-not-exist` | "404 · Page not found" | Route probe **[V]** |
-| `/__l5e/assets-v1/…/Vinicius_Dias_CV.pdf` | The CV, linked from the header and hero | Link `href`s **[V]** |
+| `/` | Página única com seções âncora: `#top`, `#experience`, `#projects`, `#skills`, `#outreach`, `#contact` | `href` da navegação e títulos `h2` **[V]** |
+| `/blog` | Título H1 "Blog" e três links de artigos | Teste de rotas **[V]** |
+| `/blog/migrating-vue-2-to-vue-3-at-scale`, `/blog/design-systems-in-code-banking`, `/blog/ai-assisted-frontend-workflows-claude-code` | Páginas de artigo: H1, parágrafo de abertura, parágrafos do corpo. Nenhum link "voltar" foi encontrado | Teste de rotas **[V]** |
+| `/does-not-exist` | "404 · Page not found" | Teste de rotas **[V]** |
+| `/__l5e/assets-v1/…/Vinicius_Dias_CV.pdf` | O CV, linkado no cabeçalho e no hero | `href` dos links **[V]** |
 
-**Navigation:** a sticky header with brand, six anchors (Experience, Projects, Skills, AI Outreach, Blog, Contact), and a CV button. The anchor links are on-page; "Blog" is a route change **[V]**.
+**Navegação:** um cabeçalho fixo com marca, seis âncoras (Experience, Projects, Skills, AI Outreach, Blog, Contact) e um botão CV. Os links de âncora são internos da página; "Blog" é uma troca de rota **[V]**.
 
 ---
 
-## 3. Feature inventory
+## 3. Inventário de funcionalidades
 
-| # | Feature | Section | Detail | Verified |
+| # | Funcionalidade | Seção | Detalhe | Verificado |
 |---|---|---|---|---|
-| F1 | Hero | `#top` | Eyebrow "Lisbon, Portugal · Senior Frontend & Product Engineer"; H1 "Building scalable interfaces & design systems."; lead paragraph; CTAs: **Draft outreach** (→ `#outreach`), **Download CV**, **Blog**, **GitHub**; secondary **LinkedIn** link | [V] |
-| F2 | "System blueprint" card | Hero, right column | Decorative card listing three focus areas (Design Systems, Architecture, AI Workflows) and a footer "60 FPS · GPU Composed" and "v2026.1". The claims are decorative: nothing measures FPS on the page | [V] (content), [A] (purpose) |
-| F3 | Stats strip | Below hero | Four figures: **6+** years experience; **5M+** users served (EnBW); **90%+** critical test coverage; **70–80%** faster load times. These are owner-supplied claims and cannot be verified from the site | [V] (presence) |
-| F4 | Selected Experience | `#experience` | Six roles as H3s: Emotion Mobility, EnBW, TLScontact, Bee Engineering, ISH Technology (SafeLabs), TOTVS · Wepipe · Liberfly (grouped). Each role has its own description (not captured in full) | [V] (headings) |
-| F5 | GitHub Projects | `#projects` | Six project cards with links to GitHub repos, and one live demo link (Star Wars Explorer on Vercel): Roses Cortinas & Persianas (landing page), Collection Manager, TV Series Manager, Kanban Dashboard, Star Wars Explorer, PokéApp | [V] |
-| F6 | Skills & Background | `#skills` | Grouped lists: Core Frontend; UI & Design Systems; AI-Assisted Engineering; Architecture & Testing; DevOps & Ecosystem; plus Education, Languages, Certifications | [V] (headings) |
-| F7 | AI Outreach drafter | `#outreach` | Heading "Draft a tailored message in seconds." Inputs: *Your name* (optional), *Company / team* (optional), *Opportunity or collaboration* (textarea). Tone chips: **Professional**, **Concise**, **Warm**. Submit: **Draft outreach**. Output panel with **Copy email** | [V] |
-| F8 | Blog listing | `/blog` | Three articles, each linked | [V] |
-| F9 | Article pages | `/blog/:slug` | H1, lead, body paragraphs | [V] |
-| F10 | Contact | `#contact` | Heading "Let's build something together." Links: email (`mailto:`), phone (`tel:`), LinkedIn, GitHub. **No form** | [V] |
-| F11 | CV download | Header, hero | PDF link | [V] |
-| F12 | 404 page | Any unknown path | "404 · Page not found" | [V] |
+| F1 | Hero | `#top` | Sobretítulo "Lisbon, Portugal · Senior Frontend & Product Engineer"; H1 "Building scalable interfaces & design systems."; parágrafo de apresentação; CTAs: **Draft outreach** (→ `#outreach`), **Download CV**, **Blog**, **GitHub**; link secundário **LinkedIn** | [V] |
+| F2 | Cartão "System blueprint" | Hero, coluna direita | Cartão decorativo com três áreas de foco (Design Systems, Architecture, AI Workflows) e um rodapé "60 FPS · GPU Composed" e "v2026.1". As afirmações são decorativas: nada na página mede FPS | [V] (conteúdo), [A] (finalidade) |
+| F3 | Faixa de números | Abaixo do hero | Quatro números: **6+** anos de experiência; **5M+** usuários atendidos (EnBW); **90%+** de cobertura de testes críticos; **70–80%** de carregamento mais rápido. São afirmações fornecidas pelo owner e não podem ser verificadas pelo site | [V] (presença) |
+| F4 | Experiência selecionada | `#experience` | Seis funções como H3: Emotion Mobility, EnBW, TLScontact, Bee Engineering, ISH Technology (SafeLabs), TOTVS · Wepipe · Liberfly (agrupadas). Cada função tem sua descrição (não capturada por completo) | [V] (títulos) |
+| F5 | Projetos do GitHub | `#projects` | Seis cards de projeto com links para repositórios do GitHub e um link de demonstração ao vivo (Star Wars Explorer, na Vercel): Roses Cortinas & Persianas (landing page), Collection Manager, TV Series Manager, Kanban Dashboard, Star Wars Explorer, PokéApp | [V] |
+| F6 | Habilidades e formação | `#skills` | Listas agrupadas: Core Frontend; UI & Design Systems; AI-Assisted Engineering; Architecture & Testing; DevOps & Ecosystem; além de Education, Languages, Certifications | [V] (títulos) |
+| F7 | Gerador de mensagem de contato (AI Outreach) | `#outreach` | Título "Draft a tailored message in seconds." Campos: *Your name* (opcional), *Company / team* (opcional), *Opportunity or collaboration* (área de texto). Chips de tom: **Professional**, **Concise**, **Warm**. Envio: **Draft outreach**. Painel de saída com **Copy email** | [V] |
+| F8 | Listagem do blog | `/blog` | Três artigos, cada um linkado | [V] |
+| F9 | Páginas de artigo | `/blog/:slug` | H1, abertura, parágrafos do corpo | [V] |
+| F10 | Contato | `#contact` | Título "Let's build something together." Links: e-mail (`mailto:`), telefone (`tel:`), LinkedIn, GitHub. **Sem formulário** | [V] |
+| F11 | Download do CV | Cabeçalho, hero | Link para PDF | [V] |
+| F12 | Página 404 | Qualquer caminho desconhecido | "404 · Page not found" | [V] |
 
-### 3.1 AI Outreach drafter — behaviour (F7)
+### 3.1 Gerador de mensagem de contato (F7): comportamento
 
-- Typed input is turned into a message in the browser. Submitting produced paragraphs that combine the owner's bio ("6+ years building scalable web applications with TypeScript, React, and Vue…") with the input the user typed **[V]**.
-- Submitting caused **no non-GET network request** **[V]**. The generator is client-side and does not call an AI API.
-- Tone chips change the output. This was **not** verified for each tone **[A]**.
-- "Copy email" copies the output to the clipboard. Not verified **[A]**.
-
----
-
-## 4. User journeys (observed)
-
-1. **Recruiter, desktop, first visit:** lands on the hero → reads the stats → scrolls Experience → Projects → Skills → **Draft outreach** → copies a message → **Download CV**.
-2. **Reader:** header **Blog** → article list → article page. No related-posts, tags, dates or back link were found **[V]**.
-3. **Wrong URL:** 404 page. No link back to home was checked **[A]**.
+- O texto digitado vira uma mensagem no navegador. Ao enviar, foram gerados parágrafos que combinam a biografia do owner ("6+ years building scalable web applications with TypeScript, React, and Vue…") com o texto digitado pelo usuário **[V]**.
+- O envio não causou **nenhuma requisição de rede que não fosse GET** **[V]**. O gerador é do lado do cliente e não chama nenhuma API de IA.
+- Os chips de tom mudam a saída. **Não** foi verificado para cada tom **[A]**.
+- "Copy email" copia a saída para a área de transferência. Não verificado **[A]**.
 
 ---
 
-## 5. Layout and responsive behaviour
+## 4. Jornadas do usuário (observadas)
 
-| Viewport | Observation | Verified |
+1. **Recrutador, desktop, primeira visita:** chega ao hero → lê os números → rola até Experience → Projects → Skills → **Draft outreach** → copia uma mensagem → **Download CV**.
+2. **Leitor:** no cabeçalho, **Blog** → lista de artigos → página do artigo. Não foram encontrados relacionados, tags, datas nem link de voltar **[V]**.
+3. **URL errada:** página 404. Não foi verificado se há link de volta para a home **[A]**.
+
+---
+
+## 5. Layout e comportamento responsivo
+
+| Viewport | Observação | Verificado |
 |---|---|---|
-| 1440 px | Two-column hero (copy left, blueprint card right). Stats in a four-column row. Full-width section rules | [V] (screenshot `screenshots/a-desktop-fold.png`) |
-| 820 px | Captured (`screenshots/a-tablet-fold.png`). Column layout was not compared in detail | [V] (capture), [A] (layout) |
-| 390 px | Single column. No horizontal scroll (`scrollWidth ≤ innerWidth`) | [V] (`screenshots/a-mobile-fold.png`) |
+| 1440 px | Hero em duas colunas (texto à esquerda, cartão blueprint à direita). Números em uma linha de quatro colunas. Divisórias de seção em largura total | [V] (captura `screenshots/a-desktop-fold.png`) |
+| 820 px | Capturado (`screenshots/a-tablet-fold.png`). O layout de colunas não foi comparado em detalhe | [V] (captura), [A] (layout) |
+| 390 px | Coluna única. Sem rolagem horizontal (`scrollWidth ≤ innerWidth`) | [V] (`screenshots/a-mobile-fold.png`) |
 
-Document height at 1440 px is about 5,600 px.
-
----
-
-## 6. Content structure
-
-- Content is static text inside the JavaScript bundle; there is no CMS and no content request **[V]**.
-- Blog articles are routed by slug (`/blog/<slug>`) **[V]**.
-- Project cards link to GitHub repos and one live site **[V]**.
-- The owner's real content (names, companies, metrics) appears on the site. The portfolio project must treat this as **owner-supplied** content and not invent anything beyond it (see [CLAUDE.md](../../CLAUDE.md), "Conteúdo real").
+A altura do documento em 1440 px é de cerca de 5.600 px.
 
 ---
 
-## 7. Accessibility (observed)
+## 6. Estrutura de conteúdo
 
-| Item | Observation | Verified |
+- O conteúdo é texto estático dentro do bundle JavaScript; não há CMS nem requisição de conteúdo **[V]**.
+- Os artigos do blog são roteados pelo slug (`/blog/<slug>`) **[V]**.
+- Os cards de projeto linkam para repositórios do GitHub e para um site ao vivo **[V]**.
+- O conteúdo real do owner (nomes, empresas, métricas) aparece no site. O projeto do portfólio deve tratá-lo como **conteúdo fornecido pelo owner** e não inventar nada além dele (ver [CLAUDE.md](../../CLAUDE.md), "Conteúdo real").
+
+---
+
+## 7. Acessibilidade (observada)
+
+| Item | Observação | Verificado |
 |---|---|---|
-| Heading structure | One H1, H2 per section, H3 per item. Good ordering | [V] |
-| Landmarks | Header and nav present; `main` not checked | [A] |
-| Keyboard focus | Not tested | [A] |
-| Colour contrast | Not measured with a tool | [A] |
-| Images | `<img>` count is 0 on the home page; the project and hero visuals are SVG/CSS | [V] |
-| Skip link | Not checked | [A] |
-| Reduced motion | No load-time animation runs in either mode (`getAnimations()` = 0 with and without `prefers-reduced-motion: reduce`). Scroll-triggered motion under reduce was not measured | [V] (load), [A] (scroll) |
+| Estrutura de títulos | Um H1, um H2 por seção e um H3 por item. Ordem correta | [V] |
+| Landmarks | Cabeçalho e navegação presentes; `main` não verificado | [A] |
+| Foco do teclado | Não testado | [A] |
+| Contraste de cor | Não medido com ferramenta | [A] |
+| Imagens | Contagem de `<img>` na home é 0; os visuais de projeto e do hero são SVG/CSS | [V] |
+| Link de pular conteúdo | Não verificado | [A] |
+| Movimento reduzido | Nenhuma animação roda no carregamento em nenhum dos modos (`getAnimations()` = 0 com e sem `prefers-reduced-motion: reduce`). Movimento disparado pela rolagem sob reduce não foi medido | [V] (carregamento), [A] (rolagem) |
 
 ---
 
-## 8. Rendering and technical findings
+## 8. Achados de renderização e técnicos
 
-| Topic | Finding | Verified |
+| Tópico | Achado | Verificado |
 |---|---|---|
-| Delivery | Vite-style static build: `/assets/index-*.js`, `routes-*.js`, `styles-*.css`. SPA with a catch-all for unknown routes | [V] |
-| Framework | Not confirmed by name. The `whileInView` prop (a Framer Motion / `motion` API) is in the routes chunk; the "Edit with Lovable" badge indicates a Lovable-generated project | [V] (API name), [A] (React + Tailwind + Radix) |
-| Motion library | Framer Motion-style `whileInView` present. **No GSAP, no ScrollTrigger, no Lenis** in any bundle (0 matches) | [V] |
-| View Transitions | `startViewTransition` appears in the entry bundle (4 matches). Its use on route changes was not exercised | [V] (presence), [A] (use) |
-| Keyframes | `accordion-up/down`, `caret-blink`, `enter`, `exit`, `pulse`, `spin` — the usual Tailwind/shadcn animation set (enter/exit suggest dialogs or toasts) | [V] |
-| Fonts | Google Fonts CSS: Fraunces, DM Sans, IBM Plex Mono. 147 KB of font files fetched from `fonts.gstatic.com` at load | [V] |
-| JS weight (decoded) | `index-*.js` 337 KB + `routes-*.js` 184 KB + analytics 29 KB ≈ **557 KB** of script, uncompressed | [V] |
-| CSS weight (decoded) | 80–89 KB | [V] |
-| Requests on load | 13 | [V] |
-| Source maps | `…js.map` returns 404 | [V] |
-| Console | No errors or warnings on the desktop run | [V] |
-| Analytics | `/__l5e/…` beacon. Third-party analytics not identified | [V] |
-| Performance measurement | No Lighthouse or Web Vitals run in this pass (deferred to the validation step) | — |
+| Entrega | Build estático estilo Vite: `/assets/index-*.js`, `routes-*.js`, `styles-*.css`. SPA com fallback para rotas desconhecidas | [V] |
+| Framework | Não confirmado pelo nome. A prop `whileInView` (API do Framer Motion / `motion`) está no chunk de rotas; o selo "Edit with Lovable" indica um projeto gerado pelo Lovable | [V] (nome da API), [A] (React + Tailwind + Radix) |
+| Biblioteca de movimento | Uso de `whileInView` no estilo Framer Motion. **Nenhum GSAP, nenhum ScrollTrigger, nenhum Lenis** em nenhum bundle (0 ocorrências) | [V] |
+| View Transitions | `startViewTransition` aparece no bundle de entrada (4 ocorrências). Seu uso em trocas de rota não foi exercitado | [V] (presença), [A] (uso) |
+| Keyframes | `accordion-up/down`, `caret-blink`, `enter`, `exit`, `pulse`, `spin` — o conjunto usual de animações do Tailwind/shadcn (enter/exit sugerem diálogos ou toasts) | [V] |
+| Fontes | CSS do Google Fonts: Fraunces, DM Sans, IBM Plex Mono. 147 KB de arquivos de fonte buscados de `fonts.gstatic.com` ao carregar | [V] |
+| Peso de JS (descompactado) | `index-*.js` 337 KB + `routes-*.js` 184 KB + analytics 29 KB ≈ **557 KB** de script, sem compressão | [V] |
+| Peso de CSS (descompactado) | 80–89 KB | [V] |
+| Requisições ao carregar | 13 | [V] |
+| Source maps | `…js.map` retorna 404 | [V] |
+| Console | Nenhum erro ou aviso na execução desktop | [V] |
+| Analytics | Beacon `/__l5e/…`. Analytics de terceiros não identificado | [V] |
+| Medição de desempenho | Nenhum Lighthouse ou Web Vitals nesta etapa (adiado para a validação) | — |
 
 ---
 
-## 9. Implementation requirements derived from Website A
+## 9. Requisitos de implementação derivados do Website A
 
-These are the **functional** requirements the Nuxt project must satisfy. Each one is mapped to what the portfolio already does in [implementation-plan.md](../implementation-plan.md).
+Estes são os requisitos **funcionais** que o projeto Nuxt precisa atender. Cada um está mapeado para o que o portfólio já faz, em [implementation-plan.md](../implementation-plan.md).
 
-| ID | Requirement | Notes |
+| ID | Requisito | Observações |
 |---|---|---|
-| A-R1 | Home with hero, stats strip, experience, projects, skills, contact | Experience and skills have no equivalent in the portfolio today (see plan §2) |
-| A-R2 | Hero CTAs: outreach, CV, blog, GitHub, LinkedIn | Outreach CTA depends on A-R6 |
-| A-R3 | Experience list with roles and descriptions | New content type or home block; needs schema work |
-| A-R4 | Projects list (GitHub-style cards) with links | Portfolio projects already cover this with a richer model |
-| A-R5 | Skills grouped by category | New content type or home block |
-| A-R6 | Outreach drafter (inputs, tone, copy) | Client-side is possible at no cost; requires owner approval (see plan §5) |
-| A-R7 | Blog listing and article pages | Already implemented (F06) |
-| A-R8 | CV download | Needs the PDF as a media/asset in the portfolio |
-| A-R9 | 404 page | Already implemented (`app/error.vue`) |
-| A-R10 | No horizontal overflow at 390 px | Existing CI budget should cover this |
+| A-R1 | Home com hero, faixa de números, experiência, projetos, habilidades e contato | Experiência e habilidades já existem no portfólio, na página Sobre (ver plano, §0.4) |
+| A-R2 | CTAs do hero: outreach, CV, blog, GitHub, LinkedIn | O CTA de outreach depende de A-R6 |
+| A-R3 | Lista de experiência com funções e descrições | Já existe como linha do tempo na página Sobre; a home a exibe (F13-T3) |
+| A-R4 | Lista de projetos (cards estilo GitHub) com links | Os projetos do portfólio já cobrem isto, com um modelo mais rico |
+| A-R5 | Habilidades agrupadas por categoria | Já existem na página Sobre; a home as exibe (F13-T4) |
+| A-R6 | Gerador de mensagem de contato (campos, tom, cópia) | Pode ser feito no cliente sem custo; depende de aprovação do owner (ver plano, §5) |
+| A-R7 | Listagem do blog e páginas de artigo | Já implementado (F06) |
+| A-R8 | Download do CV | Implementado com o PDF autohospedado (F13-T5, ADR-0017) |
+| A-R9 | Página 404 | Já implementado (`app/error.vue`) |
+| A-R10 | Sem rolagem horizontal em 390 px | O orçamento de CI existente deve cobrir isto |
 
-**Not required (intentionally):** the Lovable badge, the decorative "60 FPS" text, the analytics beacon, and Google Fonts from a third party (the portfolio self-hosts its fonts; see [CLAUDE.md](../../CLAUDE.md)).
-
----
-
-## 10. Limitations of this analysis
-
-- Only the home page, the blog listing, one article, the 404 page and the outreach drafter were exercised. Hover states, focus order, and all tone chips were not walked through.
-- Layout at 820 px was captured but not compared element by element.
-- Lighthouse, Core Web Vitals and axe scans were **not** run on Website A in this pass.
-- Only Playwright was used. REA and the Chrome DevTools MCP were not needed for these findings (no native or obfuscated runtime behaviour required them).
+**Intencionalmente não exigidos:** o selo do Lovable, o texto decorativo "60 FPS", o beacon de analytics e as fontes do Google Fonts de terceiros (o portfólio hospeda as próprias fontes; ver [CLAUDE.md](../../CLAUDE.md)).
 
 ---
 
-## Screenshots
+## 10. Limitações desta análise
 
-| File | Viewport | Notes |
+- Só foram exercitados a home, a listagem do blog, um artigo, a página 404 e o gerador de mensagem. Estados de hover, ordem de foco e todos os chips de tom não foram percorridos.
+- O layout em 820 px foi capturado, mas não comparado elemento a elemento.
+- Lighthouse, Core Web Vitals e varreduras com axe **não** foram executados no Website A nesta etapa.
+- Só o Playwright foi usado. REA e o Chrome DevTools MCP não foram necessários para estes achados (nenhum comportamento nativo ou ofuscado exigiu).
+
+---
+
+## Capturas de tela
+
+| Arquivo | Viewport | Observações |
 |---|---|---|
-| [screenshots/a-desktop-fold.png](screenshots/a-desktop-fold.png) | 1440 × 900 | Hero, blueprint card, stats |
-| [screenshots/a-tablet-fold.png](screenshots/a-tablet-fold.png) | 820 × 1180 | Hero at tablet width |
-| [screenshots/a-mobile-fold.png](screenshots/a-mobile-fold.png) | 390 × 844 | Single column |
+| [screenshots/a-desktop-fold.png](screenshots/a-desktop-fold.png) | 1440 × 900 | Hero, cartão blueprint, números |
+| [screenshots/a-tablet-fold.png](screenshots/a-tablet-fold.png) | 820 × 1180 | Hero em largura de tablet |
+| [screenshots/a-mobile-fold.png](screenshots/a-mobile-fold.png) | 390 × 844 | Coluna única |
