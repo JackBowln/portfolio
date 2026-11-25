@@ -4,6 +4,7 @@
 // show everything first); below the fold, each reveal sets its starting state as it is created, out of sight.
 // Desktop (≥ md) gets the full timelines; mobile only fades; reduced motion never gets here
 import { BREAKPOINTS, DISTANCES, DURATIONS } from '#shared/design/tokens'
+import { AT_REST, isAtRest, stepSpring } from '../spring'
 import { countableStat, formatCount } from './count'
 import type { SceneContext } from './types'
 
@@ -103,23 +104,44 @@ export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: S
 
       const magnet = closing.querySelector<HTMLElement>('[data-magnetic]')
       if (desktop && finePointer && magnet) {
-        const toX = gsap.quickTo(magnet, 'x', { duration: seconds(DURATIONS.fast), ease: EASE.out })
-        const toY = gsap.quickTo(magnet, 'y', { duration: seconds(DURATIONS.fast), ease: EASE.out })
+        // F13-T6 (M-02): the offset follows a spring, not an easing curve. The ticker runs only while the spring moves
         const LIMIT = 6
+        let target = { x: 0, y: 0 }
+        let springs = { x: AT_REST, y: AT_REST }
+        let running = false
+        const tick = (_time: number, deltaTime: number) => {
+          const dt = deltaTime / 1000
+          springs = { x: stepSpring(springs.x, target.x, dt), y: stepSpring(springs.y, target.y, dt) }
+          gsap.set(magnet, { x: springs.x.position, y: springs.y.position })
+          if (isAtRest(springs.x, target.x) && isAtRest(springs.y, target.y)) {
+            gsap.ticker.remove(tick)
+            running = false
+          }
+        }
+        const wake = () => {
+          if (!running) {
+            running = true
+            gsap.ticker.add(tick)
+          }
+        }
         const move = (event: PointerEvent) => {
           const box = magnet.getBoundingClientRect()
-          toX(Math.max(-LIMIT, Math.min(LIMIT, (event.clientX - box.left - box.width / 2) / 4)))
-          toY(Math.max(-LIMIT, Math.min(LIMIT, (event.clientY - box.top - box.height / 2) / 4)))
+          target = {
+            x: Math.max(-LIMIT, Math.min(LIMIT, (event.clientX - box.left - box.width / 2) / 4)),
+            y: Math.max(-LIMIT, Math.min(LIMIT, (event.clientY - box.top - box.height / 2) / 4)),
+          }
+          wake()
         }
         const leave = () => {
-          toX(0)
-          toY(0)
+          target = { x: 0, y: 0 }
+          wake()
         }
         magnet.addEventListener('pointermove', move)
         magnet.addEventListener('pointerleave', leave)
         return () => {
           magnet.removeEventListener('pointermove', move)
           magnet.removeEventListener('pointerleave', leave)
+          gsap.ticker.remove(tick)
         }
       }
     }
