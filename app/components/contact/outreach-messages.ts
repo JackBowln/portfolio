@@ -31,7 +31,7 @@ export const OUTREACH_MESSAGES: Record<OutreachLocale, OutreachMessages> = {
   'pt-BR': {
     title: 'Rascunhar uma mensagem',
     intro: 'Descreva a oportunidade e gere um rascunho para revisar antes de enviar. Nada é enviado nem guardado: o texto fica só nesta página.',
-    name: 'Seu nome (opcional)',
+    name: 'Sua identificação (opcional)',
     company: 'Empresa ou equipe (opcional)',
     opportunity: 'A oportunidade ou colaboração',
     tone: 'Tom',

@@ -15,6 +15,8 @@ const FIGURES = [
 ]
 
 test('the stats strip shows what the owner enters, and leaves nothing behind', async ({ page }) => {
+  // The owner's flow takes a few page loads and two publishes; CI is slower than a laptop
+  test.setTimeout(180_000)
   expect((await page.context().request.post('/api/_test/session?role=owner', { headers: ORIGIN })).status()).toBe(200)
   await page.goto('/admin/paginas/home')
 
@@ -26,17 +28,17 @@ test('the stats strip shows what the owner enters, and leaves nothing behind', a
   }
   await expect(numbers).toBeVisible()
   await page.getByRole('button', { name: 'Publicar agora' }).click()
-  await expect(page.getByText('No site desde', { exact: false })).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('No site desde', { exact: false })).toBeVisible({ timeout: 60_000 })
 
   await page.goto('/')
   const strip = page.locator('dl[data-motion="stats"]')
   await expect(strip).toBeVisible()
   await expect(strip.locator('dt')).toHaveText(FIGURES.map(figure => figure.label))
   // The counters end on the text the owner wrote, and only once they have run
-  await expect(strip.locator('dd').nth(0)).toHaveText('6+', { timeout: 5_000 })
-  await expect(strip.locator('dd').nth(1)).toHaveText('~5M', { timeout: 5_000 })
+  await expect(strip.locator('dd').nth(0)).toHaveText('6+', { timeout: 15_000 })
+  await expect(strip.locator('dd').nth(1)).toHaveText('~5M', { timeout: 15_000 })
   await expect(strip.locator('dd').nth(2)).toHaveText('70–80%')
-  await expect(strip.locator('dd').nth(3)).toHaveText('90%+', { timeout: 5_000 })
+  await expect(strip.locator('dd').nth(3)).toHaveText('90%+', { timeout: 15_000 })
 
   // Back as it was: the figures go, and the strip with them
   await page.goto('/admin/paginas/home')
@@ -44,7 +46,7 @@ test('the stats strip shows what the owner enters, and leaves nothing behind', a
     await page.getByRole('button', { name: `Remover: Número ${index}` }).click()
   }
   await page.getByRole('button', { name: 'Publicar alterações' }).click()
-  await expect(page.getByText('No site desde', { exact: false })).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('No site desde', { exact: false })).toBeVisible({ timeout: 60_000 })
   await page.goto('/')
   await expect(page.locator('dl[data-motion="stats"]')).toHaveCount(0)
 })

@@ -70,7 +70,6 @@ async function copyDraft() {
           v-model="form.name"
           v-bind="field"
           :maxlength="60"
-          autocomplete="name"
         />
       </UiField>
       <UiField

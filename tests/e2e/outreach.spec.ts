@@ -10,7 +10,7 @@ test('the draft is made in the browser, with no request, and can be copied', asy
   await page.goto('/contato')
   await expect(page.getByRole('heading', { name: 'Rascunhar uma mensagem' })).toBeVisible({ timeout: 30_000 })
 
-  await page.getByLabel('Seu nome (opcional)').fill('Alex')
+  await page.getByLabel('Sua identificação (opcional)').fill('Alex')
   await page.getByLabel('Empresa ou equipe (opcional)').fill('Acme')
   await page.getByLabel('A oportunidade ou colaboração').fill('Uma vaga de frontend num sistema de design, com migração para Vue 3.')
   await page.getByRole('radio', { name: 'Direto' }).check()
