@@ -274,9 +274,9 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 | F13-T2 faixa de números com contagem | Feita | `bbe9c5c` |
 | F13-T3 experiência fixada na home | Feita | `144a7b0` |
 | F13-T4 grupos de habilidades na home (marquee não incluído) | Feita | `cb7cec1` |
-| F13-T5 CV autohospedado | Implementada e **verificada no navegador** (download local); ADR-0017 ainda **Proposto**, aguardando aceite | `9d52de8`, correção de cache `3386174` (ADR em `ff16193`) |
+| F13-T5 CV autohospedado | Implementada e **verificada no navegador** (download local); ADR-0017 **Aceito** (`f2d487c`) | `9d52de8`, correção de cache `3386174` (ADR em `ff16193`) |
 | F13-T6 CTA magnético com mola | Feita | `3deacba` |
-| F13-T7 gerador de mensagem, só no cliente | **Pendente**: texto do template nos cinco idiomas precisa de aprovação | — |
+| F13-T7 gerador de mensagem, só no cliente | **Feita** (`f1e97fd`), no formulário de contato, com carregamento sob demanda. Texto do template escrito pelo agente, nos cinco idiomas, com fatos do currículo; aceito pelo owner (ver §8.6) | `f1e97fd` |
 | F13-T8 validação | **Parcial**: Lighthouse, axe, movimento reduzido, download do CV e a faixa de números (E2E) verificados (ver §8.4). Falta: a experiência fixada no navegador, a suíte E2E completa e a conferência com o conteúdo real do owner | — |
 | Tradução destes docs para pt-BR (D-06) | Feita nesta etapa | branch `docs/F13-pt-br` |
 
@@ -300,3 +300,17 @@ Duas mudanças de redação em relação ao primeiro rascunho: "5M+" virou "~5M"
 - O CV não podia ser só upload de imagem: o pipeline só aceitava imagem e vídeo. Resolvido com o tipo `file` do ADR-0017.
 - As configurações não registravam usos de mídia; a imagem OG podia ser apagada. Corrigido junto com o CV (F13-T5).
 - O `HomeContent` lia `blocks.stats` sem fallback e quebrava com blocos não parseados (visto no teste de app). Corrigido com `?? []`.
+
+### 8.6 Decisões tomadas pelo critério "mais recomendado" (owner, 2026-11-25)
+
+| Tema | Decisão | Por quê |
+|---|---|---|
+| ADR-0017 | Aceito | O owner aceitou; a implementação foi verificada |
+| Texto do rascunho (F13-T7) | Escrito pelo agente, nos cinco idiomas, só com fatos do currículo (6+ anos, TypeScript, Vue, React, design systems) | Era o caminho recomendado; o texto é editável e fica fora do banco |
+| Onde fica o rascunho | No formulário de contato, carregado sob demanda | A home é hydrate-never; o contato já hidrata |
+| Mensagens do rascunho | Módulo próprio, não os arquivos de locale | Não aumentar o JS de todas as rotas |
+| Publicação e merge | **Não feitos**: nada enviado ao GitHub nem fundido | Push e merge alteram o histórico remoto; ficam para o owner |
+
+### 8.7 Aberto: orçamentos de JS acima do limite
+
+Neste branch, as rotas R3 (artigo do blog, 123,33 de 123 kB), R7 (contato, 128,70 de 128 kB) e R8 (artigo em alemão, 123,33 de 123 kB) passam do limite. R1 está em 123,48 de 125 kB. A alta de cerca de 0,5 kB em todas as rotas apareceu com o commit do CV (`9d52de8`). Testes feitos: remover o link do cabeçalho reduz só 0,05 kB; as mensagens de locale não estão no JS. A causa não foi identificada. Não aumentei os limites, porque eles são regra do projeto. Próximo passo: comparar o JS por chunk com um build limpo do commit anterior, e decidir entre reduzir o código ou ajustar o limite.
