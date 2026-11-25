@@ -81,10 +81,12 @@ describe('institutional pages', () => {
   it('the home shows the about timeline of its locale, and its tags refresh the home too (F13-T3)', async () => {
     const timeline = [{ period: '2024 – 2025', title: 'Empresa A', text: 'Frontend' }, { period: '2022', title: 'Empresa B', text: '' }]
     const about = await getPage(db, 'about')
-    const saved = await updatePage(db, userId, about, { version: ptBR(about).version, blocks: { ...EMPTY_PAGE_BLOCKS.about, timeline } })
+    const skills = [{ group: 'Core', items: ['TypeScript'] }]
+    const saved = await updatePage(db, userId, about, { version: ptBR(about).version, blocks: { ...EMPTY_PAGE_BLOCKS.about, timeline, skills } })
     await publishPage(db, actor, saved, 'pt-BR', ptBR(saved).version)
     const home = await publicPage(db, 'home', 'pt-BR')
     expect(home.home?.experience).toEqual(timeline)
+    expect(home.home?.skills).toEqual(skills)
     expect(home.cacheTags).toContain('page:about:pt-BR')
   })
 

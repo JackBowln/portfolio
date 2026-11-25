@@ -15,9 +15,13 @@ const settings = useSiteSettings()
 // F13-T2: a figure needs both its number and its label to show
 const stats = computed(() => props.page.blocks.stats.filter(stat => stat.value.trim() !== '' && stat.label.trim() !== ''))
 const LINKS = { projects: '/projetos', blog: '/blog', about: '/sobre', contact: '/contato' } as const
-const ids = { featured: useId(), articles: useId(), experience: useId() }
+const ids = { featured: useId(), articles: useId(), experience: useId(), skills: useId() }
 // F13-T3: the experience on the home is the about page's timeline; an entry with no title is left out
 const experience = computed(() => (props.page.home?.experience ?? []).filter(item => item.title.trim() !== ''))
+// F13-T4: the skill groups of the about page; a group with no name or no skill is left out
+const skills = computed(() => (props.page.home?.skills ?? [])
+  .map(group => ({ group: group.group.trim(), items: group.items.map(item => item.trim()).filter(Boolean) }))
+  .filter(group => group.group !== '' && group.items.length > 0))
 const button = 'press inline-flex min-h-(--target-comfortable) items-center justify-self-start border border-text px-5 font-strong hover:border-accent hover:text-accent'
 </script>
 
@@ -188,6 +192,46 @@ const button = 'press inline-flex min-h-(--target-comfortable) items-center just
             </p>
           </div>
         </article>
+      </div>
+    </section>
+
+    <!-- F13-T4: the skills, grouped as the owner wrote them; each group reveals once with the motion (storyboard-home §5) -->
+    <section
+      v-if="skills.length > 0"
+      class="grid gap-8"
+      :aria-labelledby="ids.skills"
+      :lang="page.fallback ? 'pt-BR' : undefined"
+    >
+      <UiHeading
+        :id="ids.skills"
+        :level="2"
+        :size="4"
+      >
+        {{ $t('pages.about.skills') }}
+      </UiHeading>
+      <div class="grid gap-8 md:grid-cols-2">
+        <div
+          v-for="(group, index) in skills"
+          :key="index"
+          class="grid content-start gap-3 border-t border-border pt-6"
+          data-motion="skills-group"
+        >
+          <UiHeading
+            :level="3"
+            :size="2"
+          >
+            {{ group.group }}
+          </UiHeading>
+          <ul class="flex flex-wrap gap-2">
+            <li
+              v-for="(item, position) in group.items"
+              :key="position"
+              class="border border-border px-3 py-1 text-step--1"
+            >
+              {{ item }}
+            </li>
+          </ul>
+        </div>
       </div>
     </section>
 

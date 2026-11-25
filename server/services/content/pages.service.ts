@@ -241,6 +241,7 @@ export async function publicPage(db: Db, key: PageKey, locale: Locale): Promise<
       projects: (projects?.items ?? []).filter(item => item.featured),
       articles: (articles?.items ?? []).slice(0, 3),
       experience: (about.blocks as PageBlocks<'about'> | null)?.timeline ?? [],
+      skills: (about.blocks as PageBlocks<'about'> | null)?.skills ?? [],
     }
     tags.push(cacheTags.projectList(locale), cacheTags.blogList(locale), ...(projects?.cacheTags ?? []), ...(articles?.cacheTags ?? []), ...about.cacheTags)
   }

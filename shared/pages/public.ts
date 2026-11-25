@@ -17,7 +17,13 @@ export interface PublicPage<B = unknown> {
   seo: { title: string | null, description: string | null, noindex: boolean }
   media: PublicMediaMap
   /** The home's featured projects and latest articles (decision 2) */
-  home?: { projects: ProjectCard[], articles: BlogCard[], experience: { period: string, title: string, text: string }[] }
+  home?: {
+    projects: ProjectCard[]
+    articles: BlogCard[]
+    experience: { period: string, title: string, text: string }[]
+    /** F13-T4: the about page's skill groups, as the owner grouped them */
+    skills: { group: string, items: string[] }[]
+  }
   /** When the copy shown was published (F11-T1, the about page's dateModified) */
   publishedAt?: string
   /** JSON-LD, serialized on the server (F11-T1); the page puts it in <head> as it is */
