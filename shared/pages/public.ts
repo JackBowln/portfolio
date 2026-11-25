@@ -21,6 +21,8 @@ export interface PublicPage<B = unknown> {
     projects: ProjectCard[]
     articles: BlogCard[]
     experience: { period: string, title: string, text: string }[]
+    /** True when About has no text in the page's language and the timeline is pt-BR (F13-T3 fallback) */
+    experienceFallback: boolean
     /** F13-T4: the about page's skill groups, as the owner grouped them */
     skills: { group: string, items: string[] }[]
   }
