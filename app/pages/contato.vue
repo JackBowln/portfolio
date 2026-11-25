@@ -8,6 +8,8 @@ import { paragraphs } from '#shared/pages/public'
 import FallbackNotice from '~/components/pages/FallbackNotice.vue'
 import PageEmpty from '~/components/pages/PageEmpty.vue'
 import ContactForm from '~/components/contact/ContactForm.vue'
+// F13-T7: the outreach draft is client-only and loads on its own chunk, so the page's first load does not grow
+const OutreachDraft = defineAsyncComponent(() => import('~/components/contact/OutreachDraft.vue'))
 
 definePageMeta({
   i18n: {
@@ -68,5 +70,8 @@ const formEnabled = computed(() => settings.value.features.contactForm)
         class="underline underline-offset-(--underline-offset) hover:text-accent"
       >{{ settings.contactEmail }}</a>
     </p>
+    <ClientOnly v-if="formEnabled">
+      <OutreachDraft />
+    </ClientOnly>
   </div>
 </template>

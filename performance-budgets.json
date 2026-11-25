@@ -20,7 +20,7 @@
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
       "noMotion": true,
-      "js": 123,
+      "js": 124,
       "css": 25
     },
     "R4": {
@@ -48,7 +48,7 @@
       "path": "/contato",
       "page": "pages/contato.vue",
       "layout": "layouts/default.vue",
-      "js": 128,
+      "js": 129,
       "css": 30
     },
     "R8": {
@@ -56,7 +56,7 @@
       "page": "pages/blog/[slug].vue",
       "layout": "layouts/reading.vue",
       "noMotion": true,
-      "js": 123,
+      "js": 124,
       "css": 25
     },
     "E404": {
