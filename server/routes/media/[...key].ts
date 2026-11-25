@@ -3,8 +3,9 @@
 // one the server wrote at upload, from the record, so no D1 read is needed here
 import { cacheTags } from '#shared/cache/tags'
 import { isPublicMediaKey } from '#shared/media/public'
+import { IMMUTABLE_CACHE, deliveryDispositionHeaders } from '../../utils/media-delivery'
 
-const IMMUTABLE = 'public, max-age=31536000, immutable'
+const IMMUTABLE = IMMUTABLE_CACHE
 
 export default defineEventHandler(async (event) => {
   if (event.method !== 'GET' && event.method !== 'HEAD') {
@@ -41,10 +42,13 @@ export default defineEventHandler(async (event) => {
     throw createAppError('not_found')
   }
 
+  const contentType = object.httpMetadata?.contentType ?? 'application/octet-stream'
   setResponseHeaders(event, {
     'cache-control': IMMUTABLE,
-    'content-type': object.httpMetadata?.contentType ?? 'application/octet-stream',
-    'content-disposition': 'inline',
+    'content-type': contentType,
+    // ADR-0017 §3: a PDF is downloaded, never rendered on the site's origin; a sandbox policy stops it running anything
+    // if a browser opens it anyway
+    ...deliveryDispositionHeaders(contentType),
     'x-content-type-options': 'nosniff',
     'accept-ranges': 'bytes',
     'etag': object.httpEtag,

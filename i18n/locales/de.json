@@ -37,7 +37,8 @@
     "reduceMotion": {
       "label": "Bewegung reduzieren",
       "system": "Ihr System verlangt bereits reduzierte Bewegung."
-    }
+    },
+    "downloadCv": "CV herunterladen"
   },
   "errors": {
     "code": "Fehler {code}",

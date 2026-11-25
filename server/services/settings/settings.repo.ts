@@ -2,8 +2,9 @@
 // (the global value moves only from the version read, and each translation is written only if that move happened)
 import { and, eq, exists, inArray, sql } from 'drizzle-orm'
 import type { SegmentsMeta } from '../../../shared/content/segment-hash.ts'
-import type { Locale, SiteSettingKey, TranslationState } from '../../../shared/types/enums.ts'
+import type { Locale, MediaUsageContext, SiteSettingKey, TranslationState } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
+import { mediaUsages } from '../../db/schema/media.ts'
 import { siteSettingLocalizations, siteSettings } from '../../db/schema/settings.ts'
 
 export type SettingRow = typeof siteSettings.$inferSelect
@@ -27,6 +28,8 @@ export interface SettingWrite {
   now: Date
   /** Locales to write (a value) or remove (null) */
   localizations: { locale: Locale, value: unknown, state: TranslationState, meta?: SegmentsMeta | undefined }[]
+  /** The media this save uses (the OG image, the CV); they replace the key's usages in the same batch (ADR-0007 §8) */
+  uses?: { mediaId: string, context: MediaUsageContext }[] | undefined
   /** Translations the pt-BR change makes outdated (F09-T1) */
   outdated?: { locale: Locale, meta: SegmentsMeta }[] | undefined
 }
@@ -65,5 +68,16 @@ export function saveSettingStatements(db: Db, write: SettingWrite) {
   const outdated = (write.outdated ?? []).map(item => db.update(siteSettingLocalizations)
     .set({ translationState: 'outdated', segmentsMeta: item.meta })
     .where(and(eq(siteSettingLocalizations.key, write.key), eq(siteSettingLocalizations.locale, item.locale), done)))
-  return [head, ...translations, ...outdated] as const
+  // A settings key's media usages are replaced as a whole, like a page's (media_usages has no unique key)
+  const uses = [
+    db.delete(mediaUsages).where(and(eq(mediaUsages.entityType, 'setting'), eq(mediaUsages.entityId, write.key), done)),
+    db.insert(mediaUsages).select(db.select({
+      mediaId: sql<string>`json_extract(value, '$.mediaId')`.as('media_id'),
+      entityType: sql<string>`'setting'`.as('entity_type'),
+      entityId: sql<string>`${write.key}`.as('entity_id'),
+      locale: sql<Locale | null>`NULL`.as('locale'),
+      context: sql<MediaUsageContext>`json_extract(value, '$.context')`.as('context'),
+    }).from(sql`json_each(${JSON.stringify(write.uses ?? [])})`).where(done)),
+  ]
+  return [head, ...uses, ...translations, ...outdated] as const
 }

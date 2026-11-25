@@ -73,6 +73,10 @@ export function sniffMediaType(bytes: Uint8Array): MediaMimeType | null {
   if (isWebVtt(bytes)) {
     return 'text/vtt'
   }
+  // ADR-0017: a PDF starts with its version header
+  if (startsWith(bytes, ascii('%PDF-'))) {
+    return 'application/pdf'
+  }
   return sniffIsoBmff(bytes)
 }
 

@@ -217,3 +217,11 @@ export async function findMediaStates(db: Db, ids: readonly string[]): Promise<M
   }
   return found
 }
+
+/** The stored key of a ready PDF (F13-T5, ADR-0017), or null: a CV link is only ever built from a finished file */
+export async function findReadyFileKey(db: Db, id: string): Promise<string | null> {
+  const [row] = await db.select({ key: media.originalKey }).from(media)
+    .where(and(eq(media.id, id), eq(media.kind, 'file'), eq(media.status, 'ready')))
+    .limit(1)
+  return row?.key ?? null
+}

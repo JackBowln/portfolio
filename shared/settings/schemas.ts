@@ -24,9 +24,10 @@ const translationStyle = z.strictObject({ formality: z.enum(['formal', 'informal
 
 export const settingSchemas = {
   identity: {
-    global: z.strictObject({ name: required(80) }),
+    // F13-T5 (ADR-0017): the CV, one PDF for every language. Null until the owner uploads it
+    global: z.strictObject({ name: required(80), cvMediaId: mediaId.nullable().default(null) }),
     localized: z.strictObject({ role: text(120), bio: text(300) }),
-    defaults: { global: { name: '[PLACEHOLDER]' }, localized: { role: '[PLACEHOLDER]', bio: '' } },
+    defaults: { global: { name: '[PLACEHOLDER]', cvMediaId: null }, localized: { role: '[PLACEHOLDER]', bio: '' } },
     public: true,
   },
   social: {

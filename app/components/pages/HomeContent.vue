@@ -13,7 +13,8 @@ import ProjectCard from '~/components/projects/ProjectCard.vue'
 const props = defineProps<{ page: PublicPage<PageBlocks<'home'>> & { blocks: PageBlocks<'home'> } }>()
 const settings = useSiteSettings()
 // F13-T2: a figure needs both its number and its label to show
-const stats = computed(() => props.page.blocks.stats.filter(stat => stat.value.trim() !== '' && stat.label.trim() !== ''))
+// (Blocks saved before the field, or a page not parsed by the schema, have none: no strip, no error)
+const stats = computed(() => (props.page.blocks.stats ?? []).filter(stat => stat.value.trim() !== '' && stat.label.trim() !== ''))
 const LINKS = { projects: '/projetos', blog: '/blog', about: '/sobre', contact: '/contato' } as const
 const ids = { featured: useId(), articles: useId(), experience: useId(), skills: useId() }
 // F13-T3: the experience on the home is the about page's timeline; an entry with no title is left out
@@ -82,6 +83,14 @@ const button = 'press inline-flex min-h-(--target-comfortable) items-center just
       >
         {{ page.blocks.hero.cta.label }}
       </UiLocalizedLink>
+      <a
+        v-if="settings.identity.cv"
+        :href="settings.identity.cv.url"
+        download
+        class="inline-flex min-h-(--target-comfortable) items-center justify-self-start underline hover:text-accent"
+      >
+        {{ $t('layout.downloadCv') }}
+      </a>
     </section>
 
     <!-- F13-T2: the stats strip. A figure is text as the owner wrote it; with motion, a plain number counts up once -->

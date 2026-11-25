@@ -3,7 +3,8 @@
 import type { NAVIGATION_PAGES, SOCIAL_NETWORKS } from './schemas.ts'
 
 export interface PublicSettings {
-  identity: { name: string, role: string, bio: string }
+  /** `cv`: the CV's download link, when the owner has uploaded one (F13-T5); the media id itself never reaches the site */
+  identity: { name: string, role: string, bio: string, cv: { url: string } | null }
   social: { network: (typeof SOCIAL_NETWORKS)[number], url: string }[]
   /** Only when the owner chose to show it */
   contactEmail: string | null
@@ -20,7 +21,7 @@ export interface PublicSettings {
  * here, without zod, for the public bundle; tests/unit/settings.test.ts checks it against the schema defaults
  */
 export const PUBLIC_SETTINGS_DEFAULTS: PublicSettings = {
-  identity: { name: '[PLACEHOLDER]', role: '[PLACEHOLDER]', bio: '' },
+  identity: { name: '[PLACEHOLDER]', role: '[PLACEHOLDER]', bio: '', cv: null },
   social: [],
   contactEmail: null,
   seo: { titleTemplate: '%s — [PLACEHOLDER]', description: '[PLACEHOLDER]', ogImage: null },

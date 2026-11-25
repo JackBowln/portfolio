@@ -10,7 +10,9 @@ export type ImageFormat = (typeof IMAGE_FORMATS)[number]
 export const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'] as const
 export const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm'] as const
 export const TRACK_MIME_TYPE = 'text/vtt'
-export type MediaMimeType = (typeof IMAGE_MIME_TYPES)[number] | (typeof VIDEO_MIME_TYPES)[number] | typeof TRACK_MIME_TYPE
+// F13-T5 (ADR-0017): the CV. The only document kind: one PDF, no variants, no processing
+export const FILE_MIME_TYPES = ['application/pdf'] as const
+export type MediaMimeType = (typeof IMAGE_MIME_TYPES)[number] | (typeof VIDEO_MIME_TYPES)[number] | (typeof FILE_MIME_TYPES)[number] | typeof TRACK_MIME_TYPE
 
 export const FORMAT_MIME_TYPES: Record<ImageFormat, MediaMimeType> = {
   avif: 'image/avif',
@@ -25,6 +27,7 @@ export const MIME_EXTENSIONS: Record<MediaMimeType, string> = {
   'image/avif': 'avif',
   'video/mp4': 'mp4',
   'video/webm': 'webm',
+  'application/pdf': 'pdf',
   'text/vtt': 'vtt',
 }
 
@@ -38,10 +41,12 @@ export const MEDIA_LIMITS = {
   maxDurationMs: 4 * 60 * 60 * 1000,
   placeholderChars: 4096,
   maxTracks: 10,
+  /** ADR-0017: a CV is a short document; anything bigger is not a CV */
+  fileBytes: 5_000_000,
 } as const
 
 /** Largest body any upload may carry; the origin middleware refuses bigger ones before they reach a handler */
-export const MAX_UPLOAD_BYTES = Math.max(MEDIA_LIMITS.variantBytes, MEDIA_LIMITS.originalBytes, MEDIA_LIMITS.videoBytes, MEDIA_LIMITS.trackBytes)
+export const MAX_UPLOAD_BYTES = Math.max(MEDIA_LIMITS.variantBytes, MEDIA_LIMITS.originalBytes, MEDIA_LIMITS.videoBytes, MEDIA_LIMITS.trackBytes, MEDIA_LIMITS.fileBytes)
 
 const dimension = z.number().int().min(1).max(MEDIA_LIMITS.maxDimension)
 const sha256 = z.string().regex(/^[0-9a-f]{64}$/, 'Lowercase hex SHA-256')
@@ -98,9 +103,18 @@ export const videoManifestSchema = z.object({
   }
 })
 
-export const mediaManifestSchema = z.discriminatedUnion('kind', [imageManifestSchema, videoManifestSchema])
+export const fileManifestSchema = z.object({
+  kind: z.literal('file'),
+  mimeType: z.enum(FILE_MIME_TYPES),
+  originalFilename: filename,
+  size: z.number().int().min(1).max(MEDIA_LIMITS.fileBytes),
+  sha256,
+}).strict()
+
+export const mediaManifestSchema = z.discriminatedUnion('kind', [imageManifestSchema, videoManifestSchema, fileManifestSchema])
 export type ImageManifest = z.output<typeof imageManifestSchema>
 export type VideoManifest = z.output<typeof videoManifestSchema>
+export type FileManifest = z.output<typeof fileManifestSchema>
 export type MediaManifest = z.output<typeof mediaManifestSchema>
 
 type ImageVariantInput = Pick<ImageManifest, 'width' | 'height'> & { variants: Pick<ImageManifest['variants'][number], 'format' | 'width' | 'height'>[] }

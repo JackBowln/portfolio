@@ -46,6 +46,10 @@ export function expectedUploads(media: UploadPlanInput): ExpectedUpload[] {
       } satisfies ExpectedUpload)),
     ]
   }
+  // ADR-0017: a CV is one file, delivered with its own headers; the name is fixed, so no user input reaches the key
+  if (media.kind === 'file') {
+    return [{ name: 'original', contentType: media.mimeType, size: media.sizeBytes, key: `${prefix}/file.${MIME_EXTENSIONS[media.mimeType]}` }]
+  }
   return [
     { name: 'original', contentType: media.mimeType, size: media.sizeBytes, key: `originals/${media.sha256}.${MIME_EXTENSIONS[media.mimeType]}` },
     ...media.variants.map(variant => ({

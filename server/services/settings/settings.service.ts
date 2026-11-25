@@ -3,7 +3,7 @@
 // key at a time. A stored value that no longer fits its schema reads as the default instead of breaking the layout
 import { cacheTags } from '../../../shared/cache/tags.ts'
 import { fieldSegments } from '../../../shared/content/segment-hash.ts'
-import { shareImage } from '../../../shared/media/public.ts'
+import { mediaUrl, shareImage } from '../../../shared/media/public.ts'
 import type { SettingUpdate } from '../../../shared/settings/input.ts'
 import type { PublicSettings } from '../../../shared/settings/public.ts'
 import { settingSchemas } from '../../../shared/settings/schemas.ts'
@@ -12,7 +12,7 @@ import { SITE_SETTING_KEYS, SOURCE_LOCALE } from '../../../shared/types/enums.ts
 import type { Locale, SiteSettingKey } from '../../../shared/types/enums.ts'
 import type { Db } from '../../db/client.ts'
 import { createAppError } from '../../utils/errors.ts'
-import { findMediaStates } from '../media/media.repo.ts'
+import { findMediaStates, findReadyFileKey } from '../media/media.repo.ts'
 import { resolveMedia } from '../content/document-media.ts'
 import type { SettingLocalizationRow, SettingRow } from './settings.repo.ts'
 import { findSettingLocalizations, findSettings, saveSettingStatements } from './settings.repo.ts'
@@ -46,16 +46,19 @@ export async function publicSettings(db: Db, locale: Locale, mediaBaseUrl: strin
   const seo = globalOf('seo_defaults', rows)
   const footer = globalOf('footer', rows)
   const media = seo.ogImageMediaId ? await resolveMedia(db, [seo.ogImageMediaId], locale) : {}
+  // F13-T5: the CV's link, from a ready PDF only; the media id stays inside
+  const cvKey = identity.cvMediaId ? await findReadyFileKey(db, identity.cvMediaId) : null
+  const cvUrl = cvKey ? mediaUrl(mediaBaseUrl, cvKey) : undefined
   const ogImage = seo.ogImageMediaId ? media[seo.ogImageMediaId] : undefined
   return {
-    identity: { name: identity.name, ...localizedOf('identity', localized, locale) },
+    identity: { name: identity.name, ...localizedOf('identity', localized, locale), cv: cvUrl ? { url: cvUrl } : null },
     social: globalOf('social', rows).links,
     contactEmail: contact.showEmail ? contact.email : null,
     seo: { ...localizedOf('seo_defaults', localized, locale), ogImage: ogImage?.kind === 'image' ? shareImage(ogImage.image, mediaBaseUrl) : null },
     navigation: globalOf('navigation', rows).items,
     footer: { showSocial: footer.showSocial, ...localizedOf('footer', localized, locale) },
     features: globalOf('features', rows),
-    cacheTags: [cacheTags.settings(), ...Object.keys(media).map(cacheTags.media)],
+    cacheTags: [cacheTags.settings(), ...Object.keys(media).map(cacheTags.media), ...(cvUrl && identity.cvMediaId ? [cacheTags.media(identity.cvMediaId)] : [])],
   }
 }
 
@@ -106,6 +109,12 @@ export async function adminSettings(db: Db): Promise<AdminSetting[]> {
   })
 }
 
+/** The media a key's value uses (F13-T5 and the OG fix): the share image of seo_defaults, the CV of identity */
+function usesOf(key: SiteSettingKey, value: unknown): { mediaId: string, context: 'settings' }[] {
+  const id = key === 'seo_defaults' ? (value as SettingGlobal<'seo_defaults'>).ogImageMediaId : key === 'identity' ? (value as SettingGlobal<'identity'>).cvMediaId : null
+  return id ? [{ mediaId: id, context: 'settings' }] : []
+}
+
 /** Saves one key. 409 on "version" when it changed since the admin read it; 400 when the OG image is not ready */
 export async function updateSetting(db: Db, userId: string, key: SiteSettingKey, input: SettingUpdate): Promise<AdminSetting> {
   if (key === 'seo_defaults') {
@@ -117,6 +126,14 @@ export async function updateSetting(db: Db, userId: string, key: SiteSettingKey,
   }
   // F09-T1: only owner and admin save settings, and both may approve translations, so what they type is approved
   // against the pt-BR text it was written for; a pt-BR change makes the other approved translations outdated
+  if (key === 'identity') {
+    // F13-T5: the CV is a ready PDF (ADR-0017); anything else would be a broken link
+    const id = (input.value as SettingGlobal<'identity'>).cvMediaId
+    const state = id ? (await findMediaStates(db, [id])).get(id) : undefined
+    if (id && (state?.kind !== 'file' || state.status !== 'ready')) {
+      throw createAppError('bad_request', 'Invalid input', [{ path: 'value.cvMediaId', message: 'must be a ready PDF' }])
+    }
+  }
   const stored = settingSchemas[key].localized ? await findSettingLocalizations(db, [key]) : []
   const before = stored.find(row => row.locale === SOURCE_LOCALE)?.value as Record<string, unknown> | undefined
   const written = input.localizations ?? {}
@@ -131,7 +148,7 @@ export async function updateSetting(db: Db, userId: string, key: SiteSettingKey,
   const untouched = stored.filter(row => row.locale !== SOURCE_LOCALE && !(row.locale in written))
     .map(row => ({ key: row.locale, translationState: row.translationState, segmentsMeta: row.segmentsMeta }))
   const outdated = (await outdatedBySourceChange(fieldSegments(before), fieldSegments(after), untouched)).map(item => ({ locale: item.key, meta: item.meta }))
-  const [saved] = await db.batch(saveSettingStatements(db, { key, version: input.version, value: input.value, userId, now: new Date(), localizations, outdated }))
+  const [saved] = await db.batch(saveSettingStatements(db, { key, version: input.version, value: input.value, userId, now: new Date(), localizations, outdated, uses: usesOf(key, input.value) }))
   if (saved.length === 0) {
     throw createAppError('conflict', 'The settings changed since they were opened', [{ path: 'version', message: 'stale' }])
   }

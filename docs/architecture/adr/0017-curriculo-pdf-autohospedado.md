@@ -18,8 +18,8 @@
    - Limite de 5 MB por arquivo (bytes decimais). Um currículo maior não é currículo.
    - Um original, sem variantes e sem processamento no navegador. O `sha256` segue a regra do ADR-0007 (declarado, único, sem recálculo no Worker).
 2. **Armazenamento.**
-   - A chave segue o padrão do ADR-0007: `originals/{sha256}.pdf`. O nome nunca vem do usuário.
-   - O original não é servido por nenhum outro caminho.
+   - A chave é `media/{sha256[0:2]}/{sha256}/file.pdf`, no prefixo de mídia do ADR-0007. O nome é fixo e nunca vem do usuário.
+   - Esta chave é a única de PDF que `PUBLIC_MEDIA_KEY` aceita. `originals/` continua privado para imagens e vídeo, como antes.
 3. **Entrega.**
    - A URL é a mesma das mídias (`MEDIA_BASE_URL`, rota `server/routes/media/[...key].ts` em preview e local).
    - Cabeçalhos próprios para `file`, diferentes da imagem:
@@ -45,9 +45,12 @@
 - O CV pode ser atualizado sem deploy. A URL muda a cada versão, então o cache do navegador não serve um CV antigo por mais de um dia.
 - Risco residual: um PDF válido ainda pode conter conteúdo enganoso (um texto que parece outra pessoa). A mitigação é o owner ser quem envia o próprio arquivo; o site não verifica o conteúdo do PDF.
 
-## Verificação prevista (F13-T5)
+## Implementação (F13-T5)
 
-- Teste unitário: MIME e magic bytes; arquivo que começa com `%PDF-` mas tem MIME de imagem é recusado; limite de 5 MB.
-- Teste do worker: os cabeçalhos da §3 em uma resposta real de `file`.
-- Teste de uso: CV em uso não pode ser apagado; a troca de CV libera o uso antigo.
-- Navegador: o botão de download baixa o arquivo e a aba não renderiza PDF.
+- Manifesto `file` em `shared/media/schemas.ts` (strict, `application/pdf`, até 5 MB, sem largura nem altura); chave e plano de upload em `shared/media/keys.ts`; sniff `%PDF-` em `server/utils/magic-bytes.ts`.
+- Cabeçalhos de entrega em `server/utils/media-delivery.ts`, usados pela rota `server/routes/media/[...key].ts`.
+- Configurações: `identity.global.cvMediaId` (nulo por padrão), validado como arquivo `file` pronto. O site recebe só o link (`identity.cv.url`), resolvido de uma linha pronta.
+- Usos: as configurações agora gravam `media_usages` (`entityType: 'setting'`) para o CV e para a imagem OG, no mesmo lote do salvamento. Isso corrige a lacuna anterior, em que a imagem OG podia ser apagada sem aviso.
+- Admin: `app/components/admin/settings/CvField.vue` (PDF enviado sem pipeline; SHA-256 calculado no navegador).
+
+Verificado por testes automatizados: unitários (manifesto, chave, padrão público, sniff, cabeçalhos), o serviço de configurações contra o D1 real (vínculo, recusa de não-PDF, uso registrado e liberado). **Não verificado:** o download no navegador e o envio pelo admin, que pedem sessão e um banco local.

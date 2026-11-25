@@ -5,7 +5,7 @@ import type { Locale, MediaTrackKind } from '../types/enums.ts'
 import type { ImageFormat } from './schemas.ts'
 
 /** Delivered objects only: variants, the video file and its tracks. `originals/` never matches */
-export const PUBLIC_MEDIA_KEY = /^media\/([0-9a-f]{2})\/\1[0-9a-f]{62}\/(?:(?:avif|webp|jpeg)-\d{1,5}\.(?:avif|webp|jpg)|video\.(?:mp4|webm)|(?:captions|subtitles)-[A-Za-z]{2}(?:-[A-Z]{2})?\.vtt)$/
+export const PUBLIC_MEDIA_KEY = /^media\/([0-9a-f]{2})\/\1[0-9a-f]{62}\/(?:(?:avif|webp|jpeg)-\d{1,5}\.(?:avif|webp|jpg)|video\.(?:mp4|webm)|(?:captions|subtitles)-[A-Za-z]{2}(?:-[A-Z]{2})?\.vtt|file\.pdf)$/
 
 export function isPublicMediaKey(key: string): boolean {
   return PUBLIC_MEDIA_KEY.test(key)

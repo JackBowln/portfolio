@@ -37,7 +37,8 @@
     "reduceMotion": {
       "label": "Reduce motion",
       "system": "Your system already asks for reduced motion."
-    }
+    },
+    "downloadCv": "Download CV"
   },
   "errors": {
     "code": "Error {code}",
