@@ -1,6 +1,6 @@
 # ADR-0017 — Currículo em PDF, autohospedado na mídia
 
-- **Status:** Proposto (2026-11-25), aguardando revisão do owner dos cabeçalhos de entrega (§4)
+- **Status:** Aceito (2026-11-25, pelo owner, com a implementação verificada: ver "Implementação")
 - **Decisores:** Owner · Claude Code
 - **Relacionados:** ADR-0007 (mídia), ADR-0012 (segurança), F13-T5, decisão D-08 do [plano de implementação](../../implementation-plan.md)
 
