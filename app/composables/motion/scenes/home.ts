@@ -79,6 +79,13 @@ export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: S
       gsap.from(articles, { opacity: 0, y: DISTANCES.sm, duration: seconds(DURATIONS.base), stagger: STAGGER, ease: EASE.out, scrollTrigger: { trigger: firstArticle, start: 'top 85%', once: true } })
     }
 
+    // F13-T4: the skill groups reveal once, a light fade and a short stagger, on every screen
+    const groups = all('skills-group')
+    const [firstGroup] = groups
+    if (firstGroup) {
+      gsap.from(groups, { opacity: 0, y: DISTANCES.sm, duration: seconds(DURATIONS.base), stagger: STAGGER, ease: EASE.out, scrollTrigger: { trigger: firstGroup, start: 'top 85%', once: true } })
+    }
+
     // §6 Closing: the title in lines on desktop, then the text and the button; a magnetic button with a fine pointer
     const closing = one('closing')
     if (closing) {
