@@ -37,22 +37,27 @@ export function homeScene({ gsap, ScrollTrigger, SplitText, scope, entrance }: S
       }
     }
 
-    // §3 Narrative sections: pinned and scrubbed on desktop with 3 or more steps (the CSS stacks them under motion-ok)
-    const story = one('story')
-    const steps = all('story-step')
-    if (desktop && entrance && story?.hasAttribute('data-pin') && steps.length >= 3 && ScrollTrigger) {
-      const timeline = gsap.timeline({ scrollTrigger: { trigger: story, pin: true, start: 'top top', end: () => `+=${window.innerHeight * steps.length}`, scrub: true } })
-      steps.slice(1).forEach((step, index) => {
-        timeline.to(steps[index]!, { opacity: 0, y: -DISTANCES.md, ease: 'none' })
-        timeline.fromTo(step, { opacity: 0, y: DISTANCES.md }, { opacity: 1, y: 0, ease: 'none' }, '<')
-      })
-      timeline.fromTo(all('story-progress'), { scaleY: 0 }, { scaleY: 1, ease: 'none', duration: timeline.duration() || 1 }, 0)
-    }
-    else {
-      for (const step of steps) {
-        gsap.from(step, { opacity: 0, y: DISTANCES.sm, duration: seconds(DURATIONS.base), ease: EASE.out, scrollTrigger: { trigger: step, start: 'top 85%', once: true } })
+    // §3 Narrative sections: pinned and scrubbed on desktop with 3 or more steps (the CSS stacks them under motion-ok).
+    // F13-T3: the experience is the same story, pinned on its own; its progress is the one inside its container
+    const narrative = (storyName: 'story' | 'experience', stepName: 'story-step' | 'experience-step') => {
+      const story = one(storyName)
+      const steps = all(stepName)
+      if (desktop && entrance && story?.hasAttribute('data-pin') && steps.length >= 3 && ScrollTrigger) {
+        const timeline = gsap.timeline({ scrollTrigger: { trigger: story, pin: true, start: 'top top', end: () => `+=${window.innerHeight * steps.length}`, scrub: true } })
+        steps.slice(1).forEach((step, index) => {
+          timeline.to(steps[index]!, { opacity: 0, y: -DISTANCES.md, ease: 'none' })
+          timeline.fromTo(step, { opacity: 0, y: DISTANCES.md }, { opacity: 1, y: 0, ease: 'none' }, '<')
+        })
+        timeline.fromTo(story.querySelectorAll('[data-motion="story-progress"]'), { scaleY: 0 }, { scaleY: 1, ease: 'none', duration: timeline.duration() || 1 }, 0)
+      }
+      else {
+        for (const step of steps) {
+          gsap.from(step, { opacity: 0, y: DISTANCES.sm, duration: seconds(DURATIONS.base), ease: EASE.out, scrollTrigger: { trigger: step, start: 'top 85%', once: true } })
+        }
       }
     }
+    narrative('story', 'story-step')
+    narrative('experience', 'experience-step')
 
     // §4 Featured projects: the cover opens from an inset (desktop), the text follows; cards staggered
     all('project-card').forEach((card, index) => {

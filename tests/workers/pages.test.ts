@@ -78,6 +78,16 @@ describe('institutional pages', () => {
     expect(await publicPage(db, 'projects', 'de')).toMatchObject({ empty: true, published: [] })
   })
 
+  it('the home shows the about timeline of its locale, and its tags refresh the home too (F13-T3)', async () => {
+    const timeline = [{ period: '2024 – 2025', title: 'Empresa A', text: 'Frontend' }, { period: '2022', title: 'Empresa B', text: '' }]
+    const about = await getPage(db, 'about')
+    const saved = await updatePage(db, userId, about, { version: ptBR(about).version, blocks: { ...EMPTY_PAGE_BLOCKS.about, timeline } })
+    await publishPage(db, actor, saved, 'pt-BR', ptBR(saved).version)
+    const home = await publicPage(db, 'home', 'pt-BR')
+    expect(home.home?.experience).toEqual(timeline)
+    expect(home.cacheTags).toContain('page:about:pt-BR')
+  })
+
   it('names versions and restores one without deleting any', async () => {
     const page = await getPage(db, 'privacy')
     const first = await updatePage(db, userId, page, { version: ptBR(page).version, blocks: { body: null, updatedOn: '2026-10-01' } })

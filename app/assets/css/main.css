@@ -220,19 +220,23 @@ html.motion-ok [data-motion="hairline"] line {
 /* Pinned story (desktop, 3 or more steps): the steps share one grid cell from the first paint, so nothing moves when
    GSAP arrives; the first shows, the others wait for the scrub. Their text stays in the DOM and in reading order */
 @media (min-width: 48rem) {
-  html.motion-ok [data-motion="story"][data-pin] {
+  html.motion-ok [data-motion="story"][data-pin],
+  html.motion-ok [data-motion="experience"][data-pin] {
     grid-template-areas: "step";
   }
 
-  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"] {
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"],
+  html.motion-ok [data-motion="experience"][data-pin] > [data-motion="experience-step"] {
     grid-area: step;
   }
 
-  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"]:not(:first-of-type) {
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-step"]:not(:first-of-type),
+  html.motion-ok [data-motion="experience"][data-pin] > [data-motion="experience-step"]:not(:first-of-type) {
     opacity: 0;
   }
 
-  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-progress"] {
+  html.motion-ok [data-motion="story"][data-pin] > [data-motion="story-progress"],
+  html.motion-ok [data-motion="experience"][data-pin] > [data-motion="story-progress"] {
     position: absolute;
     inset-block: 0;
     inset-inline-start: calc(var(--spacing) * -4);

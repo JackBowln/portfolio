@@ -7,6 +7,7 @@ import { contentHash } from '../../../shared/content/canonical-json.ts'
 import { deriveDocument } from '../../../shared/content/derive.ts'
 import { snapshotOf } from '../../../shared/content/snapshot.ts'
 import type { PublicMediaMap } from '../../../shared/media/public.ts'
+import type { PageBlocks } from '../../../shared/pages/blocks.ts'
 import { EMPTY_PAGE_BLOCKS, pageBlockSchemas, pageDocuments } from '../../../shared/pages/blocks.ts'
 import type { PageUpdate } from '../../../shared/pages/input.ts'
 import type { PublicPage } from '../../../shared/pages/public.ts'
@@ -233,9 +234,15 @@ export async function publicPage(db: Db, key: PageKey, locale: Locale): Promise<
 
   let home: PublicPage['home']
   if (key === 'home') {
-    const [projects, articles] = await Promise.all([projectList(db, locale), blogPage(db, locale, 1)])
-    home = { projects: (projects?.items ?? []).filter(item => item.featured), articles: (articles?.items ?? []).slice(0, 3) }
-    tags.push(cacheTags.projectList(locale), cacheTags.blogList(locale), ...(projects?.cacheTags ?? []), ...(articles?.cacheTags ?? []))
+    // F13-T3: the experience shown on the home is the about page's timeline (same locale, else pt-BR); its tags go with
+    // the home's, so publishing the about page also refreshes the home
+    const [projects, articles, about] = await Promise.all([projectList(db, locale), blogPage(db, locale, 1), publicPage(db, 'about', locale)])
+    home = {
+      projects: (projects?.items ?? []).filter(item => item.featured),
+      articles: (articles?.items ?? []).slice(0, 3),
+      experience: (about.blocks as PageBlocks<'about'> | null)?.timeline ?? [],
+    }
+    tags.push(cacheTags.projectList(locale), cacheTags.blogList(locale), ...(projects?.cacheTags ?? []), ...(articles?.cacheTags ?? []), ...about.cacheTags)
   }
   return {
     key,

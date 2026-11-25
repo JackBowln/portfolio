@@ -15,7 +15,9 @@ const settings = useSiteSettings()
 // F13-T2: a figure needs both its number and its label to show
 const stats = computed(() => props.page.blocks.stats.filter(stat => stat.value.trim() !== '' && stat.label.trim() !== ''))
 const LINKS = { projects: '/projetos', blog: '/blog', about: '/sobre', contact: '/contato' } as const
-const ids = { featured: useId(), articles: useId() }
+const ids = { featured: useId(), articles: useId(), experience: useId() }
+// F13-T3: the experience on the home is the about page's timeline; an entry with no title is left out
+const experience = computed(() => (props.page.home?.experience ?? []).filter(item => item.title.trim() !== ''))
 const button = 'press inline-flex min-h-(--target-comfortable) items-center justify-self-start border border-text px-5 font-strong hover:border-accent hover:text-accent'
 </script>
 
@@ -137,6 +139,57 @@ const button = 'press inline-flex min-h-(--target-comfortable) items-center just
         </div>
       </section>
     </div>
+
+    <!-- F13-T3: the roles, in the order of the about page. Pinned and scrubbed on desktop with 3 or more (decision D-01);
+         the heading stays outside the pinned block, so the steps share its one grid cell -->
+    <section
+      v-if="experience.length > 0"
+      class="grid gap-8"
+      :aria-labelledby="ids.experience"
+      :lang="page.fallback ? 'pt-BR' : undefined"
+    >
+      <UiHeading
+        :id="ids.experience"
+        :level="2"
+        :size="4"
+      >
+        {{ $t('pages.home.experience') }}
+      </UiHeading>
+      <div
+        class="relative grid gap-section"
+        data-motion="experience"
+        :data-pin="experience.length >= 3 ? '' : undefined"
+      >
+        <span
+          data-motion="story-progress"
+          aria-hidden="true"
+        />
+        <article
+          v-for="(item, index) in experience"
+          :key="index"
+          class="grid gap-4 border-t border-border pt-8 lg:grid-cols-12"
+          data-motion="experience-step"
+        >
+          <p class="font-mono text-step--1 text-text-muted lg:col-span-5">
+            {{ item.period }}
+          </p>
+          <div class="grid gap-3 lg:col-span-7">
+            <UiHeading
+              :level="3"
+              :size="2"
+            >
+              {{ item.title }}
+            </UiHeading>
+            <p
+              v-for="(text, position) in paragraphs(item.text)"
+              :key="position"
+            >
+              {{ text }}
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
 
     <section
       v-if="page.home && page.home.projects.length > 0"
